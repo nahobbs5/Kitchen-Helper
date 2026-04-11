@@ -27,10 +27,12 @@ export function SettingsGearButton() {
 export function SettingsMenuModal() {
   const {
     closeSettings,
+    confirmDeleteEnabled,
     darkModeEnabled,
     isSettingsOpen,
     keepScreenAwake,
     palette,
+    toggleConfirmDelete,
     toggleDarkMode,
     toggleKeepScreenAwake,
   } = useAppSettings();
@@ -133,6 +135,46 @@ export function SettingsMenuModal() {
                 ]}
               >
                 {keepScreenAwake ? 'On' : 'Off'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View
+          style={[
+            styles.settingsSection,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+            },
+          ]}
+        >
+          <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Recipe management</Text>
+          <View style={styles.settingsRow}>
+            <View style={styles.settingsCopy}>
+              <Text style={[styles.settingsLabel, { color: palette.text }]}>Confirm delete</Text>
+              <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                Ask before deleting a saved app recipe. Turn this off for faster cleanup.
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => toggleConfirmDelete()}
+              style={[
+                styles.numberButton,
+                {
+                  minWidth: 72,
+                  backgroundColor: confirmDeleteEnabled ? palette.accentSoft : palette.elevatedAlt,
+                  borderColor: confirmDeleteEnabled ? palette.accentSoft : palette.borderAlt,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.numberButtonText,
+                  { color: confirmDeleteEnabled ? palette.accentContrastText : palette.text },
+                ]}
+              >
+                {confirmDeleteEnabled ? 'On' : 'Off'}
               </Text>
             </Pressable>
           </View>

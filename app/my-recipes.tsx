@@ -12,6 +12,7 @@ import {
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ReferenceNav } from '../components/reference-nav';
+import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
@@ -22,34 +23,81 @@ export default function MyRecipesScreen() {
   const isWide = width >= 960;
   const { palette } = useAppSettings();
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [activeCuisine, setActiveCuisine] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
+  const { clearDeletedRecipe, customRecipes, lastDeletedRecipe, recipeOverrideMap, restoreDeletedRecipe } =
+    useCustomRecipes();
   const { favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
+  const allRecipes = useMemo(
+    () => [
+      ...customRecipes,
+      ...obsidianRecipes.map((recipe) => {
+        const override = recipeOverrideMap[recipe.slug];
+
+        return override
+          ? {
+              ...recipe,
+              title: override.title,
+              category: override.category,
+              ingredients: override.ingredients,
+              directions: override.directions,
+              notes: override.notes,
+              cuisineRegion: override.cuisineRegion,
+            }
+          : recipe;
+      }),
+    ],
+    [customRecipes, recipeOverrideMap]
+  );
   const recipeCategories = Object.entries(
-    obsidianRecipes.reduce<Record<string, number>>((groups, recipe) => {
+    allRecipes.reduce<Record<string, number>>((groups, recipe) => {
       groups[recipe.category] = (groups[recipe.category] ?? 0) + 1;
       return groups;
     }, {})
   ).map(([name, count]) => ({ name, count }));
   const categoryFilters = [
-    { name: 'All', count: obsidianRecipes.length },
+    { name: 'All', count: allRecipes.length },
     { name: 'Favorites', count: favoriteSlugs.length },
     ...recipeCategories,
+  ];
+  const cuisineFilters = [
+    { name: 'All', count: allRecipes.length },
+    ...Object.entries(
+      allRecipes.reduce<Record<string, number>>((groups, recipe) => {
+        const cuisine = (recipe as { cuisineRegion?: string | null }).cuisineRegion;
+
+        if (!cuisine) {
+          return groups;
+        }
+
+        groups[cuisine] = (groups[cuisine] ?? 0) + 1;
+        return groups;
+      }, {})
+    )
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, count]) => ({ name, count })),
   ];
   const normalizedSearch = searchText.trim().toLowerCase();
   const filteredRecipes = useMemo(
     () =>
       (activeCategory === 'All'
-        ? obsidianRecipes
+        ? allRecipes
         : activeCategory === 'Favorites'
-          ? obsidianRecipes.filter((recipe) => favoriteSlugs.includes(recipe.slug))
-          : obsidianRecipes.filter((recipe) => recipe.category === activeCategory)).filter((recipe) =>
-        normalizedSearch
-          ? `${recipe.title} ${recipe.category} ${recipe.allergyFriendlyTags.join(' ')} ${recipe.allergenTags.join(' ')}` 
-              .toLowerCase()
-              .includes(normalizedSearch)
-          : true
-      ),
-    [activeCategory, favoriteSlugs, normalizedSearch]
+          ? allRecipes.filter((recipe) => favoriteSlugs.includes(recipe.slug))
+          : allRecipes.filter((recipe) => recipe.category === activeCategory))
+        .filter((recipe) =>
+          activeCuisine === 'All'
+            ? true
+            : ((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '') === activeCuisine
+        )
+        .filter((recipe) =>
+          normalizedSearch
+            ? `${recipe.title} ${recipe.category} ${(recipe as { cuisineRegion?: string | null }).cuisineRegion ?? ''} ${recipe.allergyFriendlyTags.join(' ')} ${recipe.allergenTags.join(' ')}`
+                .toLowerCase()
+                .includes(normalizedSearch)
+            : true
+        ),
+    [activeCategory, activeCuisine, allRecipes, favoriteSlugs, normalizedSearch]
   );
 
   return (
@@ -66,9 +114,50 @@ export default function MyRecipesScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This page now reflects the actual recipe notes in your `Cooking` Obsidian vault. It
-              gives the app a real recipe shelf to build from instead of placeholders.
+              This page now combines the recipe notes from your `Cooking` Obsidian vault with
+              recipes saved directly inside the app, so your library can grow from both places.
             </Text>
+            {lastDeletedRecipe ? (
+              <View
+                style={[
+                  styles.noticeCard,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                ]}
+              >
+                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
+                  Deleted {lastDeletedRecipe.title}
+                </Text>
+                <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
+                  You can undo this and restore the recipe to app storage.
+                </Text>
+                <View style={styles.actionRow}>
+                  <Pressable
+                    onPress={restoreDeletedRecipe}
+                    style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                  >
+                    <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Undo Delete</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={clearDeletedRecipe}
+                    style={[
+                      styles.secondaryButton,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                    ]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Dismiss</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={() => router.push('/add-recipe')}
+                style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+              >
+                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>
+              </Pressable>
+            </View>
 
             <ReferenceNav />
           </View>
@@ -78,8 +167,7 @@ export default function MyRecipesScreen() {
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
               Filter by recipe type here on the page, or tap one of the folder cards below for the
-              same result. Later we can go deeper and pull ingredients, directions, times, and
-              servings too.
+              same result. Favorites and newly added app recipes show up in the same library view.
             </Text>
 
             <TextInput
@@ -122,6 +210,41 @@ export default function MyRecipesScreen() {
                 );
               })}
             </View>
+
+            {cuisineFilters.length > 1 ? (
+              <>
+                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Cuisine region</Text>
+                <View style={styles.servingsRow}>
+                  {cuisineFilters.map((cuisine) => {
+                    const isActive = activeCuisine === cuisine.name;
+
+                    return (
+                      <Pressable
+                        key={cuisine.name}
+                        onPress={() => setActiveCuisine(cuisine.name)}
+                        style={[
+                          styles.servingsButton,
+                          { borderColor: palette.borderAlt },
+                          !isActive && { backgroundColor: palette.surface },
+                          isActive && styles.servingsButtonActive,
+                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.servingsButtonText,
+                            { color: isActive ? palette.inverseText : palette.text },
+                            isActive && styles.servingsButtonTextActive,
+                          ]}
+                        >
+                          {cuisine.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </>
+            ) : null}
           </View>
         </View>
 
@@ -129,12 +252,18 @@ export default function MyRecipesScreen() {
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Current library</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipes from Obsidian</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipes from vault and app storage</Text>
               <View style={styles.listStack}>
                 {filteredRecipes.map((recipe) => (
                   <Pressable
                     key={recipe.slug}
-                    onPress={() => router.push(`/recipes/${recipe.slug}`)}
+                    onPress={() =>
+                      router.push(
+                        recipe.source === 'App Storage'
+                          ? { pathname: '/user-recipes/[slug]', params: { slug: recipe.slug } }
+                          : { pathname: '/recipes/[slug]', params: { slug: recipe.slug } }
+                      )
+                    }
                     style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
@@ -156,6 +285,21 @@ export default function MyRecipesScreen() {
                         </Text>
                       </Pressable>
                     </View>
+                    {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
+                      <View style={styles.tagRow}>
+                        <Pressable
+                          onPress={(event) => {
+                            event.stopPropagation();
+                            setActiveCuisine((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? 'All');
+                          }}
+                          style={styles.cuisineTag}
+                        >
+                          <Text style={styles.cuisineTagText}>
+                            {(recipe as { cuisineRegion?: string | null }).cuisineRegion}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    ) : null}
                     {recipe.allergyFriendlyTags.length > 0 ? (
                       <View style={styles.tagRow}>
                         {recipe.allergyFriendlyTags.map((tag) => (
@@ -226,7 +370,7 @@ export default function MyRecipesScreen() {
                   style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                 >
                   <Text style={[styles.detailCardTitle, { color: palette.text }]}>All recipes</Text>
-                  <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{obsidianRecipes.length} recipes</Text>
+                  <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{allRecipes.length} recipes</Text>
                   <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                     {activeCategory === 'All' ? 'Current filter' : 'Tap to clear filters'}
                   </Text>

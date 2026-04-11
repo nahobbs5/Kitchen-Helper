@@ -15,6 +15,7 @@ import { AppPalette, darkPalette, lightPalette } from '../components/app-theme';
 type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
+  confirmDeleteEnabled: boolean;
   loaded: boolean;
   palette: AppPalette;
   isSettingsOpen: boolean;
@@ -22,6 +23,7 @@ type SettingsContextValue = {
   closeSettings: () => void;
   toggleDarkMode: (value?: boolean) => void;
   toggleKeepScreenAwake: (value?: boolean) => void;
+  toggleConfirmDelete: (value?: boolean) => void;
 };
 
 const SETTINGS_KEY = 'kitchen-helper.app-settings';
@@ -31,11 +33,13 @@ const SettingsContext = createContext<SettingsContextValue | undefined>(undefine
 type StoredSettings = {
   darkModeEnabled?: boolean;
   keepScreenAwake?: boolean;
+  confirmDeleteEnabled?: boolean;
 };
 
 export function SettingsProvider({ children }: PropsWithChildren) {
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
+  const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const wakeLockActiveRef = useRef(false);
@@ -58,6 +62,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           const parsed = JSON.parse(value) as StoredSettings;
           setDarkModeEnabled(Boolean(parsed.darkModeEnabled));
           setKeepScreenAwake(Boolean(parsed.keepScreenAwake));
+          setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? true);
         } finally {
           setLoaded(true);
         }
@@ -83,9 +88,10 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       JSON.stringify({
         darkModeEnabled,
         keepScreenAwake,
+        confirmDeleteEnabled,
       } satisfies StoredSettings)
     ).catch(() => {});
-  }, [darkModeEnabled, keepScreenAwake, loaded]);
+  }, [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, loaded]);
 
   useEffect(() => {
     if (!loaded) {
@@ -119,6 +125,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     () => ({
       darkModeEnabled,
       keepScreenAwake,
+      confirmDeleteEnabled,
       loaded,
       palette: darkModeEnabled ? darkPalette : lightPalette,
       isSettingsOpen,
@@ -128,8 +135,10 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setDarkModeEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       toggleKeepScreenAwake: (value?: boolean) =>
         setKeepScreenAwake((current) => (typeof value === 'boolean' ? value : !current)),
+      toggleConfirmDelete: (value?: boolean) =>
+        setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
     }),
-    [darkModeEnabled, keepScreenAwake, loaded, isSettingsOpen]
+    [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, loaded, isSettingsOpen]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

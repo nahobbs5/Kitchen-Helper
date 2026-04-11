@@ -389,6 +389,17 @@ export const kitchenStyles = StyleSheet.create({
     color: '#33511c',
     fontWeight: '700',
   },
+  cuisineTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#cfe7f7',
+  },
+  cuisineTagText: {
+    fontSize: 12,
+    color: '#1f4f73',
+    fontWeight: '700',
+  },
   numberGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -445,6 +456,69 @@ export const kitchenStyles = StyleSheet.create({
     color: '#2c2219',
     marginTop: 6,
   },
+  formStack: {
+    gap: 16,
+    marginTop: 6,
+  },
+  formField: {
+    gap: 8,
+  },
+  formLabel: {
+    fontSize: 13,
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+    color: '#8a5a24',
+  },
+  formHint: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#7a6650',
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: '#d8c3a2',
+    backgroundColor: '#fff9ef',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#2c2219',
+  },
+  formTextArea: {
+    minHeight: 140,
+    textAlignVertical: 'top',
+  },
+  helperCard: {
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    gap: 8,
+  },
+  helperCardTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '800',
+  },
+  helperCardBody: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  noticeCard: {
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    gap: 10,
+  },
+  noticeCardTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '800',
+  },
+  noticeCardBody: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
   actionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -474,6 +548,32 @@ export const kitchenStyles = StyleSheet.create({
     color: '#7a4b1a',
     fontWeight: '800',
     fontSize: 15,
+  },
+  dangerButton: {
+    backgroundColor: '#a33821',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  dangerButtonText: {
+    color: '#fff7ea',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  dangerCard: {
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    gap: 10,
+  },
+  dangerCardTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '800',
+  },
+  dangerCardBody: {
+    fontSize: 14,
+    lineHeight: 21,
   },
   settingsGearButton: {
     width: 38,

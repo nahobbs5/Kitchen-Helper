@@ -7,68 +7,41 @@ import { ReferenceNav } from '../../components/reference-nav';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
-import { obsidianRecipeMap } from '../../data/obsidian-recipes';
-import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { scaleIngredientLine } from '../../utils/ingredient-scaling';
 
 const fractionalPresets = [0.25, 0.5] as const;
 const servingTargets = [2, 4, 8] as const;
 const customServingOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
-export default function ObsidianRecipeScreen() {
+export default function UserRecipeScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
-  const { recipeOverrideMap } = useCustomRecipes();
-  const baseRecipe = slug ? obsidianRecipeMap[slug] : undefined;
-  const override = slug ? recipeOverrideMap[slug] : undefined;
-  const recipe = baseRecipe
-    ? {
-        ...baseRecipe,
-        title: override?.title ?? baseRecipe.title,
-        category: override?.category ?? baseRecipe.category,
-        ingredients: override?.ingredients ?? baseRecipe.ingredients,
-        directions: override?.directions ?? baseRecipe.directions,
-        notes: override?.notes ?? null,
-        cuisineRegion: override?.cuisineRegion ?? null,
-      }
-    : undefined;
-  const [multiplier, setMultiplier] = useState(1);
+  const { confirmDeleteEnabled, palette } = useAppSettings();
+  const { customRecipeMap, deleteRecipe, loaded } = useCustomRecipes();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const [multiplier, setMultiplier] = useState(1);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const normalizedSlug = Array.isArray(slug) ? slug[0] : slug;
+  const recipe = normalizedSlug ? customRecipeMap[normalizedSlug] : undefined;
 
-  const baseServings = useMemo(() => extractBaseServings(recipe?.servings ?? null), [recipe?.servings]);
-
-  const servingButtons = useMemo(() => {
-    const buttons = [
+  const servingButtons = useMemo(
+    () => [
       { key: 'original', label: 'Original', multiplier: 1 },
       ...fractionalPresets.map((value) => ({
         key: `fraction-${value}`,
         label: value === 0.5 ? '1/2x' : '1/4x',
         multiplier: value,
       })),
-    ];
-
-    if (baseServings) {
-      buttons.push(
-        ...servingTargets.map((value) => ({
-          key: `servings-${value}`,
-          label: `${value}`,
-          multiplier: value / baseServings,
-        }))
-      );
-    } else {
-      buttons.push(
-        ...servingTargets.map((value) => ({
-          key: `multiplier-${value}`,
-          label: `${value}x`,
-          multiplier: value,
-        }))
-      );
-    }
-
-    return buttons;
-  }, [baseServings]);
+      ...servingTargets.map((value) => ({
+        key: `multiplier-${value}`,
+        label: `${value}x`,
+        multiplier: value,
+      })),
+    ],
+    []
+  );
 
   const scaledIngredients = useMemo(() => {
     if (!recipe) {
@@ -81,7 +54,44 @@ export default function ObsidianRecipeScreen() {
     }));
   }, [multiplier, recipe]);
 
-  const customLabel = baseServings ? 'Custom servings' : 'Custom multiplier';
+  function handleDelete() {
+    if (!recipe) {
+      return;
+    }
+
+    deleteRecipe(recipe.slug);
+    router.replace('/my-recipes');
+  }
+
+  function handleDeletePress() {
+    if (!recipe) {
+      return;
+    }
+
+    if (!confirmDeleteEnabled) {
+      handleDelete();
+      return;
+    }
+
+    setShowDeleteConfirm((current) => !current);
+  }
+
+  if (!loaded) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
+        <Stack.Screen options={{ title: 'Loading recipe' }} />
+        <ScrollView contentContainerStyle={styles.page}>
+          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+            <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Loading</Text>
+            <Text style={[styles.panelTitle, { color: palette.text }]}>Opening saved recipe</Text>
+            <Text style={[styles.panelText, { color: palette.textMuted }]}>
+              Local app recipes are still loading from storage.
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   if (!recipe) {
     return (
@@ -90,10 +100,9 @@ export default function ObsidianRecipeScreen() {
         <ScrollView contentContainerStyle={styles.page}>
           <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
             <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Missing recipe</Text>
-            <Text style={[styles.panelTitle, { color: palette.text }]}>We could not find that recipe</Text>
+            <Text style={[styles.panelTitle, { color: palette.text }]}>We could not find that saved recipe</Text>
             <Text style={[styles.panelText, { color: palette.textMuted }]}>
-              The route did not match a generated Obsidian recipe. Running `corepack pnpm
-              sync:recipes` will refresh the app data after recipe files change.
+              That recipe may have been removed from local app storage.
             </Text>
           </View>
         </ScrollView>
@@ -130,85 +139,70 @@ export default function ObsidianRecipeScreen() {
               </Pressable>
             </View>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This page is generated from your Obsidian Markdown note. The app is now reading the
-              note structure, showing the ingredients and directions, and letting you scale the
-              ingredient list.
+              This recipe was added directly inside the app and saved into local app storage.
             </Text>
             <View style={styles.actionRow}>
               <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: '/edit-recipe/[slug]',
-                    params: { slug: recipe.slug, source: 'obsidian' },
-                  })
-                }
+                onPress={() => router.push({ pathname: '/edit-recipe/[slug]', params: { slug: recipe.slug } })}
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
                 <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Edit Recipe</Text>
               </Pressable>
+              <Pressable
+                onPress={handleDeletePress}
+                style={styles.dangerButton}
+              >
+                <Text style={styles.dangerButtonText}>🗑 Delete Recipe</Text>
+              </Pressable>
             </View>
-            <ReferenceNav />
-            {recipe.cuisineRegion ? (
-              <View style={styles.tagRow}>
-                <View style={styles.cuisineTag}>
-                  <Text style={styles.cuisineTagText}>{recipe.cuisineRegion}</Text>
+            {showDeleteConfirm ? (
+              <View
+                style={[
+                  styles.dangerCard,
+                  { backgroundColor: palette.elevatedAlt, borderColor: '#d47a5b' },
+                ]}
+              >
+                <Text style={[styles.dangerCardTitle, { color: palette.text }]}>
+                  Delete {recipe.title}?
+                </Text>
+                <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
+                  This removes the recipe from local app storage. You can cancel if you want to keep it.
+                </Text>
+                <View style={styles.actionRow}>
+                  <Pressable
+                    onPress={() => setShowDeleteConfirm(false)}
+                    style={[
+                      styles.secondaryButton,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                    ]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
+                  </Pressable>
+                  <Pressable onPress={handleDelete} style={styles.dangerButton}>
+                    <Text style={styles.dangerButtonText}>Delete {recipe.title}</Text>
+                  </Pressable>
                 </View>
               </View>
             ) : null}
-            {recipe.servings ? (
-              <View style={styles.badgeRow}>
-                <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
-                  {recipe.servings}
-                </Text>
+            <ReferenceNav />
+            <View style={styles.tagRow}>
+              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                <Text style={[styles.tagText, { color: palette.tagText }]}>Saved in app</Text>
               </View>
-            ) : null}
-            {recipe.allergyFriendlyTags.length > 0 ? (
-              <View style={styles.tagRow}>
-                {recipe.allergyFriendlyTags.map((tag) => (
-                  <View key={tag} style={styles.allergyFriendlyTag}>
-                    <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-            {recipe.allergenTags.length > 0 ? (
-              <View style={styles.tagRow}>
-                {recipe.allergenTags.map((tag) => (
-                  <View key={tag} style={styles.allergenTag}>
-                    <Text style={styles.allergenTagText}>{tag}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-            {recipe.prepTime || recipe.cookTime || recipe.totalTime ? (
-              <View style={styles.tagRow}>
-                {recipe.prepTime ? (
-                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                    <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
-                  </View>
-                ) : null}
-                {recipe.cookTime ? (
-                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                    <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
-                  </View>
-                ) : null}
-                {recipe.totalTime ? (
-                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                    <Text style={[styles.tagText, { color: palette.tagText }]}>Total: {recipe.totalTime}</Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
+              {recipe.cuisineRegion ? (
+                <View style={styles.cuisineTag}>
+                  <Text style={styles.cuisineTagText}>{recipe.cuisineRegion}</Text>
+                </View>
+              ) : null}
+            </View>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
-              {baseServings ? `Based on ${baseServings} servings` : 'Based on original recipe amount'}
-            </Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Scale ingredients</Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Use 1/4x, 1/2x, or quick serving presets. When a note includes servings, the `2`,
-              `4`, and `8` buttons target those serving counts. Otherwise they act as multipliers.
+              Since this form does not ask for servings yet, these buttons act as multipliers for
+              the ingredient list.
             </Text>
 
             <View style={styles.servingsRow}>
@@ -241,16 +235,15 @@ export default function ObsidianRecipeScreen() {
               })}
             </View>
 
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>{customLabel}</Text>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Custom multiplier</Text>
             <View style={styles.numberGrid}>
               {customServingOptions.map((value) => {
-                const optionMultiplier = baseServings ? value / baseServings : value;
-                const isActive = Math.abs(multiplier - optionMultiplier) < 0.001;
+                const isActive = Math.abs(multiplier - value) < 0.001;
 
                 return (
                   <Pressable
                     key={`custom-${value}`}
-                    onPress={() => setMultiplier(optionMultiplier)}
+                    onPress={() => setMultiplier(value)}
                     style={[
                       styles.numberButton,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
@@ -270,7 +263,7 @@ export default function ObsidianRecipeScreen() {
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Ingredients</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled from Markdown</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled from your saved form</Text>
               <View style={styles.listStack}>
                 {scaledIngredients.length > 0 ? (
                   scaledIngredients.map((section, index) => (
@@ -288,9 +281,7 @@ export default function ObsidianRecipeScreen() {
                   ))
                 ) : (
                   <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      No ingredients were detected in this note.
-                    </Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No ingredients were saved.</Text>
                   </View>
                 )}
               </View>
@@ -318,39 +309,26 @@ export default function ObsidianRecipeScreen() {
                   ))
                 ) : (
                   <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      No directions were detected in this note.
-                    </Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No directions were saved.</Text>
                   </View>
                 )}
               </View>
             </View>
 
-            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe notes</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Markdown-backed recipe</Text>
-              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                If you update the Markdown file, rerun `corepack pnpm sync:recipes` to regenerate
-                the app data from the vault. Edits made here are stored locally in the app as
-                overrides, so the original Markdown note stays untouched.
-              </Text>
-              {recipe.notes ? (
-                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>{recipe.notes}</Text>
-              ) : null}
-              {recipe.prepTime || recipe.cookTime || recipe.totalTime ? (
-                <View style={styles.listStack}>
-                  {recipe.prepTime ? (
-                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Prep time: {recipe.prepTime}</Text>
-                  ) : null}
-                  {recipe.cookTime ? (
-                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Cook time: {recipe.cookTime}</Text>
-                  ) : null}
-                  {recipe.totalTime ? (
-                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Total time: {recipe.totalTime}</Text>
-                  ) : null}
-                </View>
-              ) : null}
-            </View>
+            {(recipe.notes || recipe.cuisineRegion) ? (
+              <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
+                <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe notes</Text>
+                <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Saved extras</Text>
+                {recipe.cuisineRegion ? (
+                  <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
+                    Cuisine region: {recipe.cuisineRegion}
+                  </Text>
+                ) : null}
+                {recipe.notes ? (
+                  <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>{recipe.notes}</Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         </View>
       </ScrollView>
