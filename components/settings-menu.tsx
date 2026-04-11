@@ -154,7 +154,8 @@ export function SettingsMenuModal() {
             <View style={styles.settingsCopy}>
               <Text style={[styles.settingsLabel, { color: palette.text }]}>Confirm delete</Text>
               <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                Ask before deleting a saved app recipe. Turn this off for faster cleanup.
+                Ask before deleting a saved app recipe. Turn this off for faster cleanup. Does not
+                apply to bulk deletes.
               </Text>
             </View>
             <Pressable

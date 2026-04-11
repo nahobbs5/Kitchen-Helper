@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { NoticePieTimer } from '../components/notice-pie-timer';
 import { ReferenceNav } from '../components/reference-nav';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
@@ -26,7 +27,11 @@ export default function MyRecipesScreen() {
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
   const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
   const [searchText, setSearchText] = useState('');
-  const { clearDeletedRecipe, customRecipes, lastDeletedRecipe, recipeOverrideMap, restoreDeletedRecipe } =
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedRecipeSlugs, setSelectedRecipeSlugs] = useState<string[]>([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [dismissProgress, setDismissProgress] = useState(0);
+  const { clearDeletedRecipes, customRecipes, deleteRecipes, lastDeletedRecipes, recipeOverrideMap, restoreDeletedRecipes } =
     useCustomRecipes();
   const { favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
   const allRecipes = useMemo(
@@ -168,17 +173,73 @@ export default function MyRecipesScreen() {
     );
   }
 
-  useEffect(() => {
-    if (!lastDeletedRecipe) {
+  function toggleSelectionMode() {
+    setSelectionMode((current) => !current);
+    setSelectedRecipeSlugs([]);
+    setShowBulkDeleteConfirm(false);
+  }
+
+  function toggleRecipeSelection(slug: string) {
+    setSelectedRecipeSlugs((current) =>
+      current.includes(slug) ? current.filter((value) => value !== slug) : [...current, slug]
+    );
+  }
+
+  function selectAllVisibleRecipes() {
+    setSelectedRecipeSlugs(filteredRecipes.map((recipe) => recipe.slug));
+  }
+
+  function clearSelectedRecipes() {
+    setSelectedRecipeSlugs([]);
+    setShowBulkDeleteConfirm(false);
+  }
+
+  const selectedRecipes = filteredRecipes.filter((recipe) => selectedRecipeSlugs.includes(recipe.slug));
+  const selectedAppStorageRecipes = selectedRecipes.filter((recipe) => recipe.source === 'App Storage');
+  const selectedVaultRecipes = selectedRecipes.filter((recipe) => recipe.source !== 'App Storage');
+
+  function handleBulkDelete() {
+    if (selectedAppStorageRecipes.length === 0) {
       return;
     }
 
+    deleteRecipes(selectedAppStorageRecipes.map((recipe) => recipe.slug));
+    setSelectedRecipeSlugs((current) =>
+      current.filter((slug) => !selectedAppStorageRecipes.some((recipe) => recipe.slug === slug))
+    );
+    setShowBulkDeleteConfirm(false);
+    setSelectionMode(false);
+  }
+
+  function handleBulkDeletePress() {
+    if (selectedAppStorageRecipes.length === 0) {
+      return;
+    }
+
+    setShowBulkDeleteConfirm(true);
+  }
+
+  useEffect(() => {
+    if (lastDeletedRecipes.length === 0) {
+      setDismissProgress(0);
+      return;
+    }
+
+    const startedAt = Date.now();
+    const intervalId = setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      setDismissProgress(Math.min(elapsed / 10000, 1));
+    }, 33);
+
     const timeoutId = setTimeout(() => {
-      clearDeletedRecipe();
+      clearDeletedRecipes();
     }, 10000);
 
-    return () => clearTimeout(timeoutId);
-  }, [clearDeletedRecipe, lastDeletedRecipe]);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [clearDeletedRecipes, lastDeletedRecipes]);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -197,7 +258,7 @@ export default function MyRecipesScreen() {
               This page now combines the recipe notes from your `Cooking` Obsidian vault with
               recipes saved directly inside the app, so your library can grow from both places.
             </Text>
-            {lastDeletedRecipe ? (
+            {lastDeletedRecipes.length > 0 ? (
               <View
                 style={[
                   styles.noticeCard,
@@ -205,20 +266,34 @@ export default function MyRecipesScreen() {
                 ]}
               >
                 <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
-                  Deleted {lastDeletedRecipe.title}
+                  {lastDeletedRecipes.length === 1
+                    ? `Deleted ${lastDeletedRecipes[0].title}`
+                    : `Deleted ${lastDeletedRecipes.length} recipes`}
                 </Text>
                 <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
                   You can undo this and restore the recipe to app storage.
                 </Text>
+                <View style={styles.noticeTimerRow}>
+                  <View style={styles.noticeTimerGlyph}>
+                    <NoticePieTimer
+                      progress={dismissProgress}
+                      color={palette.accent}
+                      backgroundColor={palette.borderAlt}
+                    />
+                  </View>
+                  <Text style={[styles.noticeTimerText, { color: palette.accentText }]}>
+                    Auto dismissing
+                  </Text>
+                </View>
                 <View style={styles.actionRow}>
                   <Pressable
-                    onPress={restoreDeletedRecipe}
+                    onPress={restoreDeletedRecipes}
                     style={[styles.primaryButton, { backgroundColor: palette.accent }]}
                   >
                     <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Undo Delete</Text>
                   </Pressable>
                   <Pressable
-                    onPress={clearDeletedRecipe}
+                    onPress={clearDeletedRecipes}
                     style={[
                       styles.secondaryButton,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
@@ -237,7 +312,90 @@ export default function MyRecipesScreen() {
               >
                 <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>
               </Pressable>
+              <Pressable
+                onPress={toggleSelectionMode}
+                style={[
+                  styles.secondaryButton,
+                  { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                ]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                  {selectionMode ? 'Done Selecting' : 'Select Recipes'}
+                </Text>
+              </Pressable>
             </View>
+
+            {selectionMode ? (
+              <View
+                style={[
+                  styles.noticeCard,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                ]}
+              >
+                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
+                  {selectedRecipeSlugs.length} selected
+                </Text>
+                <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
+                  Tap individual recipes or their checkboxes to build a selection for bulk actions.
+                </Text>
+                <View style={styles.actionRow}>
+                  <Pressable
+                    onPress={selectAllVisibleRecipes}
+                    style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Select All</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={clearSelectedRecipes}
+                    style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Clear</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleBulkDeletePress}
+                    style={[
+                      styles.dangerButton,
+                      selectedAppStorageRecipes.length === 0 && { backgroundColor: palette.borderAlt },
+                    ]}
+                  >
+                    <Text style={styles.dangerButtonText}>
+                      🗑 Delete {selectedAppStorageRecipes.length} Recipe{selectedAppStorageRecipes.length === 1 ? '' : 's'}
+                    </Text>
+                  </Pressable>
+                </View>
+                {selectedVaultRecipes.length > 0 ? (
+                  <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
+                    {selectedVaultRecipes.length} selected recipe{selectedVaultRecipes.length === 1 ? '' : 's'} are from Obsidian and will be skipped for delete.
+                  </Text>
+                ) : null}
+                {showBulkDeleteConfirm ? (
+                  <View
+                    style={[
+                      styles.dangerCard,
+                      { backgroundColor: palette.surface, borderColor: '#d47a5b' },
+                    ]}
+                  >
+                    <Text style={[styles.dangerCardTitle, { color: palette.text }]}>
+                      Delete {selectedAppStorageRecipes.length} recipe{selectedAppStorageRecipes.length === 1 ? '' : 's'}?
+                    </Text>
+                    <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
+                      This removes the selected app-stored recipes from the library. You can still undo right after.
+                    </Text>
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={() => setShowBulkDeleteConfirm(false)}
+                        style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                      >
+                        <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
+                      </Pressable>
+                      <Pressable onPress={handleBulkDelete} style={styles.dangerButton}>
+                        <Text style={styles.dangerButtonText}>Delete Selected</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
 
             <ReferenceNav />
           </View>
@@ -381,33 +539,73 @@ export default function MyRecipesScreen() {
                 {filteredRecipes.map((recipe) => (
                   <Pressable
                     key={recipe.slug}
-                    onPress={() =>
+                    onPress={() => {
+                      if (selectionMode) {
+                        toggleRecipeSelection(recipe.slug);
+                        return;
+                      }
+
                       router.push(
                         recipe.source === 'App Storage'
                           ? { pathname: '/user-recipes/[slug]', params: { slug: recipe.slug } }
                           : { pathname: '/recipes/[slug]', params: { slug: recipe.slug } }
-                      )
-                    }
-                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                      );
+                    }}
+                    style={[
+                      styles.detailCard,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      selectionMode && selectedRecipeSlugs.includes(recipe.slug) && {
+                        borderColor: palette.accent,
+                        borderWidth: 2,
+                      },
+                    ]}
                   >
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
                     <View style={styles.detailCardHeader}>
-                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
-                      <Pressable
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          toggleFavorite(recipe.slug);
-                        }}
-                        style={[
-                          styles.starButton,
-                          { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                          isFavorite(recipe.slug) && styles.starButtonActive,
-                        ]}
-                      >
-                        <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                          {isFavorite(recipe.slug) ? '★' : '☆'}
-                        </Text>
-                      </Pressable>
+                      <View style={{ flex: 1, gap: 6 }}>
+                        {selectionMode ? (
+                          <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>
+                            {selectedRecipeSlugs.includes(recipe.slug) ? 'Selected' : 'Tap to select'}
+                          </Text>
+                        ) : null}
+                        <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
+                      </View>
+                      {selectionMode ? (
+                        <Pressable
+                          onPress={(event) => {
+                            event.stopPropagation();
+                            toggleRecipeSelection(recipe.slug);
+                          }}
+                          style={[
+                            styles.starButton,
+                            { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                            selectedRecipeSlugs.includes(recipe.slug) && {
+                              backgroundColor: palette.accentSoft,
+                              borderColor: palette.accentSoft,
+                            },
+                          ]}
+                        >
+                          <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                            {selectedRecipeSlugs.includes(recipe.slug) ? '☑' : '☐'}
+                          </Text>
+                        </Pressable>
+                      ) : (
+                        <Pressable
+                          onPress={(event) => {
+                            event.stopPropagation();
+                            toggleFavorite(recipe.slug);
+                          }}
+                          style={[
+                            styles.starButton,
+                            { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                            isFavorite(recipe.slug) && styles.starButtonActive,
+                          ]}
+                        >
+                          <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                            {isFavorite(recipe.slug) ? '★' : '☆'}
+                          </Text>
+                        </Pressable>
+                      )}
                     </View>
                     {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
                       <View style={styles.tagRow}>

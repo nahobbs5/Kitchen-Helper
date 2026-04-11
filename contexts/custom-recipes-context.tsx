@@ -51,12 +51,13 @@ type CustomRecipesContextValue = {
   customRecipeMap: Record<string, UserRecipe>;
   recipeOverrides: RecipeOverride[];
   recipeOverrideMap: Record<string, RecipeOverride>;
-  lastDeletedRecipe: UserRecipe | null;
+  lastDeletedRecipes: UserRecipe[];
   addRecipe: (input: NewUserRecipeInput) => UserRecipe;
   updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => UserRecipe | RecipeOverride | null;
   deleteRecipe: (slug: string) => void;
-  restoreDeletedRecipe: () => void;
-  clearDeletedRecipe: () => void;
+  deleteRecipes: (slugs: string[]) => void;
+  restoreDeletedRecipes: () => void;
+  clearDeletedRecipes: () => void;
   loaded: boolean;
 };
 
@@ -85,7 +86,7 @@ function toSection(text: string): RecipeSection[] {
 export function CustomRecipesProvider({ children }: PropsWithChildren) {
   const [customRecipes, setCustomRecipes] = useState<UserRecipe[]>([]);
   const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverride[]>([]);
-  const [lastDeletedRecipe, setLastDeletedRecipe] = useState<UserRecipe | null>(null);
+  const [lastDeletedRecipes, setLastDeletedRecipes] = useState<UserRecipe[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -128,7 +129,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       customRecipeMap: Object.fromEntries(customRecipes.map((recipe) => [recipe.slug, recipe])),
       recipeOverrides,
       recipeOverrideMap: Object.fromEntries(recipeOverrides.map((recipe) => [recipe.slug, recipe])),
-      lastDeletedRecipe,
+      lastDeletedRecipes,
       loaded,
       addRecipe: (input: NewUserRecipeInput) => {
         const title = input.title.trim();
@@ -179,31 +180,49 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       },
       deleteRecipe: (slug: string) => {
         setCustomRecipes((current) => {
-          const removedRecipe = current.find((recipe) => recipe.slug === slug) ?? null;
+          const removedRecipes = current.filter((recipe) => recipe.slug === slug);
           const next = current.filter((recipe) => recipe.slug !== slug);
-          setLastDeletedRecipe(removedRecipe);
+          setLastDeletedRecipes(removedRecipes);
           AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });
       },
-      restoreDeletedRecipe: () => {
-        if (!lastDeletedRecipe) {
+      deleteRecipes: (slugs: string[]) => {
+        if (slugs.length === 0) {
           return;
         }
 
         setCustomRecipes((current) => {
-          if (current.some((recipe) => recipe.slug === lastDeletedRecipe.slug)) {
-            return current;
-          }
+          const removedRecipes = current.filter((recipe) => slugs.includes(recipe.slug));
+          const next = current.filter((recipe) => !slugs.includes(recipe.slug));
 
-          const next = [lastDeletedRecipe, ...current];
+          setLastDeletedRecipes(removedRecipes);
           AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });
-        setLastDeletedRecipe(null);
       },
-      clearDeletedRecipe: () => {
-        setLastDeletedRecipe(null);
+      restoreDeletedRecipes: () => {
+        if (lastDeletedRecipes.length === 0) {
+          return;
+        }
+
+        setCustomRecipes((current) => {
+          const recipesToRestore = lastDeletedRecipes.filter(
+            (deletedRecipe) => !current.some((recipe) => recipe.slug === deletedRecipe.slug)
+          );
+
+          if (recipesToRestore.length === 0) {
+            return current;
+          }
+
+          const next = [...recipesToRestore, ...current];
+          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+        setLastDeletedRecipes([]);
+      },
+      clearDeletedRecipes: () => {
+        setLastDeletedRecipes([]);
       },
       updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => {
         const title = input.title.trim();
@@ -277,7 +296,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         return updatedOverride;
       },
     }),
-    [customRecipes, lastDeletedRecipe, loaded, recipeOverrides]
+    [customRecipes, lastDeletedRecipes, loaded, recipeOverrides]
   );
 
   return <CustomRecipesContext.Provider value={value}>{children}</CustomRecipesContext.Provider>;

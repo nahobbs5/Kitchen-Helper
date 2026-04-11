@@ -519,6 +519,21 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  noticeTimerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  noticeTimerGlyph: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noticeTimerText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
   actionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
