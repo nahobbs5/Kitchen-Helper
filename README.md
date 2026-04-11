@@ -12,8 +12,9 @@ It is focused on practical kitchen utilities:
 - recipe scaling
 - substitutions
 - conversions
-- saved recipe browsing
+- saved recipe browsing and editing
 - glossary/reference lookups
+- cook timers
 
 ## Current Status
 
@@ -23,13 +24,19 @@ The app currently includes:
 - a searchable conversions page
 - a searchable allergy substitutions page
 - a searchable cooking dictionary page
-- a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+- a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
+- locally created recipes stored in app storage
 - clickable recipe detail pages generated from Markdown
+- editable recipe detail pages for both local recipes and Obsidian-backed recipes through local overrides
 - ingredient scaling controls on recipe pages
 - favorites saved locally
+- category, cuisine-region, allergen, and favorites filtering
+- bulk recipe selection, bulk favorites, bulk metadata editing, and bulk delete
+- undo delete notifications with auto-dismiss
 - a shared settings menu in the header
 - dark mode
 - a keep-screen-awake cook mode setting
+- a shared cook timer popup with up to three timers
 
 ## Stack
 
@@ -42,6 +49,8 @@ This project currently uses:
 - pnpm
 - Metro
 - AsyncStorage
+- expo-audio
+- react-native-svg
 
 ## Why Expo
 
@@ -103,8 +112,8 @@ Shared styles, theme palettes, and reusable UI pieces
 A simple way to think about it:
 
 - `Cooking/` contains the Obsidian recipe source files and resource files
-- `scripts/generate-obsidian-recipes.mjs` turns recipe notes into [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
-- `scripts/generate-cooking-dictionary.mjs` turns the glossary resource into [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts)
+- `scripts/generate-obsidian-recipes.mjs` turns recipe notes into [`data/obsidian-recipes.ts`]
+- `scripts/generate-cooking-dictionary.mjs` turns the glossary resource into [`data/cooking-dictionary.ts`]
 - `app/` renders the screens from that data
 - `contexts/` handles shared state like favorites and settings
 - `components/` keeps the UI and theming consistent
@@ -113,46 +122,68 @@ A simple way to think about it:
 
 Important routed files:
 
-- [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
-- [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx)
-- [`app/conversions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\conversions.tsx)
-- [`app/cooking-dictionary.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\cooking-dictionary.tsx)
-- [`app/allergy-substitutions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\allergy-substitutions.tsx)
-- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
-- [`app/recipe.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipe.tsx)
-- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx)
+- [`app/_layout.tsx`]
+- [`app/add-recipe.tsx`]
+- [`app/index.tsx`]
+- [`app/conversions.tsx`]
+- [`app/cooking-dictionary.tsx`]
+- [`app/allergy-substitutions.tsx`]
+- [`app/edit-recipe/[slug].tsx`]
+- [`app/my-recipes.tsx`]
+- [`app/recipe.tsx`]
+- [`app/recipes/[slug].tsx`]
+- [`app/user-recipes/[slug].tsx`]
 
 Important shared files:
 
-- [`components/kitchen-styles.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\kitchen-styles.ts)
-- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
-- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
-- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
-- [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
-- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
-- [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts)
+- [`components/cook-timer-modal.tsx`]
+- [`components/kitchen-styles.ts`]
+- [`components/notice-pie-timer.tsx`]
+- [`components/reference-nav.tsx`]
+- [`components/app-theme.ts`]
+- [`components/settings-menu.tsx`]
+- [`components/sample-data.ts`]
+- [`contexts/cook-timer-context.tsx`]
+- [`contexts/custom-recipes-context.tsx`]
+- [`contexts/favorites-context.tsx`]
+- [`contexts/settings-context.tsx`]
+- [`utils/allergen-tags.ts`]
+- [`utils/ingredient-scaling.ts`]
 
 ## Data Sources
 
 ### Obsidian Recipes
 
-Recipe data comes from the [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking) folder.
+Recipe data comes from the [`Cooking/`](Cooking) folder.
 
 The app parses those Markdown notes into structured recipe data including:
 
 - title
 - category
+- cuisine region when overridden locally
 - ingredients
 - directions
 - servings
 - prep/cook/total time when available
 - allergen and allergy-friendly tags
 
+### Local App Recipes And Overrides
+
+The app also stores recipe data in local app storage.
+
+That includes:
+
+- recipes created directly in the app
+- local edits to Obsidian-backed recipes
+- bulk metadata changes
+
+This lets the app treat all recipes as editable without changing the original Markdown files in the `Cooking` vault.
+
 ### Cooking Dictionary
 
 The cooking dictionary page is generated from:
 
-- [`Cooking/Resources/Cooking Dictionary.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking\Resources\Cooking%20Dictionary.md)
+- [`Cooking/Resources/Cooking Dictionary.md`]
 
 The app displays that glossary as searchable term cards and cites the source:
 
@@ -160,7 +191,7 @@ The app displays that glossary as searchable term cards and cites the source:
 
 ## Scripts
 
-Useful scripts in [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json):
+Useful scripts in [`package.json`](package.json):
 
 - `start`
 - `android`
@@ -190,12 +221,66 @@ Current saved settings:
 
 - `Dark mode`
 - `Keep screen awake`
+- `Confirm delete`
 
 How it works:
 
 - settings are stored locally with AsyncStorage
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
+- confirm delete asks before deleting a saved app recipe and does not apply to bulk deletes
+
+## Recipe Management
+
+The app now supports:
+
+- adding recipes directly in the app
+- editing any recipe in the UI
+- local overrides for Obsidian-backed recipes
+- deleting app-saved recipes
+- restoring recently deleted recipes from an undo banner
+
+Recipe metadata now includes:
+
+- category
+- cuisine region
+- allergen tags
+- allergy-friendly tags
+
+Allergen tags are auto-detected from recipe content and can still be edited manually.
+
+## Bulk Actions
+
+`My Recipes` now supports bulk selection with:
+
+- checkboxes on each recipe card
+- desktop `Shift+click` range selection
+- `Select All`
+- bulk delete
+- bulk favorite
+- bulk metadata editing
+
+Bulk delete always asks for confirmation, regardless of the normal delete-confirm setting.
+
+## Cook Timer
+
+The app now includes a shared cook timer popup available anywhere the reference nav appears.
+
+Current timer behavior:
+
+- up to three timers
+- custom names
+- minutes or `mm:ss` input
+- shrinking horizontal progress bars
+- beep and vibration when a timer finishes
+- button labels that correctly distinguish `Start` from `Resume`
+- `Reset` is disabled until a timer has actually been started
+
+Important files:
+
+- [`components/cook-timer-modal.tsx`]
+- [`contexts/cook-timer-context.tsx`]
+- [`components/reference-nav.tsx`]
 
 ## Notes About Expo Go and Dependency Alignment
 
@@ -252,8 +337,10 @@ npx expo install --check
 
 Natural next steps from here:
 
-1. add a dedicated cooking mode screen
+1. add more bulk actions like unfavorite or bulk tag removal
 2. improve dictionary formatting for very long entries
 3. add recipe search from the home screen
 4. standardize more recipe note formats so more metadata can be parsed cleanly
-5. add local recipe creation or import workflows
+5. add richer timer presets or recipe-step-linked timers
+
+

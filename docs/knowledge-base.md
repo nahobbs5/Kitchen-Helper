@@ -11,11 +11,14 @@ Kitchen Helper is a cross-platform cooking app prototype focused on practical ki
 Current core areas:
 
 - recipe browsing from Obsidian notes
+- recipe creation and editing in app storage
 - ingredient scaling
 - kitchen conversions
 - allergy-friendly substitutions
 - cooking glossary lookups
 - saved favorites
+- bulk recipe management
+- cook timers
 - app-wide settings
 
 The app currently runs on:
@@ -34,6 +37,8 @@ The project currently uses:
 - pnpm
 - Metro
 - AsyncStorage
+- expo-audio
+- react-native-svg
 
 ## How These Tools Fit Together
 
@@ -79,13 +84,13 @@ It helps us:
 
 Expo Router is the navigation system.
 
-Routes are created from files in the [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app) folder.
+Routes are created from files in the [`app/`](app) folder.
 
 Examples:
 
-- [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx) -> `/`
-- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx) -> `/my-recipes`
-- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx) -> dynamic recipe pages
+- [`app/index.tsx`] -> `/`
+- [`app/my-recipes.tsx`] -> `/my-recipes`
+- [`app/recipes/[slug].tsx`] -> dynamic recipe pages
 
 This keeps navigation easier to follow as the app grows.
 
@@ -123,6 +128,9 @@ Right now it stores:
 
 - favorite recipes
 - saved settings like dark mode and keep-awake mode
+- app-created recipes
+- local overrides for imported recipes
+- deleted-recipe undo state
 
 ## Why This Setup Was Chosen
 
@@ -135,33 +143,21 @@ The stack was chosen because it gives us a good balance of:
 
 For this project, getting a useful Android and web app from the same codebase mattered more than using the most custom setup possible.
 
-## Why The App Lives In `kitchen-helper`
-
-The parent workspace folder is:
-
-- `C:\Users\Nathan\Documents\App Ideas`
-
-That is a fine workspace name, but not a good Expo app/package name because of the space and naming rules.
-
-So the actual app lives in:
-
-- [`C:\Users\Nathan\Documents\App Ideas\kitchen-helper`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper)
-
 ## High-Level Project Structure
 
 Important top-level areas:
 
-- [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app)
-- [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components)
-- [`contexts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts)
-- [`data/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data)
-- [`scripts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts)
-- [`utils/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils)
-- [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
-- [`docs/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\docs)
-- [`README.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\README.md)
-- [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json)
-- [`app.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app.json)
+- [`app/`](app)
+- [`components/`](components)
+- [`contexts/`](contexts)
+- [`data/`](data)
+- [`scripts/`](scripts)
+- [`utils/`](utils)
+- [`Cooking/`](Cooking)
+- [`docs/`](docs)
+- [`README.md`](README.md)
+- [`package.json`](package.json)
+- [`app.json`](app.json)
 
 ## App Architecture
 
@@ -174,18 +170,21 @@ The app is currently organized into four main layers:
 
 ### 1. Routes
 
-Routes live in [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app).
+Routes live in [`app/`](app).
 
 Important route files:
 
-- [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
-- [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx)
-- [`app/conversions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\conversions.tsx)
-- [`app/cooking-dictionary.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\cooking-dictionary.tsx)
-- [`app/allergy-substitutions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\allergy-substitutions.tsx)
-- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
-- [`app/recipe.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipe.tsx)
-- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx)
+- [`app/_layout.tsx`]
+- [`app/add-recipe.tsx`]
+- [`app/index.tsx`]
+- [`app/conversions.tsx`]
+- [`app/cooking-dictionary.tsx`]
+- [`app/allergy-substitutions.tsx`]
+- [`app/edit-recipe/[slug].tsx`]
+- [`app/my-recipes.tsx`]
+- [`app/recipe.tsx`]
+- [`app/recipes/[slug].tsx`]
+- [`app/user-recipes/[slug].tsx`]
 
 What this layer does:
 
@@ -194,7 +193,7 @@ What this layer does:
 - renders page-level UI
 - wires screens to shared data, styles, and state
 
-[`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx) is especially important because it:
+[`app/_layout.tsx`] is especially important because it:
 
 - wraps the app in providers
 - defines the shared stack navigator
@@ -203,18 +202,25 @@ What this layer does:
 
 ### 2. Shared State
 
-App-wide state lives in [`contexts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts).
+App-wide state lives in [`contexts/`](contexts).
 
 Important files:
 
-- [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
-- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
+- [`contexts/cook-timer-context.tsx`]
+- [`contexts/custom-recipes-context.tsx`]
+- [`contexts/favorites-context.tsx`]
+- [`contexts/settings-context.tsx`]
 
 What this layer currently handles:
 
+- app-created recipes
+- local recipe overrides for imported recipes
+- deleted-recipe undo state
 - favorite recipe slugs
 - dark mode
 - keep-screen-awake cook mode
+- the confirm-delete preference
+- the shared cook-timer popup and timer state
 - opening and closing the settings overlay
 - persistence through AsyncStorage
 
@@ -226,50 +232,58 @@ This is where source content gets turned into app-ready data.
 
 Important files:
 
-- [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
-- [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts)
-- [`scripts/generate-obsidian-recipes.mjs`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts\generate-obsidian-recipes.mjs)
-- [`scripts/generate-cooking-dictionary.mjs`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts\generate-cooking-dictionary.mjs)
-- [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts)
-- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
-- [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+- [`data/obsidian-recipes.ts`]
+- [`data/cooking-dictionary.ts`]
+- [`scripts/generate-obsidian-recipes.mjs`]
+- [`scripts/generate-cooking-dictionary.mjs`]
+- [`utils/allergen-tags.ts`]
+- [`utils/ingredient-scaling.ts`]
+- [`components/sample-data.ts`]
+- [`Cooking/`](Cooking)
 
 How this layer works:
 
-- recipe Markdown notes live in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+- recipe Markdown notes live in [`Cooking/`](Cooking)
 - recipe resources also live there, including the glossary file and conversion resources
 - `scripts/generate-obsidian-recipes.mjs` parses the recipe notes
-- that script writes structured output into [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
-- `scripts/generate-cooking-dictionary.mjs` parses [`Cooking/Resources/Cooking Dictionary.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking\Resources\Cooking%20Dictionary.md)
-- that script writes structured glossary output into [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts)
+- that script writes structured output into [`data/obsidian-recipes.ts`]
+- `scripts/generate-cooking-dictionary.mjs` parses [`Cooking/Resources/Cooking Dictionary.md`]
+- that script writes structured glossary output into [`data/cooking-dictionary.ts`]
 - route files read those generated data files to render screens
-- [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts) scales ingredient text for recipe pages
-- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts) still provides curated prototype content for reference pages and the preview recipe screen
+- [`utils/allergen-tags.ts`] helps detect and normalize allergen tags
+- [`utils/ingredient-scaling.ts`] scales ingredient text for recipe pages
+- [`components/sample-data.ts`] still provides curated prototype content for reference pages and the preview recipe screen
 
 ### 4. Shared Components and Theming
 
-Reusable UI pieces live in [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components).
+Reusable UI pieces live in [`components/`](components).
 
 Important files:
 
-- [`components/kitchen-styles.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\kitchen-styles.ts)
-- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
-- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
+- [`components/cook-timer-modal.tsx`]
+- [`components/kitchen-styles.ts`]
+- [`components/notice-pie-timer.tsx`]
+- [`components/reference-nav.tsx`]
+- [`components/app-theme.ts`]
+- [`components/settings-menu.tsx`]
 
 What this layer does:
 
 - centralizes shared styles
 - defines the light and dark palettes
 - provides the shared settings gear and overlay
+- provides the shared reference navigation row
+- provides the shared cook timer popup
+- provides the delete notice pie-timer UI
 - keeps route files focused on screen behavior instead of duplicated UI plumbing
 
 ## Simple Data Flow
 
 A good mental model for the app is:
 
-1. source recipes and reference files live in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
-2. generator scripts turn them into typed app data in [`data/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data)
-3. route files in [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app) render that data
+1. source recipes and reference files live in [`Cooking/`](Cooking)
+2. generator scripts turn them into typed app data in [`data/`](data)
+3. route files in [`app/`](app) render that data
 4. shared contexts provide favorites, settings, and theme state
 5. shared components and styles keep the UI consistent across screens
 
@@ -286,17 +300,29 @@ Current capabilities:
 - a searchable allergy substitutions page
 - a searchable cooking dictionary page with letter filters
 - a `My Recipes` page backed by real Obsidian recipe notes
-- filtering recipes by category and favorites
-- searching recipes by title, category, and allergy tags
+- recipe creation in app storage
+- recipe editing for both app-created and imported recipes
+- filtering recipes by category, cuisine region, favorites, and allergen tags
+- multi-select recipe filters for category, cuisine region, and allergen tags
+- searching recipes by title, category, cuisine region, and allergy tags
+- bulk recipe selection with checkboxes
+- desktop shift-click range selection
+- bulk metadata editing
+- bulk favorites
+- bulk delete with confirmation
+- delete undo notices with a 10-second visual timer
 - clickable recipe detail pages generated from Markdown
 - parsed ingredients and directions from recipe notes
 - prep, cook, and total time where the note supports it
 - ingredient scaling controls including `1/4x`, `1/2x`, preset servings, and a custom `1-10` selector
 - allergen and allergy-friendly tags on recipes
+- auto-detected allergen tags that remain editable
+- cuisine-region tags and filters
 - favorite recipe toggles with persistent storage
 - a shared settings menu from the header gear
 - dark mode
 - keep-screen-awake cook mode
+- a shared cook timer popup with up to three timers
 - responsive layouts for both Android and web
 
 What it does not yet support:
@@ -306,11 +332,11 @@ What it does not yet support:
 - recipe authoring inside the app
 - pantry tracking
 - grocery list generation
-- dedicated cook-mode screen/timers
+- dedicated step-linked cooking mode
 
 ## Obsidian Recipe Integration
 
-The app now uses real recipe data from the [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking) folder.
+The app now uses real recipe data from the [`Cooking/`](Cooking) folder.
 
 The recipe generator currently tries to extract:
 
@@ -333,13 +359,21 @@ A practical rule we settled on:
 
 That keeps recipe timing more trustworthy.
 
+Imported recipes are still editable in the app because local overrides are stored separately from the original Markdown notes.
+
+That means:
+
+- the vault stays untouched
+- the app can still support edits, tags, and metadata cleanup
+- imported recipes and app-created recipes behave much more similarly in the UI
+
 ## Cooking Dictionary
 
 The cooking dictionary page is based on:
 
-- [`Cooking/Resources/Cooking Dictionary.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking\Resources\Cooking%20Dictionary.md)
+- [`Cooking/Resources/Cooking Dictionary.md`]
 
-The parser converts that glossary into [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts), which the app renders as searchable term cards.
+The parser converts that glossary into [`data/cooking-dictionary.ts`], which the app renders as searchable term cards.
 
 The page also cites the source used for the glossary:
 
@@ -355,21 +389,24 @@ The app has a shared settings menu that can be opened from the gear icon in the 
 
 Important files:
 
-- [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
-- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
-- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
-- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
+- [`app/_layout.tsx`]
+- [`components/settings-menu.tsx`]
+- [`contexts/settings-context.tsx`]
+- [`components/app-theme.ts`]
 
 Current saved settings:
 
 - `Dark mode`
 - `Keep screen awake`
+- `Confirm delete`
 
 How it works:
 
 - settings are stored locally with AsyncStorage
 - dark mode swaps between centralized light and dark palettes
 - keep-awake mode uses `expo-keep-awake`
+- confirm delete controls whether single app-recipe deletion asks first
+- bulk delete still always confirms, even if the single-delete setting is turned off
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
 
 This was a useful architecture milestone because it introduced real app-wide persisted state.
@@ -380,11 +417,94 @@ Favorite recipes are stored locally and can be toggled from both the recipe list
 
 Important files:
 
-- [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
-- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
-- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx)
+- [`contexts/favorites-context.tsx`]
+- [`app/my-recipes.tsx`]
+- [`app/recipes/[slug].tsx`]
 
 This gives the app one early personalized behavior without needing accounts or a backend.
+
+## Custom Recipes And Overrides
+
+The app now has a second recipe-storage path in addition to generated Obsidian data.
+
+Important file:
+
+- [`contexts/custom-recipes-context.tsx`]
+
+This context stores:
+
+- recipes created in the app
+- local edits to imported recipes
+- bulk metadata changes
+- recently deleted recipe data for undo
+
+This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault.
+
+## Bulk Selection And Bulk Actions
+
+`My Recipes` has grown into a real library-management screen.
+
+Current bulk behaviors include:
+
+- checkbox selection on recipe cards
+- whole-card selection highlighting
+- `Select All`
+- desktop `Shift+click` range selection
+- bulk favorite
+- bulk metadata editing
+- bulk delete with required confirmation
+
+One important product decision here:
+
+- bulk delete is still limited to recipes the app owns in storage
+- imported recipes can still be selected for bulk metadata and favorites because those operate through local overrides instead of file deletion
+
+## Allergen And Metadata Tagging
+
+Recipe metadata is now richer and more editable than the original first version.
+
+Current metadata behavior includes:
+
+- auto-detected allergen tags
+- editable allergy-friendly tags
+- optional cuisine-region tags
+- multi-select filtering in the recipe library
+
+This metadata can come from:
+
+- imported recipe parsing
+- manual add/edit forms
+- local override edits
+- bulk metadata actions
+
+The visual system is also intentional:
+
+- orange for allergen tags
+- green for allergy-friendly tags
+- light blue for cuisine-region tags
+
+## Cook Timer
+
+The app now includes a shared cook timer popup available from the same reference navigation pattern used for conversions, substitutions, and the cooking dictionary.
+
+Important files:
+
+- [`components/cook-timer-modal.tsx`]
+- [`contexts/cook-timer-context.tsx`]
+- [`components/reference-nav.tsx`]
+
+Current behavior:
+
+- up to three timers
+- custom timer names
+- whole-minute or `mm:ss` input
+- shrinking horizontal progress bars
+- beep at zero
+- vibration on supported native devices
+- `Start`, `Pause`, and `Resume` labels that track real timer state
+- `Reset` stays disabled until the timer has actually been started
+
+The timer popup is global, which keeps it accessible while moving around the app.
 
 ## Expo Go Dependency Lesson
 
@@ -413,7 +533,7 @@ That was an important reminder that native-feeling runtime errors in Expo are so
 
 ## Configuration Files
 
-### [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json)
+### [`package.json`](package.json)
 
 This file defines:
 
@@ -436,7 +556,7 @@ It also sets:
 
 That tells Expo to boot the app through Expo Router.
 
-### [`app.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app.json)
+### [`app.json`](app.json)
 
 This file contains Expo app configuration such as:
 
@@ -446,7 +566,7 @@ This file contains Expo app configuration such as:
 
 One important detail is the Expo Router plugin configuration that supports the routed app structure.
 
-### [`README.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\README.md)
+### [`README.md`](README.md)
 
 The README is the shorter overview.
 
@@ -522,8 +642,8 @@ Likely next layers include:
 1. a more dedicated cook-mode screen
 2. better recipe metadata normalization
 3. more structured recipe import flows
-4. more kitchen references and searchable helpers
-5. possibly local recipe creation or editing
+4. more bulk-management actions
+5. deeper timer integration with recipe steps
 
 ## Change Log So Far
 
@@ -552,6 +672,12 @@ High-level sequence of what has happened:
 21. debugged the Expo Go Android failure and fixed package alignment issues
 22. added the cooking dictionary page and dictionary generator
 23. added source citation for the glossary and cleaned up the parser output
+24. added local recipe creation in app storage
+25. added recipe editing for both local and imported recipes through overrides
+26. added cuisine-region metadata and filters
+27. added delete flows, undo notices, and the confirm-delete setting
+28. added bulk selection, bulk favorites, bulk metadata, and shift-click range selection
+29. added a shared cook timer popup with audio, vibration, and timer progress UI
 
 ## How To Grow This File
 
@@ -574,3 +700,5 @@ Going forward, new technical changes can be added here with:
 4. what concept it introduces
 
 That keeps this document useful as both a project memory and a learning reference.
+
+

@@ -630,6 +630,9 @@ export const kitchenStyles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
+  timerSheet: {
+    maxWidth: 520,
+  },
   settingsEyebrow: {
     fontSize: 12,
     letterSpacing: 1.2,
@@ -683,5 +686,30 @@ export const kitchenStyles = StyleSheet.create({
   settingsCloseText: {
     fontSize: 15,
     fontWeight: '800',
+  },
+  timerStack: {
+    gap: 12,
+  },
+  timerHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  timerRemainingText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  timerDurationInput: {
+    maxWidth: 160,
+  },
+  timerTrack: {
+    height: 14,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  timerFill: {
+    height: '100%',
+    borderRadius: 999,
   },
 });

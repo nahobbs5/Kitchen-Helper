@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 
+import { CookTimerModal } from '../components/cook-timer-modal';
 import { SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
@@ -8,12 +10,15 @@ import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
 export default function RootLayout() {
   return (
     <SettingsProvider>
-      <CustomRecipesProvider>
-        <FavoritesProvider>
-          <RootNavigator />
-          <SettingsMenuModal />
-        </FavoritesProvider>
-      </CustomRecipesProvider>
+      <CookTimerProvider>
+        <CustomRecipesProvider>
+          <FavoritesProvider>
+            <RootNavigator />
+            <SettingsMenuModal />
+            <CookTimerModal />
+          </FavoritesProvider>
+        </CustomRecipesProvider>
+      </CookTimerProvider>
     </SettingsProvider>
   );
 }
