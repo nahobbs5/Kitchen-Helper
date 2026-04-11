@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { RecipeSection } from '../data/obsidian-recipes';
+import { inferRecipeTags } from '../utils/allergen-tags';
 
 export type UserRecipe = {
   slug: string;
@@ -28,12 +29,16 @@ type NewUserRecipeInput = {
   directionsText: string;
   notes?: string;
   cuisineRegion?: string | null;
+  allergyFriendlyTags?: string[];
+  allergenTags?: string[];
 };
 
 export type RecipeOverride = {
   slug: string;
   title: string;
   category: string;
+  allergyFriendlyTags: string[];
+  allergenTags: string[];
   ingredients: RecipeSection[];
   directions: RecipeSection[];
   notes: string | null;
@@ -140,6 +145,13 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             counter += 1;
           }
 
+          const inferredTags = inferRecipeTags({
+            title,
+            ingredientsText: input.ingredientsText,
+            directionsText: input.directionsText,
+            notes: input.notes,
+          });
+
           createdRecipe = {
             slug,
             title,
@@ -149,8 +161,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             cookTime: null,
             totalTime: null,
             servings: null,
-            allergyFriendlyTags: [],
-            allergenTags: [],
+            allergyFriendlyTags: input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags,
+            allergenTags: input.allergenTags ?? inferredTags.allergenTags,
             ingredients: toSection(input.ingredientsText),
             directions: toSection(input.directionsText),
             notes: input.notes?.trim() ? input.notes.trim() : null,
@@ -195,10 +207,18 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       },
       updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => {
         const title = input.title.trim();
+        const inferredTags = inferRecipeTags({
+          title,
+          ingredientsText: input.ingredientsText,
+          directionsText: input.directionsText,
+          notes: input.notes,
+        });
         const ingredientsSection = toSection(input.ingredientsText);
         const directionsSection = toSection(input.directionsText);
         const notes = input.notes?.trim() ? input.notes.trim() : null;
         const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
+        const allergyFriendlyTags = input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags;
+        const allergenTags = input.allergenTags ?? inferredTags.allergenTags;
 
         if (source === 'custom') {
           let updatedRecipe: UserRecipe | null = null;
@@ -213,6 +233,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                 ...recipe,
                 title,
                 category: input.category,
+                allergyFriendlyTags,
+                allergenTags,
                 ingredients: ingredientsSection,
                 directions: directionsSection,
                 notes,
@@ -236,6 +258,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             slug,
             title,
             category: input.category,
+            allergyFriendlyTags,
+            allergenTags,
             ingredients: ingredientsSection,
             directions: directionsSection,
             notes,

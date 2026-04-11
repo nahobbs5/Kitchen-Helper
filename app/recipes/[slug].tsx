@@ -28,6 +28,8 @@ export default function ObsidianRecipeScreen() {
         ...baseRecipe,
         title: override?.title ?? baseRecipe.title,
         category: override?.category ?? baseRecipe.category,
+        allergyFriendlyTags: override?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+        allergenTags: override?.allergenTags ?? baseRecipe.allergenTags,
         ingredients: override?.ingredients ?? baseRecipe.ingredients,
         directions: override?.directions ?? baseRecipe.directions,
         notes: override?.notes ?? null,

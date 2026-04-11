@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -39,6 +39,8 @@ export default function MyRecipesScreen() {
               ...recipe,
               title: override.title,
               category: override.category,
+              allergyFriendlyTags: override.allergyFriendlyTags,
+              allergenTags: override.allergenTags,
               ingredients: override.ingredients,
               directions: override.directions,
               notes: override.notes,
@@ -99,6 +101,18 @@ export default function MyRecipesScreen() {
         ),
     [activeCategory, activeCuisine, allRecipes, favoriteSlugs, normalizedSearch]
   );
+
+  useEffect(() => {
+    if (!lastDeletedRecipe) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      clearDeletedRecipe();
+    }, 10000);
+
+    return () => clearTimeout(timeoutId);
+  }, [clearDeletedRecipe, lastDeletedRecipe]);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>

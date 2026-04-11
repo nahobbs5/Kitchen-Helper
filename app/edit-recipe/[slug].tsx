@@ -8,6 +8,13 @@ import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useAppSettings } from '../../contexts/settings-context';
 import type { ObsidianRecipe } from '../../data/obsidian-recipes';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
+import {
+  allergenTagOptions,
+  allergyFriendlyTagOptions,
+  inferRecipeTags,
+  toggleAllergenSelection,
+  toggleFriendlySelection,
+} from '../../utils/allergen-tags';
 
 const categoryOptions = [
   { label: 'Appetizer', value: 'Appetizers' },
@@ -60,8 +67,20 @@ export default function EditRecipeScreen() {
   const [directions, setDirections] = useState(recipe ? sectionText(recipe.directions) : '');
   const [notes, setNotes] = useState(recipe?.notes ?? '');
   const [cuisineRegion, setCuisineRegion] = useState(recipe?.cuisineRegion ?? '');
+  const [allergenTags, setAllergenTags] = useState<string[]>(recipe?.allergenTags ?? []);
+  const [allergyFriendlyTags, setAllergyFriendlyTags] = useState<string[]>(recipe?.allergyFriendlyTags ?? []);
   const [saveAttempted, setSaveAttempted] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const detectedTags = useMemo(
+    () =>
+      inferRecipeTags({
+        title: recipeName,
+        ingredientsText: ingredients,
+        directionsText: directions,
+        notes,
+      }),
+    [directions, ingredients, notes, recipeName]
+  );
 
   useEffect(() => {
     if (!recipe) {
@@ -74,6 +93,8 @@ export default function EditRecipeScreen() {
     setDirections(sectionText(recipe.directions));
     setNotes(recipe.notes ?? '');
     setCuisineRegion(recipe.cuisineRegion ?? '');
+    setAllergenTags(recipe.allergenTags ?? []);
+    setAllergyFriendlyTags(recipe.allergyFriendlyTags ?? []);
   }, [recipe]);
 
   const missingRequiredFields = useMemo(
@@ -102,6 +123,8 @@ export default function EditRecipeScreen() {
       directionsText: directions,
       notes,
       cuisineRegion,
+      allergenTags,
+      allergyFriendlyTags,
     }, effectiveSource);
 
     router.replace({
@@ -130,6 +153,23 @@ export default function EditRecipeScreen() {
     }
 
     setShowDeleteConfirm((current) => !current);
+  }
+
+  function handleAllergenToggle(tag: (typeof allergenTagOptions)[number]) {
+    const next = toggleAllergenSelection(allergenTags, allergyFriendlyTags, tag);
+    setAllergenTags(next.allergenTags);
+    setAllergyFriendlyTags(next.allergyFriendlyTags);
+  }
+
+  function handleFriendlyToggle(tag: (typeof allergyFriendlyTagOptions)[number]) {
+    const next = toggleFriendlySelection(allergenTags, allergyFriendlyTags, tag);
+    setAllergenTags(next.allergenTags);
+    setAllergyFriendlyTags(next.allergyFriendlyTags);
+  }
+
+  function handleAutoDetectTags() {
+    setAllergenTags(detectedTags.allergenTags);
+    setAllergyFriendlyTags(detectedTags.allergyFriendlyTags);
   }
 
   if (!loaded) {
@@ -338,6 +378,84 @@ export default function EditRecipeScreen() {
                   />
                 </View>
 
+                <View style={styles.formField}>
+                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergen tags</Text>
+                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                    These can be auto-detected from the recipe text and then edited manually.
+                  </Text>
+                  <View style={styles.tagRow}>
+                    {allergenTagOptions.map((tag) => {
+                      const isActive = allergenTags.includes(tag);
+
+                      return (
+                        <Pressable
+                          key={tag}
+                          onPress={() => handleAllergenToggle(tag)}
+                          style={[
+                            styles.servingsButton,
+                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                            isActive && styles.allergenTag,
+                            isActive && { borderColor: '#e98d34' },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.servingsButtonText,
+                              { color: palette.text },
+                              isActive && styles.allergenTagText,
+                            ]}
+                          >
+                            {tag}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                <View style={styles.formField}>
+                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergy-friendly tags</Text>
+                  <View style={styles.tagRow}>
+                    {allergyFriendlyTagOptions.map((tag) => {
+                      const isActive = allergyFriendlyTags.includes(tag);
+
+                      return (
+                        <Pressable
+                          key={tag}
+                          onPress={() => handleFriendlyToggle(tag)}
+                          style={[
+                            styles.servingsButton,
+                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                            isActive && styles.allergyFriendlyTag,
+                            isActive && { borderColor: '#97bf72' },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.servingsButtonText,
+                              { color: palette.text },
+                              isActive && styles.allergyFriendlyTagText,
+                            ]}
+                          >
+                            {tag}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  <View style={styles.actionRow}>
+                    <Pressable
+                      onPress={handleAutoDetectTags}
+                      style={[
+                        styles.secondaryButton,
+                        { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      ]}
+                    >
+                      <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Auto-detect tags</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
                 <View style={styles.actionRow}>
                   <Pressable
                     onPress={() => router.back()}
@@ -420,6 +538,16 @@ export default function EditRecipeScreen() {
                 ) : (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
                 )}
+                {allergenTags.length > 0 ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Allergens: {allergenTags.join(', ')}
+                  </Text>
+                ) : null}
+                {allergyFriendlyTags.length > 0 ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Allergy-friendly: {allergyFriendlyTags.join(', ')}
+                  </Text>
+                ) : null}
               </View>
             </View>
           </View>
