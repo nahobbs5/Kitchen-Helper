@@ -475,4 +475,92 @@ export const kitchenStyles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 15,
   },
+  settingsGearButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsGearIcon: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  settingsOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  settingsBackdrop: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(18, 15, 12, 0.48)',
+  },
+  settingsSheet: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 28,
+    borderWidth: 1,
+    padding: 24,
+    gap: 16,
+  },
+  settingsEyebrow: {
+    fontSize: 12,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+  },
+  settingsTitle: {
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '800',
+  },
+  settingsBody: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  settingsSection: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+    gap: 14,
+  },
+  settingsSectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  settingsCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  settingsLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  settingsHint: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  settingsCloseButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  settingsCloseText: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
 });

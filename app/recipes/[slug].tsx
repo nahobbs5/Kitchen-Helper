@@ -4,6 +4,7 @@ import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } 
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { useFavorites } from '../../contexts/favorites-context';
+import { useAppSettings } from '../../contexts/settings-context';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
 import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
 
@@ -15,6 +16,7 @@ export default function ObsidianRecipeScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const { palette } = useAppSettings();
   const recipe = slug ? obsidianRecipeMap[slug] : undefined;
   const [multiplier, setMultiplier] = useState(1);
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -67,13 +69,13 @@ export default function ObsidianRecipeScreen() {
 
   if (!recipe) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
         <Stack.Screen options={{ title: 'Recipe not found' }} />
         <ScrollView contentContainerStyle={styles.page}>
-          <View style={styles.panel}>
-            <Text style={styles.panelEyebrow}>Missing recipe</Text>
-            <Text style={styles.panelTitle}>We could not find that recipe</Text>
-            <Text style={styles.panelText}>
+          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+            <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Missing recipe</Text>
+            <Text style={[styles.panelTitle, { color: palette.text }]}>We could not find that recipe</Text>
+            <Text style={[styles.panelText, { color: palette.textMuted }]}>
               The route did not match a generated Obsidian recipe. Running `corepack pnpm
               sync:recipes` will refresh the app data after recipe files change.
             </Text>
@@ -84,22 +86,34 @@ export default function ObsidianRecipeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <Stack.Screen options={{ title: recipe.title }} />
       <ScrollView contentContainerStyle={styles.page}>
-        <View style={[styles.hero, isWide && styles.heroWide]}>
+        <View
+          style={[
+            styles.hero,
+            isWide && styles.heroWide,
+            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+          ]}
+        >
           <View style={styles.heroCopy}>
-            <Text style={styles.eyebrow}>{recipe.category}</Text>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
             <View style={styles.detailCardHeader}>
-              <Text style={styles.title}>{recipe.title}</Text>
+              <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
               <Pressable
                 onPress={() => toggleFavorite(recipe.slug)}
-                style={[styles.starButton, isFavorite(recipe.slug) && styles.starButtonActive]}
+                style={[
+                  styles.starButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isFavorite(recipe.slug) && styles.starButtonActive,
+                ]}
               >
-                <Text style={styles.starButtonText}>{isFavorite(recipe.slug) ? '★' : '☆'}</Text>
+                <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                  {isFavorite(recipe.slug) ? '★' : '☆'}
+                </Text>
               </Pressable>
             </View>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page is generated from your Obsidian Markdown note. The app is now reading the
               note structure, showing the ingredients and directions, and letting you scale the
               ingredient list.
@@ -107,7 +121,9 @@ export default function ObsidianRecipeScreen() {
 
             {recipe.servings ? (
               <View style={styles.badgeRow}>
-                <Text style={styles.badge}>{recipe.servings}</Text>
+                <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
+                  {recipe.servings}
+                </Text>
               </View>
             ) : null}
             {recipe.allergyFriendlyTags.length > 0 ? (
@@ -131,30 +147,30 @@ export default function ObsidianRecipeScreen() {
             {recipe.prepTime || recipe.cookTime || recipe.totalTime ? (
               <View style={styles.tagRow}>
                 {recipe.prepTime ? (
-                  <View style={styles.tag}>
-                    <Text style={styles.tagText}>Prep: {recipe.prepTime}</Text>
+                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                    <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
                   </View>
                 ) : null}
                 {recipe.cookTime ? (
-                  <View style={styles.tag}>
-                    <Text style={styles.tagText}>Cook: {recipe.cookTime}</Text>
+                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                    <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
                   </View>
                 ) : null}
                 {recipe.totalTime ? (
-                  <View style={styles.tag}>
-                    <Text style={styles.tagText}>Total: {recipe.totalTime}</Text>
+                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                    <Text style={[styles.tagText, { color: palette.tagText }]}>Total: {recipe.totalTime}</Text>
                   </View>
                 ) : null}
               </View>
             ) : null}
           </View>
 
-          <View style={styles.heroCard}>
-            <Text style={styles.heroCardLabel}>Serving controls</Text>
-            <Text style={styles.heroCardTitle}>
+          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
               {baseServings ? `Based on ${baseServings} servings` : 'Based on original recipe amount'}
             </Text>
-            <Text style={styles.heroCardText}>
+            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
               Use 1/4x, 1/2x, or quick serving presets. When a note includes servings, the `2`,
               `4`, and `8` buttons target those serving counts. Otherwise they act as multipliers.
             </Text>
@@ -167,11 +183,18 @@ export default function ObsidianRecipeScreen() {
                   <Pressable
                     key={button.key}
                     onPress={() => setMultiplier(button.multiplier)}
-                    style={[styles.servingsButton, isActive && styles.servingsButtonActive]}
+                    style={[
+                      styles.servingsButton,
+                      { borderColor: palette.borderAlt },
+                      !isActive && { backgroundColor: palette.surface },
+                      isActive && styles.servingsButtonActive,
+                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                    ]}
                   >
                     <Text
                       style={[
                         styles.servingsButtonText,
+                        { color: isActive ? palette.inverseText : palette.text },
                         isActive && styles.servingsButtonTextActive,
                       ]}
                     >
@@ -182,7 +205,7 @@ export default function ObsidianRecipeScreen() {
               })}
             </View>
 
-            <Text style={styles.heroCardLabel}>{customLabel}</Text>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>{customLabel}</Text>
             <View style={styles.numberGrid}>
               {customServingOptions.map((value) => {
                 const optionMultiplier = baseServings ? value / baseServings : value;
@@ -192,9 +215,14 @@ export default function ObsidianRecipeScreen() {
                   <Pressable
                     key={`custom-${value}`}
                     onPress={() => setMultiplier(optionMultiplier)}
-                    style={[styles.numberButton, isActive && styles.numberButtonActive]}
+                    style={[
+                      styles.numberButton,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      isActive && styles.numberButtonActive,
+                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                    ]}
                   >
-                    <Text style={styles.numberButtonText}>{value}</Text>
+                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{value}</Text>
                   </Pressable>
                 );
               })}
@@ -204,24 +232,29 @@ export default function ObsidianRecipeScreen() {
 
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
-            <View style={styles.panel}>
-              <Text style={styles.panelEyebrow}>Ingredients</Text>
-              <Text style={styles.panelTitle}>Scaled from Markdown</Text>
+            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Ingredients</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled from Markdown</Text>
               <View style={styles.listStack}>
                 {scaledIngredients.length > 0 ? (
                   scaledIngredients.map((section, index) => (
-                    <View key={`${section.title ?? 'ingredients'}-${index}`} style={styles.detailCard}>
-                      {section.title ? <Text style={styles.detailCardMeta}>{section.title}</Text> : null}
+                    <View
+                      key={`${section.title ?? 'ingredients'}-${index}`}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
                       {section.items.map((item) => (
-                        <Text key={item} style={styles.detailCardBody}>
+                        <Text key={item} style={[styles.detailCardBody, { color: palette.textMuted }]}>
                           - {item}
                         </Text>
                       ))}
                     </View>
                   ))
                 ) : (
-                  <View style={styles.detailCard}>
-                    <Text style={styles.detailCardBody}>No ingredients were detected in this note.</Text>
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      No ingredients were detected in this note.
+                    </Text>
                   </View>
                 )}
               </View>
@@ -229,42 +262,53 @@ export default function ObsidianRecipeScreen() {
           </View>
 
           <View style={styles.secondaryColumn}>
-            <View style={styles.panelAlt}>
-              <Text style={styles.panelEyebrow}>Directions</Text>
-              <Text style={styles.panelTitle}>Recipe steps</Text>
+            <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe steps</Text>
               <View style={styles.listStack}>
                 {recipe.directions.length > 0 ? (
                   recipe.directions.map((section, sectionIndex) => (
-                    <View key={`${section.title ?? 'directions'}-${sectionIndex}`} style={styles.detailCard}>
-                      {section.title ? <Text style={styles.detailCardMeta}>{section.title}</Text> : null}
+                    <View
+                      key={`${section.title ?? 'directions'}-${sectionIndex}`}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
                       {section.items.map((item, itemIndex) => (
-                        <Text key={`${itemIndex}-${item}`} style={styles.detailCardBody}>
+                        <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
                           {itemIndex + 1}. {item}
                         </Text>
                       ))}
                     </View>
                   ))
                 ) : (
-                  <View style={styles.detailCard}>
-                    <Text style={styles.detailCardBody}>No directions were detected in this note.</Text>
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      No directions were detected in this note.
+                    </Text>
                   </View>
                 )}
               </View>
             </View>
 
-            <View style={styles.panelDark}>
-              <Text style={styles.panelDarkEyebrow}>Recipe notes</Text>
-              <Text style={styles.panelDarkTitle}>Markdown-backed recipe</Text>
-              <Text style={styles.panelDarkText}>
+            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
+              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe notes</Text>
+              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Markdown-backed recipe</Text>
+              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                 If you update the Markdown file, rerun `corepack pnpm sync:recipes` to regenerate
                 the app data from the vault. A custom serving amount can be added later on top of
                 this scaling setup.
               </Text>
               {recipe.prepTime || recipe.cookTime || recipe.totalTime ? (
                 <View style={styles.listStack}>
-                  {recipe.prepTime ? <Text style={styles.panelDarkText}>Prep time: {recipe.prepTime}</Text> : null}
-                  {recipe.cookTime ? <Text style={styles.panelDarkText}>Cook time: {recipe.cookTime}</Text> : null}
-                  {recipe.totalTime ? <Text style={styles.panelDarkText}>Total time: {recipe.totalTime}</Text> : null}
+                  {recipe.prepTime ? (
+                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Prep time: {recipe.prepTime}</Text>
+                  ) : null}
+                  {recipe.cookTime ? (
+                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Cook time: {recipe.cookTime}</Text>
+                  ) : null}
+                  {recipe.totalTime ? (
+                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Total time: {recipe.totalTime}</Text>
+                  ) : null}
                 </View>
               ) : null}
             </View>

@@ -141,6 +141,115 @@ Current important folders and files:
 - [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json)
 - [`README.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\README.md)
 
+## App Architecture
+
+The app is currently organized into four main layers:
+
+1. routes
+2. shared context/state
+3. data and parsing
+4. shared components and styles
+
+### 1. Routes
+
+Routes live in the [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app) folder.
+
+Important route files:
+
+- [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
+- [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx)
+- [`app/conversions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\conversions.tsx)
+- [`app/allergy-substitutions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\allergy-substitutions.tsx)
+- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
+- [`app/recipe.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipe.tsx)
+- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx)
+
+What this layer does:
+
+- defines the screens users can visit
+- maps files to URLs and navigation routes
+- renders page-level UI
+- pulls in shared data, styles, and context as needed
+
+The route layer should mostly answer:
+
+- what screen is this
+- what data does it show
+- what actions can the user take here
+
+### 2. Shared Context and State
+
+Shared app-wide state lives in the [`contexts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts) folder.
+
+Important files:
+
+- [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
+- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
+
+What this layer does:
+
+- stores favorite recipe state
+- stores saved app settings
+- persists that state with AsyncStorage
+- makes the state available to any screen wrapped by the providers
+
+This is the first real app-wide state layer in the project.
+
+It is useful because it prevents every screen from having to manage the same settings or favorites logic separately.
+
+### 3. Data and Parsing
+
+Recipe and utility data currently come from a mix of static shared data and generated data.
+
+Important files:
+
+- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
+- [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
+- [`scripts/generate-obsidian-recipes.mjs`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts\generate-obsidian-recipes.mjs)
+- [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts)
+- [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+
+How this layer works:
+
+- the `Cooking/` folder contains the Obsidian Markdown source files
+- `scripts/generate-obsidian-recipes.mjs` parses those notes
+- the script writes structured output into `data/obsidian-recipes.ts`
+- route files read from that generated data to render recipe lists and recipe detail screens
+- `utils/ingredient-scaling.ts` handles ingredient amount scaling on recipe pages
+- `components/sample-data.ts` still powers the prototype-only data such as sample conversions and demo recipe content
+
+This separation matters because it keeps source content, generation logic, and UI rendering from all blurring together in one file.
+
+### 4. Shared Components and Styles
+
+Reusable visual building blocks live in the [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components) folder.
+
+Important files:
+
+- [`components/kitchen-styles.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\kitchen-styles.ts)
+- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
+- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
+
+What this layer does:
+
+- centralizes visual styles
+- provides theme palettes for light and dark mode
+- defines reusable UI pieces like the shared settings modal and gear button
+
+This layer helps keep route files focused on screen behavior instead of repeating the same style or modal code everywhere.
+
+### Simple Flow
+
+One useful mental model is:
+
+1. Markdown recipes live in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+2. the generator script turns them into [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
+3. route files render that data on recipe pages
+4. shared contexts provide cross-app behavior like favorites and settings
+5. shared components/styles keep the UI consistent
+
+That is the current backbone of the app.
+
 ## What Each Main Area Does
 
 ### [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app)
@@ -316,6 +425,9 @@ It currently supports:
 - prep and cook time indicators when recipe notes include them
 - ingredients and directions parsed from Obsidian recipe files
 - serving controls on recipe pages with 1/4x, 1/2x, 2, 4, and 8 options
+- a shared settings menu with a gear icon in the header on every page
+- a saved dark mode preference
+- a saved cook mode preference that keeps the screen awake while the app is open
 - recipe scaling through serving-size buttons
 - sample substitutions
 - sample conversions
@@ -329,6 +441,112 @@ It does not yet support:
 - pantry tracking
 - cooking timers
 - real structured recipe creation
+
+## Settings System
+
+The app now has a shared settings menu that can be opened from any screen.
+
+### How it is accessed
+
+The settings menu is opened from a gear icon in the header.
+
+That gear icon lives in the shared layout, which means it appears across the routed screens instead of being added one page at a time.
+
+Important files:
+
+- [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
+- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
+
+### What settings exist right now
+
+There are currently two saved settings:
+
+- `Dark mode`
+- `Keep screen awake`
+
+These are meant to be practical first settings for a cooking app:
+
+- dark mode helps with reading comfort and overall preference
+- keep-awake mode helps when someone is actively cooking and does not want the screen turning off
+
+### How settings are stored
+
+Settings are stored locally on the device using AsyncStorage.
+
+That means:
+
+- the values persist between app launches
+- they are local to the device/browser storage
+- they do not require a backend or user account
+
+Important file:
+
+- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
+
+This context is responsible for:
+
+- loading saved settings on app startup
+- exposing the current values to the UI
+- saving changes when the user toggles a setting
+- opening and closing the settings modal
+
+### How dark mode works
+
+Dark mode is handled through a shared theme palette.
+
+Important file:
+
+- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
+
+This file defines:
+
+- a light palette
+- a dark palette
+
+The settings context chooses which palette is active, and screens read from that palette when setting:
+
+- page background colors
+- card backgrounds
+- text colors
+- border colors
+- header colors
+
+This is a useful pattern because it keeps theme values centralized instead of scattering hard-coded dark-mode colors across many files.
+
+### How keep-awake cook mode works
+
+The keep-awake setting uses Expo's keep-awake package.
+
+Dependency:
+
+- `expo-keep-awake`
+
+When the setting is enabled, the app requests that the screen stay awake while the app remains open.
+
+This is most useful on Android while cooking from a recipe screen.
+
+On web, support can depend more on the browser and device, so it is best understood as:
+
+- stronger on native
+- more limited on web
+
+### Why this system matters
+
+This is one of the first examples in the project where we added true app-wide state, not just screen-local state.
+
+That makes it a good learning milestone because it introduces:
+
+- shared context
+- persisted preferences
+- theme switching
+- device behavior integration
+
+It also creates a clear place to add future settings later, such as:
+
+- text size
+- default measurement system
+- always-open recipe in cook mode
+- favorite landing page
 
 ## What Was Verified
 
@@ -415,7 +633,9 @@ High-level sequence of what has happened:
 11. added menu routes for conversions, allergy substitutions, and My Recipes
 12. connected the My Recipes page to the actual Obsidian recipe inventory
 13. added generated Obsidian recipe pages with ingredients and directions parsing
-14. added serving controls and ingredient scaling to recipe detail pages`r`n15. updated conversion and substitution references from the chart resource
+14. added serving controls and ingredient scaling to recipe detail pages
+15. updated conversion and substitution references from the chart resource
+16. added a shared settings menu with saved dark mode and keep-awake cook mode
 
 ## How To Grow This File
 

@@ -1,7 +1,8 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { useAppSettings } from '../contexts/settings-context';
 
 const menuItems = [
   {
@@ -31,32 +32,46 @@ const menuItems = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const { palette } = useAppSettings();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
-        <View style={[styles.hero, isWide && styles.heroWide]}>
+        <View
+          style={[
+            styles.hero,
+            isWide && styles.heroWide,
+            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+          ]}
+        >
           <View style={styles.heroCopy}>
-            <Text style={styles.eyebrow}>Kitchen utility hub</Text>
-            <Text style={styles.title}>Useful kitchen tools in one place</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Kitchen utility hub</Text>
+            <Text style={[styles.title, { color: palette.text }]}>Useful kitchen tools in one place</Text>
+            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               The home screen now acts like a menu for the app. Instead of one demo page, we have
               dedicated routes for references, substitutions, recipes, and the scaling prototype.
             </Text>
 
             <View style={styles.badgeRow}>
-              <Text style={styles.badge}>Conversions</Text>
-              <Text style={styles.badge}>Allergy swaps</Text>
-              <Text style={styles.badge}>My recipes</Text>
+              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
+                Conversions
+              </Text>
+              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
+                Allergy swaps
+              </Text>
+              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
+                My recipes
+              </Text>
             </View>
           </View>
 
-          <View style={styles.heroCard}>
-            <Text style={styles.heroCardLabel}>What this unlocks</Text>
-            <Text style={styles.heroCardTitle}>A clearer app structure</Text>
-            <Text style={styles.heroCardText}>
+          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>What this unlocks</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>A clearer app structure</Text>
+            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
               Each major feature can now grow on its own screen without crowding the rest of the
               app. That matters on both Android and web.
             </Text>
@@ -65,38 +80,47 @@ export default function HomeScreen() {
 
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
-            <View style={styles.panel}>
-              <Text style={styles.panelEyebrow}>Main menu</Text>
-              <Text style={styles.panelTitle}>Pick a kitchen helper</Text>
+            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Main menu</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Pick a kitchen helper</Text>
               <View style={styles.menuGrid}>
                 {menuItems.map((item) => (
-                  <Link key={item.title} href={item.href} asChild>
-                    <Pressable style={styles.menuCard}>
-                      <Text style={styles.menuCardEyebrow}>{item.eyebrow}</Text>
-                      <Text style={styles.menuCardTitle}>{item.title}</Text>
-                      <Text style={styles.menuCardBody}>{item.body}</Text>
-                      <Text style={styles.menuCardLink}>Open screen</Text>
-                    </Pressable>
-                  </Link>
+                  <Pressable
+                    key={item.title}
+                    onPress={() => router.push(item.href)}
+                    style={[
+                      styles.menuCard,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                    ]}
+                  >
+                    <Text style={[styles.menuCardEyebrow, { color: palette.accentText }]}>{item.eyebrow}</Text>
+                    <Text style={[styles.menuCardTitle, { color: palette.text }]}>{item.title}</Text>
+                    <Text style={[styles.menuCardBody, { color: palette.textMuted }]}>{item.body}</Text>
+                    <Text style={[styles.menuCardLink, { color: palette.accent }]}>Open screen</Text>
+                  </Pressable>
                 ))}
               </View>
             </View>
           </View>
 
           <View style={styles.secondaryColumn}>
-            <View style={styles.panelAlt}>
-              <Text style={styles.panelEyebrow}>Why these pages matter</Text>
-              <Text style={styles.panelTitle}>Reference content needs a home</Text>
-              <Text style={styles.panelText}>
+            <View
+              style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+            >
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Why these pages matter</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Reference content needs a home</Text>
+              <Text style={[styles.panelText, { color: palette.textMuted }]}>
                 Conversions and allergy substitutions are the kind of pages people reopen often.
                 Giving them dedicated routes makes the app feel more dependable.
               </Text>
             </View>
 
-            <View style={styles.panelDark}>
-              <Text style={styles.panelDarkEyebrow}>Recipe direction</Text>
-              <Text style={styles.panelDarkTitle}>My Recipes is now part of the structure</Text>
-              <Text style={styles.panelDarkText}>
+            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
+              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe direction</Text>
+              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>
+                My Recipes is now part of the structure
+              </Text>
+              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                 That page is where saved recipes can live now, and later it can become the place
                 where your Obsidian recipe notes get imported or synced.
               </Text>

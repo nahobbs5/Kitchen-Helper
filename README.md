@@ -80,6 +80,31 @@ The project now includes:
 - Expo Router
 - web support packages
 
+## App Architecture
+
+At a high level, the app is organized into four pieces:
+
+1. `app/`
+Routes and screens
+
+2. `contexts/`
+Shared saved state like favorites and settings
+
+3. `data/`, `scripts/`, `utils/`, and `Cooking/`
+Recipe source files, generated recipe data, and scaling/parsing logic
+
+4. `components/`
+Shared styles, theme palettes, and reusable UI pieces
+
+A simple way to think about it:
+
+- `Cooking/` holds the Obsidian recipe source files
+- `scripts/generate-obsidian-recipes.mjs` turns them into structured app data
+- `data/obsidian-recipes.ts` is what the app reads
+- `app/` renders screens from that data
+- `contexts/` adds app-wide behavior like favorites and settings
+- `components/` keeps the UI and theming consistent
+
 ## Files That Were Updated
 
 ### Expo Router files
@@ -194,6 +219,9 @@ It can:
 - show prep time and cook time indicators where the Markdown note provides them
 - display ingredients and directions parsed from Markdown notes
 - scale recipe ingredients with Original, 1/4x, 1/2x, and quick 2, 4, 8 options
+- open a shared settings menu from any page
+- save a dark mode preference
+- save a keep-screen-awake cook mode preference
 - switch between sample serving sizes
 - recalculate ingredient quantities for the sample recipe
 - display example substitutions
@@ -207,7 +235,24 @@ It does not yet:
 - parse ingredients from text
 - store user data
 - run a real substitution engine
-- support cooking mode
+- support a full-screen dedicated cooking mode
+
+## Settings
+
+The app now has a shared settings menu available from the gear icon in the header.
+
+Current saved settings:
+
+- `Dark mode`
+- `Keep screen awake`
+
+How it works:
+
+- settings are stored locally with AsyncStorage
+- dark mode switches the app between light and dark palettes
+- keep-screen-awake uses Expo's `expo-keep-awake` package
+
+This means the app now has one piece of true app-wide saved preference state, not just per-screen UI state.
 
 ## Verification That Was Run
 
@@ -257,12 +302,14 @@ So far, we have:
 5. added web support
 6. added Expo Router for file-based navigation
 7. split the app into multiple screens
-8. added menu pages for conversions, allergy substitutions, and My Recipes`r`n8a. updated conversions and substitutions pages to reflect the chart resource
+8. added menu pages for conversions, allergy substitutions, and My Recipes
+9. updated conversions and substitutions pages to reflect the chart resource
 9. kept the recipe preview as the scaling prototype
 10. connected My Recipes to parsed Obsidian recipe data
 11. added clickable recipe detail pages generated from Markdown
 12. added serving controls to Obsidian-backed recipe pages
-12. verified TypeScript and web bundling
+13. added a shared settings menu with saved dark mode and keep-awake cook mode
+14. verified TypeScript and web bundling
 
 ## Good Next Steps
 

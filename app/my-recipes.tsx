@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Pressable,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 
@@ -18,6 +19,7 @@ export default function MyRecipesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const { palette } = useAppSettings();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
   const { favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
@@ -50,37 +52,43 @@ export default function MyRecipesScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
-        <View style={[styles.hero, isWide && styles.heroWide]}>
+        <View
+          style={[
+            styles.hero,
+            isWide && styles.heroWide,
+            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+          ]}
+        >
           <View style={styles.heroCopy}>
-            <Text style={styles.eyebrow}>Recipe library</Text>
-            <Text style={styles.title}>My Recipes</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe library</Text>
+            <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
+            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page now reflects the actual recipe notes in your `Cooking` Obsidian vault. It
               gives the app a real recipe shelf to build from instead of placeholders.
             </Text>
 
             <View style={styles.actionRow}>
-              <Link href="/conversions" asChild>
-                <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Conversions</Text>
-                </Pressable>
-              </Link>
-              <Link href="/allergy-substitutions" asChild>
-                <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Substitutions</Text>
-                </Pressable>
-              </Link>
+              <Pressable
+                onPress={() => router.push('/conversions')}
+                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Conversions</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/allergy-substitutions')}
+                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Substitutions</Text>
+              </Pressable>
             </View>
           </View>
 
-          <View style={styles.heroCard}>
-            <Text style={styles.heroCardLabel}>Vault snapshot</Text>
-            <Text style={styles.heroCardTitle}>
-              {filteredRecipes.length} recipes shown
-            </Text>
-            <Text style={styles.heroCardText}>
+          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Vault snapshot</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
+            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
               Filter by recipe type here on the page, or tap one of the folder cards below for the
               same result. Later we can go deeper and pull ingredients, directions, times, and
               servings too.
@@ -90,8 +98,11 @@ export default function MyRecipesScreen() {
               value={searchText}
               onChangeText={setSearchText}
               placeholder="Search recipes, categories, or tags"
-              placeholderTextColor="#8f775b"
-              style={styles.searchInput}
+              placeholderTextColor={palette.searchPlaceholder}
+              style={[
+                styles.searchInput,
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+              ]}
             />
 
             <View style={styles.servingsRow}>
@@ -102,11 +113,18 @@ export default function MyRecipesScreen() {
                   <Pressable
                     key={category.name}
                     onPress={() => setActiveCategory(category.name)}
-                    style={[styles.servingsButton, isActive && styles.servingsButtonActive]}
+                    style={[
+                      styles.servingsButton,
+                      { borderColor: palette.borderAlt },
+                      !isActive && { backgroundColor: palette.surface },
+                      isActive && styles.servingsButtonActive,
+                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                    ]}
                   >
                     <Text
                       style={[
                         styles.servingsButtonText,
+                        { color: isActive ? palette.inverseText : palette.text },
                         isActive && styles.servingsButtonTextActive,
                       ]}
                     >
@@ -121,18 +139,18 @@ export default function MyRecipesScreen() {
 
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
-            <View style={styles.panel}>
-              <Text style={styles.panelEyebrow}>Current library</Text>
-              <Text style={styles.panelTitle}>Recipes from Obsidian</Text>
+            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Current library</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipes from Obsidian</Text>
               <View style={styles.listStack}>
                 {filteredRecipes.map((recipe) => (
                     <Pressable
                       key={recipe.slug}
                       onPress={() => router.push(`/recipes/${recipe.slug}`)}
-                      style={styles.detailCard}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                     >
                       <View style={styles.detailCardHeader}>
-                        <Text style={styles.detailCardTitle}>{recipe.title}</Text>
+                        <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
                         <Pressable
                           onPress={(event) => {
                             event.stopPropagation();
@@ -140,10 +158,11 @@ export default function MyRecipesScreen() {
                           }}
                           style={[
                             styles.starButton,
+                            { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
                             isFavorite(recipe.slug) && styles.starButtonActive,
                           ]}
                         >
-                          <Text style={styles.starButtonText}>
+                          <Text style={[styles.starButtonText, { color: palette.accentText }]}>
                             {isFavorite(recipe.slug) ? '★' : '☆'}
                           </Text>
                         </Pressable>
@@ -169,27 +188,27 @@ export default function MyRecipesScreen() {
                       {recipe.prepTime || recipe.cookTime ? (
                         <View style={styles.tagRow}>
                           {recipe.prepTime ? (
-                            <View style={styles.tag}>
-                              <Text style={styles.tagText}>Prep: {recipe.prepTime}</Text>
+                            <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                              <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
                             </View>
                           ) : null}
                           {recipe.cookTime ? (
-                            <View style={styles.tag}>
-                              <Text style={styles.tagText}>Cook: {recipe.cookTime}</Text>
+                            <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                              <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
                             </View>
                           ) : null}
                         </View>
                       ) : null}
-                      <Text style={styles.detailCardBody}>
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                         Open this recipe to view ingredients and directions from the Markdown note.
                       </Text>
-                      <Text style={styles.menuCardLink}>Open recipe</Text>
+                      <Text style={[styles.menuCardLink, { color: palette.accent }]}>Open recipe</Text>
                     </Pressable>
                 ))}
                 {filteredRecipes.length === 0 ? (
-                  <View style={styles.detailCard}>
-                    <Text style={styles.detailCardTitle}>No recipes in this filter</Text>
-                    <Text style={styles.detailCardBody}>
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>No recipes in this filter</Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                       Try another search term, another category, or switch back to `All`.
                     </Text>
                   </View>
@@ -199,48 +218,56 @@ export default function MyRecipesScreen() {
           </View>
 
           <View style={styles.secondaryColumn}>
-            <View style={styles.panelAlt}>
-              <Text style={styles.panelEyebrow}>Recipe folders</Text>
-              <Text style={styles.panelTitle}>Organized from your vault</Text>
+            <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe folders</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Organized from your vault</Text>
               <View style={styles.listStack}>
                 {recipeCategories.map((category) => (
                   <Pressable
                     key={category.name}
                     onPress={() => setActiveCategory(category.name)}
-                    style={styles.detailCard}
+                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
-                    <Text style={styles.detailCardTitle}>{category.name}</Text>
-                    <Text style={styles.infoCardMeta}>{category.count} recipes</Text>
-                    <Text style={styles.detailCardBody}>
+                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>{category.name}</Text>
+                    <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{category.count} recipes</Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                       {activeCategory === category.name ? 'Current filter' : 'Tap to filter recipes'}
                     </Text>
                   </Pressable>
                 ))}
-                <Pressable onPress={() => setActiveCategory('All')} style={styles.detailCard}>
-                  <Text style={styles.detailCardTitle}>All recipes</Text>
-                  <Text style={styles.infoCardMeta}>{obsidianRecipes.length} recipes</Text>
-                  <Text style={styles.detailCardBody}>
+                <Pressable
+                  onPress={() => setActiveCategory('All')}
+                  style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                >
+                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>All recipes</Text>
+                  <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{obsidianRecipes.length} recipes</Text>
+                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                     {activeCategory === 'All' ? 'Current filter' : 'Tap to clear filters'}
                   </Text>
                 </Pressable>
               </View>
             </View>
 
-            <View style={styles.panelDark}>
-              <Text style={styles.panelDarkEyebrow}>Next integration step</Text>
-              <Text style={styles.panelDarkTitle}>Use the note contents themselves</Text>
-              <Text style={styles.panelDarkText}>
+            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
+              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Next integration step</Text>
+              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>
+                Use the note contents themselves
+              </Text>
+              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                 The app is currently showing recipe titles and categories from your Obsidian vault.
                 Next we can parse ingredients and directions from the Markdown so a recipe page uses
                 the real note content.
               </Text>
 
               <View style={styles.actionRow}>
-                <Link href="/recipe" asChild>
-                  <Pressable style={styles.primaryButton}>
-                    <Text style={styles.primaryButtonText}>Open recipe preview</Text>
-                  </Pressable>
-                </Link>
+                <Pressable
+                  onPress={() => router.push('/recipe')}
+                  style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                >
+                  <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                    Open recipe preview
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>

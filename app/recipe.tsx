@@ -9,12 +9,14 @@ import {
   formatAmount,
   substitutions,
 } from '../components/sample-data';
+import { useAppSettings } from '../contexts/settings-context';
 
 const previewServingOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 export default function RecipeScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const { palette } = useAppSettings();
   const [servings, setServings] = useState(baseServings);
 
   const scaledIngredients = useMemo(() => {
@@ -27,22 +29,28 @@ export default function RecipeScreen() {
   }, [servings]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
-        <View style={[styles.hero, isWide && styles.heroWide]}>
+        <View
+          style={[
+            styles.hero,
+            isWide && styles.heroWide,
+            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+          ]}
+        >
           <View style={styles.heroCopy}>
-            <Text style={styles.eyebrow}>Recipe route</Text>
-            <Text style={styles.title}>Creamy Spinach Pasta</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe route</Text>
+            <Text style={[styles.title, { color: palette.text }]}>Creamy Spinach Pasta</Text>
+            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page is now its own route, which is exactly why Expo Router is useful. We can
               treat recipe viewing as a real screen instead of a block inside one giant component.
             </Text>
           </View>
 
-          <View style={styles.heroCard}>
-            <Text style={styles.heroCardLabel}>Scaling demo</Text>
-            <Text style={styles.heroCardTitle}>Adjust servings</Text>
-            <Text style={styles.heroCardText}>
+          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Scaling demo</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Adjust servings</Text>
+            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
               Tap a serving size to update the ingredient list below.
             </Text>
 
@@ -54,11 +62,18 @@ export default function RecipeScreen() {
                   <Pressable
                     key={count}
                     onPress={() => setServings(count)}
-                    style={[styles.servingsButton, isActive && styles.servingsButtonActive]}
+                    style={[
+                      styles.servingsButton,
+                      { borderColor: palette.borderAlt },
+                      !isActive && { backgroundColor: palette.surface },
+                      isActive && styles.servingsButtonActive,
+                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                    ]}
                   >
                     <Text
                       style={[
                         styles.servingsButtonText,
+                        { color: isActive ? palette.inverseText : palette.text },
                         isActive && styles.servingsButtonTextActive,
                       ]}
                     >
@@ -69,7 +84,7 @@ export default function RecipeScreen() {
               })}
             </View>
 
-            <Text style={styles.heroCardLabel}>Custom servings</Text>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Custom servings</Text>
             <View style={styles.numberGrid}>
               {previewServingOptions.map((count) => {
                 const isActive = servings === count;
@@ -78,9 +93,14 @@ export default function RecipeScreen() {
                   <Pressable
                     key={`preview-${count}`}
                     onPress={() => setServings(count)}
-                    style={[styles.numberButton, isActive && styles.numberButtonActive]}
+                    style={[
+                      styles.numberButton,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      isActive && styles.numberButtonActive,
+                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                    ]}
                   >
-                    <Text style={styles.numberButtonText}>{count}</Text>
+                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{count}</Text>
                   </Pressable>
                 );
               })}
@@ -90,34 +110,37 @@ export default function RecipeScreen() {
 
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
-            <View style={styles.panel}>
-              <Text style={styles.panelEyebrow}>Ingredients</Text>
-              <Text style={styles.panelTitle}>Scaled in real time</Text>
+            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Ingredients</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled in real time</Text>
               <View style={styles.ingredientList}>
                 {scaledIngredients.map((ingredient) => (
-                  <View key={ingredient.name} style={styles.ingredientRow}>
+                  <View key={ingredient.name} style={[styles.ingredientRow, { backgroundColor: palette.surface }]}>
                     <View>
-                      <Text style={styles.ingredientAmount}>
+                      <Text style={[styles.ingredientAmount, { color: palette.text }]}>
                         {formatAmount(ingredient.amount)} {ingredient.unit}
                       </Text>
-                      <Text style={styles.ingredientName}>{ingredient.name}</Text>
+                      <Text style={[styles.ingredientName, { color: palette.textMuted }]}>{ingredient.name}</Text>
                     </View>
-                    {ingredient.note ? <Text style={styles.ingredientNote}>{ingredient.note}</Text> : null}
+                    {ingredient.note ? <Text style={[styles.ingredientNote, { color: palette.textSoft }]}>{ingredient.note}</Text> : null}
                   </View>
                 ))}
               </View>
             </View>
 
-            <View style={styles.panel}>
-              <Text style={styles.panelEyebrow}>Substitutions</Text>
-              <Text style={styles.panelTitle}>Helpful swaps with context</Text>
+            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Substitutions</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Helpful swaps with context</Text>
               <View style={styles.cardStack}>
                 {substitutions.map((substitute) => (
-                  <View key={substitute.ingredient} style={styles.infoCard}>
-                    <Text style={styles.infoCardTitle}>{substitute.ingredient}</Text>
-                    <Text style={styles.infoCardSwap}>{substitute.swap}</Text>
-                    <Text style={styles.infoCardMeta}>{substitute.ratio}</Text>
-                    <Text style={styles.infoCardBody}>{substitute.note}</Text>
+                  <View
+                    key={substitute.ingredient}
+                    style={[styles.infoCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.infoCardTitle, { color: palette.accentText }]}>{substitute.ingredient}</Text>
+                    <Text style={[styles.infoCardSwap, { color: palette.text }]}>{substitute.swap}</Text>
+                    <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{substitute.ratio}</Text>
+                    <Text style={[styles.infoCardBody, { color: palette.textMuted }]}>{substitute.note}</Text>
                   </View>
                 ))}
               </View>
@@ -125,24 +148,26 @@ export default function RecipeScreen() {
           </View>
 
           <View style={styles.secondaryColumn}>
-            <View style={styles.panelAlt}>
-              <Text style={styles.panelEyebrow}>Conversions</Text>
-              <Text style={styles.panelTitle}>Quick kitchen references</Text>
+            <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Conversions</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Quick kitchen references</Text>
               <View style={styles.conversionList}>
                 {conversions.map((conversion) => (
-                  <View key={conversion.from} style={styles.conversionRow}>
-                    <Text style={styles.conversionFrom}>{conversion.from}</Text>
-                    <Text style={styles.conversionArrow}>to {conversion.to}</Text>
-                    <Text style={styles.conversionResult}>{conversion.result}</Text>
+                  <View key={conversion.from} style={[styles.conversionRow, { backgroundColor: palette.surface }]}>
+                    <Text style={[styles.conversionFrom, { color: palette.text }]}>{conversion.from}</Text>
+                    <Text style={[styles.conversionArrow, { color: palette.accentText }]}>to {conversion.to}</Text>
+                    <Text style={[styles.conversionResult, { color: palette.accent }]}>{conversion.result}</Text>
                   </View>
                 ))}
               </View>
             </View>
 
-            <View style={styles.panelDark}>
-              <Text style={styles.panelDarkEyebrow}>Why this screen matters</Text>
-              <Text style={styles.panelDarkTitle}>Recipe pages can grow independently</Text>
-              <Text style={styles.panelDarkText}>
+            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
+              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Why this screen matters</Text>
+              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>
+                Recipe pages can grow independently
+              </Text>
+              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                 Later, this route can add timers, cooking mode, pantry checks, and recipe notes
                 without making the home screen harder to reason about.
               </Text>
