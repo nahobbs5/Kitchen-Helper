@@ -379,42 +379,10 @@ export default function EditRecipeScreen() {
                 </View>
 
                 <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergen tags</Text>
+                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergy-friendly tags</Text>
                   <Text style={[styles.formHint, { color: palette.textSoft }]}>
                     These can be auto-detected from the recipe text and then edited manually.
                   </Text>
-                  <View style={styles.tagRow}>
-                    {allergenTagOptions.map((tag) => {
-                      const isActive = allergenTags.includes(tag);
-
-                      return (
-                        <Pressable
-                          key={tag}
-                          onPress={() => handleAllergenToggle(tag)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.allergenTag,
-                            isActive && { borderColor: '#e98d34' },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: palette.text },
-                              isActive && styles.allergenTagText,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergy-friendly tags</Text>
                   <View style={styles.tagRow}>
                     {allergyFriendlyTagOptions.map((tag) => {
                       const isActive = allergyFriendlyTags.includes(tag);
@@ -453,6 +421,38 @@ export default function EditRecipeScreen() {
                     >
                       <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Auto-detect tags</Text>
                     </Pressable>
+                  </View>
+                </View>
+
+                <View style={styles.formField}>
+                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergen tags</Text>
+                  <View style={styles.tagRow}>
+                    {allergenTagOptions.map((tag) => {
+                      const isActive = allergenTags.includes(tag);
+
+                      return (
+                        <Pressable
+                          key={tag}
+                          onPress={() => handleAllergenToggle(tag)}
+                          style={[
+                            styles.servingsButton,
+                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                            isActive && styles.allergenTag,
+                            isActive && { borderColor: '#e98d34' },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.servingsButtonText,
+                              { color: palette.text },
+                              isActive && styles.allergenTagText,
+                            ]}
+                          >
+                            {tag}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 </View>
 

@@ -22,8 +22,9 @@ export default function MyRecipesScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const { palette } = useAppSettings();
-  const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [activeCuisine, setActiveCuisine] = useState<string>('All');
+  const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
+  const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
+  const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
   const [searchText, setSearchText] = useState('');
   const { clearDeletedRecipe, customRecipes, lastDeletedRecipe, recipeOverrideMap, restoreDeletedRecipe } =
     useCustomRecipes();
@@ -79,18 +80,50 @@ export default function MyRecipesScreen() {
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([name, count]) => ({ name, count })),
   ];
+  const allergenFilters = [
+    { name: 'All', count: allRecipes.length },
+    ...Object.entries(
+      allRecipes.reduce<Record<string, number>>((groups, recipe) => {
+        [...recipe.allergyFriendlyTags, ...recipe.allergenTags].forEach((tag) => {
+          groups[tag] = (groups[tag] ?? 0) + 1;
+        });
+        return groups;
+      }, {})
+    )
+      .sort(([left], [right]) => {
+        const leftFriendly = left.toLowerCase().includes('free');
+        const rightFriendly = right.toLowerCase().includes('free');
+
+        if (leftFriendly !== rightFriendly) {
+          return leftFriendly ? -1 : 1;
+        }
+
+        return left.localeCompare(right);
+      })
+      .map(([name, count]) => ({ name, count })),
+  ];
   const normalizedSearch = searchText.trim().toLowerCase();
   const filteredRecipes = useMemo(
     () =>
-      (activeCategory === 'All'
-        ? allRecipes
-        : activeCategory === 'Favorites'
-          ? allRecipes.filter((recipe) => favoriteSlugs.includes(recipe.slug))
-          : allRecipes.filter((recipe) => recipe.category === activeCategory))
+      allRecipes
         .filter((recipe) =>
-          activeCuisine === 'All'
+          activeCategoryFilters.includes('Favorites') ? favoriteSlugs.includes(recipe.slug) : true
+        )
+        .filter((recipe) => {
+          const selectedCategories = activeCategoryFilters.filter((value) => value !== 'Favorites');
+          return selectedCategories.length === 0 ? true : selectedCategories.includes(recipe.category);
+        })
+        .filter((recipe) =>
+          activeCuisineFilters.length === 0
             ? true
-            : ((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '') === activeCuisine
+            : activeCuisineFilters.includes((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '')
+        )
+        .filter((recipe) =>
+          activeAllergenTags.length === 0
+            ? true
+            : activeAllergenTags.every((tag) =>
+                [...recipe.allergenTags, ...recipe.allergyFriendlyTags].includes(tag)
+              )
         )
         .filter((recipe) =>
           normalizedSearch
@@ -99,8 +132,41 @@ export default function MyRecipesScreen() {
                 .includes(normalizedSearch)
             : true
         ),
-    [activeCategory, activeCuisine, allRecipes, favoriteSlugs, normalizedSearch]
+    [activeAllergenTags, activeCategoryFilters, activeCuisineFilters, allRecipes, favoriteSlugs, normalizedSearch]
   );
+
+  function toggleCategoryFilter(tag: string) {
+    if (tag === 'All') {
+      setActiveCategoryFilters([]);
+      return;
+    }
+
+    setActiveCategoryFilters((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
+    );
+  }
+
+  function toggleCuisineFilter(tag: string) {
+    if (tag === 'All') {
+      setActiveCuisineFilters([]);
+      return;
+    }
+
+    setActiveCuisineFilters((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
+    );
+  }
+
+  function toggleAllergenFilter(tag: string) {
+    if (tag === 'All') {
+      setActiveAllergenTags([]);
+      return;
+    }
+
+    setActiveAllergenTags((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
+    );
+  }
 
   useEffect(() => {
     if (!lastDeletedRecipe) {
@@ -197,12 +263,15 @@ export default function MyRecipesScreen() {
 
             <View style={styles.servingsRow}>
               {categoryFilters.map((category) => {
-                const isActive = activeCategory === category.name;
+                const isActive =
+                  category.name === 'All'
+                    ? activeCategoryFilters.length === 0
+                    : activeCategoryFilters.includes(category.name);
 
                 return (
                   <Pressable
                     key={category.name}
-                    onPress={() => setActiveCategory(category.name)}
+                    onPress={() => toggleCategoryFilter(category.name)}
                     style={[
                       styles.servingsButton,
                       { borderColor: palette.borderAlt },
@@ -230,12 +299,15 @@ export default function MyRecipesScreen() {
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Cuisine region</Text>
                 <View style={styles.servingsRow}>
                   {cuisineFilters.map((cuisine) => {
-                    const isActive = activeCuisine === cuisine.name;
+                    const isActive =
+                      cuisine.name === 'All'
+                        ? activeCuisineFilters.length === 0
+                        : activeCuisineFilters.includes(cuisine.name);
 
                     return (
                       <Pressable
                         key={cuisine.name}
-                        onPress={() => setActiveCuisine(cuisine.name)}
+                        onPress={() => toggleCuisineFilter(cuisine.name)}
                         style={[
                           styles.servingsButton,
                           { borderColor: palette.borderAlt },
@@ -252,6 +324,44 @@ export default function MyRecipesScreen() {
                           ]}
                         >
                           {cuisine.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </>
+            ) : null}
+
+            {allergenFilters.length > 1 ? (
+              <>
+                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Allergen tags</Text>
+                <View style={styles.servingsRow}>
+                  {allergenFilters.map((filter) => {
+                    const isActive =
+                      filter.name === 'All'
+                        ? activeAllergenTags.length === 0
+                        : activeAllergenTags.includes(filter.name);
+
+                    return (
+                      <Pressable
+                        key={filter.name}
+                        onPress={() => toggleAllergenFilter(filter.name)}
+                        style={[
+                          styles.servingsButton,
+                          { borderColor: palette.borderAlt },
+                          !isActive && { backgroundColor: palette.surface },
+                          isActive && styles.servingsButtonActive,
+                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.servingsButtonText,
+                            { color: isActive ? palette.inverseText : palette.text },
+                            isActive && styles.servingsButtonTextActive,
+                          ]}
+                        >
+                          {filter.name}
                         </Text>
                       </Pressable>
                     );
@@ -304,7 +414,7 @@ export default function MyRecipesScreen() {
                         <Pressable
                           onPress={(event) => {
                             event.stopPropagation();
-                            setActiveCuisine((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? 'All');
+                            toggleCuisineFilter((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? 'All');
                           }}
                           style={styles.cuisineTag}
                         >
@@ -317,18 +427,32 @@ export default function MyRecipesScreen() {
                     {recipe.allergyFriendlyTags.length > 0 ? (
                       <View style={styles.tagRow}>
                         {recipe.allergyFriendlyTags.map((tag) => (
-                          <View key={tag} style={styles.allergyFriendlyTag}>
+                          <Pressable
+                            key={tag}
+                            onPress={(event) => {
+                            event.stopPropagation();
+                              toggleAllergenFilter(tag);
+                            }}
+                            style={styles.allergyFriendlyTag}
+                          >
                             <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
-                          </View>
+                          </Pressable>
                         ))}
                       </View>
                     ) : null}
                     {recipe.allergenTags.length > 0 ? (
                       <View style={styles.tagRow}>
                         {recipe.allergenTags.map((tag) => (
-                          <View key={tag} style={styles.allergenTag}>
+                          <Pressable
+                            key={tag}
+                            onPress={(event) => {
+                            event.stopPropagation();
+                              toggleAllergenFilter(tag);
+                            }}
+                            style={styles.allergenTag}
+                          >
                             <Text style={styles.allergenTagText}>{tag}</Text>
-                          </View>
+                          </Pressable>
                         ))}
                       </View>
                     ) : null}
@@ -369,24 +493,24 @@ export default function MyRecipesScreen() {
                 {recipeCategories.map((category) => (
                   <Pressable
                     key={category.name}
-                    onPress={() => setActiveCategory(category.name)}
+                    onPress={() => toggleCategoryFilter(category.name)}
                     style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{category.name}</Text>
                     <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{category.count} recipes</Text>
                     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      {activeCategory === category.name ? 'Current filter' : 'Tap to filter recipes'}
+                      {activeCategoryFilters.includes(category.name) ? 'Current filter' : 'Tap to filter recipes'}
                     </Text>
                   </Pressable>
                 ))}
                 <Pressable
-                  onPress={() => setActiveCategory('All')}
+                  onPress={() => toggleCategoryFilter('All')}
                   style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                 >
                   <Text style={[styles.detailCardTitle, { color: palette.text }]}>All recipes</Text>
                   <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{allRecipes.length} recipes</Text>
                   <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                    {activeCategory === 'All' ? 'Current filter' : 'Tap to clear filters'}
+                    {activeCategoryFilters.length === 0 ? 'Current filter' : 'Tap to clear filters'}
                   </Text>
                 </Pressable>
               </View>
