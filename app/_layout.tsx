@@ -36,6 +36,7 @@ function RootNavigator() {
     >
       <Stack.Screen name="index" options={{ title: 'Kitchen Helper' }} />
       <Stack.Screen name="conversions" options={{ title: 'Conversions' }} />
+      <Stack.Screen name="cooking-dictionary" options={{ title: 'Cooking Dictionary' }} />
       <Stack.Screen name="allergy-substitutions" options={{ title: 'Allergy Swaps' }} />
       <Stack.Screen name="my-recipes" options={{ title: 'My Recipes' }} />
       <Stack.Screen name="recipes/[slug]" options={{ title: 'Recipe' }} />

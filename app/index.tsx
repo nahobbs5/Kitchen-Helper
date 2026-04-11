@@ -12,6 +12,12 @@ const menuItems = [
     href: '/conversions' as const,
   },
   {
+    eyebrow: 'Glossary',
+    title: 'Cooking dictionary',
+    body: 'Search cooking terms, ingredients, and technique definitions from your saved glossary resource.',
+    href: '/cooking-dictionary' as const,
+  },
+  {
     eyebrow: 'Allergy help',
     title: 'Common allergy substitutions',
     body: 'Practical swap ideas for dairy-free, egg-free, gluten-free, nut-free, and soy-free cooking.',
@@ -58,6 +64,9 @@ export default function HomeScreen() {
             <View style={styles.badgeRow}>
               <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
                 Conversions
+              </Text>
+              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
+                Dictionary
               </Text>
               <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
                 Allergy swaps
