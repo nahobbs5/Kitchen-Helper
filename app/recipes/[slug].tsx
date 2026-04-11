@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { ReferenceNav } from '../../components/reference-nav';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
@@ -118,6 +119,7 @@ export default function ObsidianRecipeScreen() {
               note structure, showing the ingredients and directions, and letting you scale the
               ingredient list.
             </Text>
+            <ReferenceNav />
             {recipe.servings ? (
               <View style={styles.badgeRow}>
                 <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>

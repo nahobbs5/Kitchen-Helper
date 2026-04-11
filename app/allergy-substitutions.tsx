@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ReferenceNav } from '../components/reference-nav';
 import { allergySubstitutions, chartSubstitutions } from '../components/sample-data';
 import { useAppSettings } from '../contexts/settings-context';
 
@@ -53,6 +54,7 @@ export default function AllergySubstitutionsScreen() {
               This screen is a quick reference for common allergy-aware swaps. It is not medical
               advice, but it gives the app a useful place to start for safer cooking alternatives.
             </Text>
+            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

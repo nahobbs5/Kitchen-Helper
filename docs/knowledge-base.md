@@ -1,18 +1,24 @@
 # Kitchen Helper Knowledge Base
 
-This document is meant to be a running explanation of how the project works and why certain technical choices were made.
+This file is the longer-form project guide for Kitchen Helper.
 
-The goal is not just to record what files exist, but to build a reference you can come back to while learning and building.
+The README is the quick orientation document. This knowledge base is where we keep the deeper explanation of how the app works, why certain choices were made, and what changed over time.
 
 ## Project Goal
 
-Kitchen Helper is a cooking app prototype focused on practical kitchen utilities:
+Kitchen Helper is a cross-platform cooking app prototype focused on practical kitchen utilities people can use while they cook.
 
-- recipe scaling
-- ingredient substitutions
-- cooking conversions
+Current core areas:
 
-The app is being built so it can work on:
+- recipe browsing from Obsidian notes
+- ingredient scaling
+- kitchen conversions
+- allergy-friendly substitutions
+- cooking glossary lookups
+- saved favorites
+- app-wide settings
+
+The app currently runs on:
 
 - Android
 - Web
@@ -27,138 +33,155 @@ The project currently uses:
 - Expo Router
 - pnpm
 - Metro
+- AsyncStorage
 
 ## How These Tools Fit Together
 
 ### Expo
 
-Expo is the framework that runs the app project.
+Expo is the app framework and development environment.
 
 It gives us:
 
-- project structure
-- development tooling
+- the project structure
 - Android support
 - web support
-- a smoother React Native workflow
+- development tooling
+- access to Expo-native packages like `expo-keep-awake`
 
-You can think of Expo as the overall app platform we are building inside.
+It is the main reason we can move quickly with one codebase.
 
 ### React Native
 
-React Native is the UI framework used to build the app screens.
+React Native is the UI layer.
 
-Instead of writing HTML elements like `div`, this project uses React Native components like:
+Instead of HTML elements like `div` and `button`, this project uses cross-platform components such as:
 
 - `View`
 - `Text`
 - `ScrollView`
 - `Pressable`
+- `TextInput`
 
-These components are designed to work across platforms, including Android and web through Expo's tooling.
+Those components render appropriately for Android and web through Expo.
 
 ### TypeScript
 
-TypeScript adds type checking on top of JavaScript.
+TypeScript adds type checking to the app.
 
-It helps catch mistakes earlier and makes the code easier to reason about as the project grows.
+It helps us:
 
-Examples in this project include:
-
-- ingredient types
-- substitution types
-- conversion types
+- catch mistakes earlier
+- keep generated data shapes reliable
+- make screen and utility code easier to reason about
 
 ### Expo Router
 
 Expo Router is the navigation system.
 
-It uses files inside the `app/` folder to define screens and routes.
+Routes are created from files in the [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app) folder.
 
 Examples:
 
-- `app/index.tsx` becomes `/`
-- `app/recipe.tsx` becomes `/recipe`
+- [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx) -> `/`
+- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx) -> `/my-recipes`
+- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx) -> dynamic recipe pages
 
-This is useful because navigation becomes easier to understand and easier to scale as more screens are added.
+This keeps navigation easier to follow as the app grows.
 
 ### pnpm
 
-`pnpm` is the package manager used to install and track dependencies.
+`pnpm` is the package manager.
 
-It works similarly to `npm`, but is often faster and more space efficient.
+It is used for:
 
-On this machine, `pnpm` is currently being run through `corepack`, so commands usually look like:
+- installing dependencies
+- running scripts
+- keeping the lockfile in sync
+
+On this machine it is run through `corepack`, so most commands look like:
 
 ```powershell
 corepack pnpm install
-corepack pnpm sync:recipes
 corepack pnpm run web
 corepack pnpm run android
+corepack pnpm sync:recipes
+corepack pnpm sync:dictionary
 ```
 
 ### Metro
 
-Metro is the JavaScript bundler used by Expo.
+Metro is the bundler used by Expo in this app.
 
-A bundler takes all the app code and dependencies and turns them into the packaged code the app can run.
+Even though the app targets web too, Expo still uses Metro for this setup. That is why the app itself is not using Vite.
 
-Even though the app also targets web, Expo still uses Metro for this setup.
+### AsyncStorage
 
-This is why we did not wire Vite into the app itself.
+AsyncStorage is the local persistence layer currently used by the app.
 
-## Why We Chose This Setup
+Right now it stores:
 
-The current stack was chosen because it gives us a good balance of:
+- favorite recipes
+- saved settings like dark mode and keep-awake mode
 
-- speed of setup
-- cross-platform support
-- room to grow
-- beginner-friendly structure
+## Why This Setup Was Chosen
 
-For this project, the most important goal is to get a working Android and web app from one codebase while keeping the architecture understandable.
+The stack was chosen because it gives us a good balance of:
+
+- fast setup
+- one shared codebase
+- Android and web support
+- architecture that stays understandable while learning
+
+For this project, getting a useful Android and web app from the same codebase mattered more than using the most custom setup possible.
 
 ## Why The App Lives In `kitchen-helper`
 
-The original parent folder is:
+The parent workspace folder is:
 
 - `C:\Users\Nathan\Documents\App Ideas`
 
-That folder name is fine for a general workspace, but it is not a valid Expo app/package name because of the space and naming rules.
+That is a fine workspace name, but not a good Expo app/package name because of the space and naming rules.
 
-So the actual project was created in:
+So the actual app lives in:
 
 - [`C:\Users\Nathan\Documents\App Ideas\kitchen-helper`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper)
 
 ## High-Level Project Structure
 
-Current important folders and files:
+Important top-level areas:
 
 - [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app)
 - [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components)
+- [`contexts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts)
+- [`data/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data)
+- [`scripts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts)
+- [`utils/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils)
+- [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
 - [`docs/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\docs)
-- [`app.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app.json)
-- [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json)
 - [`README.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\README.md)
+- [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json)
+- [`app.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app.json)
 
 ## App Architecture
 
 The app is currently organized into four main layers:
 
 1. routes
-2. shared context/state
-3. data and parsing
-4. shared components and styles
+2. shared state
+3. data generation and utilities
+4. shared components and theming
 
 ### 1. Routes
 
-Routes live in the [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app) folder.
+Routes live in [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app).
 
 Important route files:
 
 - [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
 - [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx)
 - [`app/conversions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\conversions.tsx)
+- [`app/cooking-dictionary.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\cooking-dictionary.tsx)
 - [`app/allergy-substitutions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\allergy-substitutions.tsx)
 - [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
 - [`app/recipe.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipe.tsx)
@@ -167,191 +190,226 @@ Important route files:
 What this layer does:
 
 - defines the screens users can visit
-- maps files to URLs and navigation routes
+- maps files to URLs and app routes
 - renders page-level UI
-- pulls in shared data, styles, and context as needed
+- wires screens to shared data, styles, and state
 
-The route layer should mostly answer:
+[`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx) is especially important because it:
 
-- what screen is this
-- what data does it show
-- what actions can the user take here
+- wraps the app in providers
+- defines the shared stack navigator
+- controls the shared header
+- exposes the settings gear across screens
 
-### 2. Shared Context and State
+### 2. Shared State
 
-Shared app-wide state lives in the [`contexts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts) folder.
+App-wide state lives in [`contexts/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts).
 
 Important files:
 
 - [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
 - [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
 
-What this layer does:
+What this layer currently handles:
 
-- stores favorite recipe state
-- stores saved app settings
-- persists that state with AsyncStorage
-- makes the state available to any screen wrapped by the providers
+- favorite recipe slugs
+- dark mode
+- keep-screen-awake cook mode
+- opening and closing the settings overlay
+- persistence through AsyncStorage
 
-This is the first real app-wide state layer in the project.
+This layer matters because it keeps app-wide behavior from being duplicated separately on every screen.
 
-It is useful because it prevents every screen from having to manage the same settings or favorites logic separately.
+### 3. Data Generation and Utilities
 
-### 3. Data and Parsing
-
-Recipe and utility data currently come from a mix of static shared data and generated data.
+This is where source content gets turned into app-ready data.
 
 Important files:
 
-- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
 - [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
+- [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts)
 - [`scripts/generate-obsidian-recipes.mjs`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts\generate-obsidian-recipes.mjs)
+- [`scripts/generate-cooking-dictionary.mjs`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\scripts\generate-cooking-dictionary.mjs)
 - [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts)
+- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
 - [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
 
 How this layer works:
 
-- the `Cooking/` folder contains the Obsidian Markdown source files
-- `scripts/generate-obsidian-recipes.mjs` parses those notes
-- the script writes structured output into `data/obsidian-recipes.ts`
-- route files read from that generated data to render recipe lists and recipe detail screens
-- `utils/ingredient-scaling.ts` handles ingredient amount scaling on recipe pages
-- `components/sample-data.ts` still powers the prototype-only data such as sample conversions and demo recipe content
+- recipe Markdown notes live in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+- recipe resources also live there, including the glossary file and conversion resources
+- `scripts/generate-obsidian-recipes.mjs` parses the recipe notes
+- that script writes structured output into [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
+- `scripts/generate-cooking-dictionary.mjs` parses [`Cooking/Resources/Cooking Dictionary.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking\Resources\Cooking%20Dictionary.md)
+- that script writes structured glossary output into [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts)
+- route files read those generated data files to render screens
+- [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts) scales ingredient text for recipe pages
+- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts) still provides curated prototype content for reference pages and the preview recipe screen
 
-This separation matters because it keeps source content, generation logic, and UI rendering from all blurring together in one file.
+### 4. Shared Components and Theming
 
-### 4. Shared Components and Styles
-
-Reusable visual building blocks live in the [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components) folder.
+Reusable UI pieces live in [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components).
 
 Important files:
 
 - [`components/kitchen-styles.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\kitchen-styles.ts)
-- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
 - [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
+- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
 
 What this layer does:
 
-- centralizes visual styles
-- provides theme palettes for light and dark mode
-- defines reusable UI pieces like the shared settings modal and gear button
+- centralizes shared styles
+- defines the light and dark palettes
+- provides the shared settings gear and overlay
+- keeps route files focused on screen behavior instead of duplicated UI plumbing
 
-This layer helps keep route files focused on screen behavior instead of repeating the same style or modal code everywhere.
+## Simple Data Flow
 
-### Simple Flow
+A good mental model for the app is:
 
-One useful mental model is:
+1. source recipes and reference files live in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+2. generator scripts turn them into typed app data in [`data/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data)
+3. route files in [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app) render that data
+4. shared contexts provide favorites, settings, and theme state
+5. shared components and styles keep the UI consistent across screens
 
-1. Markdown recipes live in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
-2. the generator script turns them into [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
-3. route files render that data on recipe pages
-4. shared contexts provide cross-app behavior like favorites and settings
-5. shared components/styles keep the UI consistent
+That is the current backbone of the project.
 
-That is the current backbone of the app.
+## What The App Does Right Now
 
-## What Each Main Area Does
+The app is still a prototype, but it is already useful.
 
-### [`app/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app)
+Current capabilities:
 
-This folder contains app routes and screens.
+- a home screen that acts as a kitchen tools hub
+- a searchable conversions page with section filters
+- a searchable allergy substitutions page
+- a searchable cooking dictionary page with letter filters
+- a `My Recipes` page backed by real Obsidian recipe notes
+- filtering recipes by category and favorites
+- searching recipes by title, category, and allergy tags
+- clickable recipe detail pages generated from Markdown
+- parsed ingredients and directions from recipe notes
+- prep, cook, and total time where the note supports it
+- ingredient scaling controls including `1/4x`, `1/2x`, preset servings, and a custom `1-10` selector
+- allergen and allergy-friendly tags on recipes
+- favorite recipe toggles with persistent storage
+- a shared settings menu from the header gear
+- dark mode
+- keep-screen-awake cook mode
+- responsive layouts for both Android and web
 
-Important files right now:
+What it does not yet support:
+
+- user accounts
+- sync across devices
+- recipe authoring inside the app
+- pantry tracking
+- grocery list generation
+- dedicated cook-mode screen/timers
+
+## Obsidian Recipe Integration
+
+The app now uses real recipe data from the [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking) folder.
+
+The recipe generator currently tries to extract:
+
+- title
+- slug
+- category
+- ingredients
+- directions
+- servings
+- prep time
+- cook time
+- total time
+- allergen tags
+- allergy-friendly tags
+
+A practical rule we settled on:
+
+- `prep time` should only come from explicit metadata or clearly reliable note content
+- `cook time` can be inferred more safely from clear phrases such as bake or simmer durations
+
+That keeps recipe timing more trustworthy.
+
+## Cooking Dictionary
+
+The cooking dictionary page is based on:
+
+- [`Cooking/Resources/Cooking Dictionary.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking\Resources\Cooking%20Dictionary.md)
+
+The parser converts that glossary into [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts), which the app renders as searchable term cards.
+
+The page also cites the source used for the glossary:
+
+- [What’s Cooking America glossary](https://whatscookingamerica.net/glossary/)
+
+One cleanup detail that mattered here:
+
+- the parser was adjusted so the glossary intro block was not treated as a fake dictionary entry
+
+## Settings System
+
+The app has a shared settings menu that can be opened from the gear icon in the header.
+
+Important files:
 
 - [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
-- [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx)
-- [`app/recipe.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipe.tsx)
+- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
+- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
+- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
 
-#### `app/_layout.tsx`
+Current saved settings:
 
-This file defines the shared navigation wrapper for the routes in the `app/` folder.
+- `Dark mode`
+- `Keep screen awake`
 
-Right now it uses a stack navigator.
+How it works:
 
-That means:
+- settings are stored locally with AsyncStorage
+- dark mode swaps between centralized light and dark palettes
+- keep-awake mode uses `expo-keep-awake`
+- the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
 
-- screens are layered in a navigation stack
-- users can move forward to a new screen
-- users can move back to the previous screen
+This was a useful architecture milestone because it introduced real app-wide persisted state.
 
-This file is important because it controls:
+## Favorites System
 
-- shared header behavior
-- shared screen styling
-- route registration in the stack
+Favorite recipes are stored locally and can be toggled from both the recipe list and recipe detail pages.
 
-#### `app/index.tsx`
+Important files:
 
-This is the home screen.
+- [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
+- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
+- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx)
 
-Because it is named `index.tsx`, it becomes the default route for the folder.
+This gives the app one early personalized behavior without needing accounts or a backend.
 
-So on web, this maps to:
+## Expo Go Dependency Lesson
 
-- `/`
+One of the more important debugging lessons so far came from Expo Go on Android.
 
-Right now it exists mostly to:
+The app was failing with this native error:
 
-- show that Expo Router is active
-- explain the routed structure
-- link to the recipe screen
+- `java.lang.String cannot be cast to java.lang.Boolean`
 
-#### `app/recipe.tsx`
+At first the UI looked suspicious, but the real cause was Expo dependency mismatch, not the screen code.
 
-This is the sample recipe screen.
+`npx expo-doctor` and `npx expo install --check` revealed that several packages were out of alignment with Expo SDK 54, including:
 
-Because it is named `recipe.tsx`, it becomes:
+- `@react-native-async-storage/async-storage`
+- `expo-keep-awake`
+- `react-native-safe-area-context`
+- `react-native-screens`
 
-- `/recipe`
+After aligning those package versions to Expo SDK 54-compatible releases:
 
-This screen currently holds most of the cooking-app demo behavior, including:
+- `npx expo-doctor` passed
+- `npx expo install --check` reported everything up to date
+- Expo Go started working correctly again
 
-- serving size selection
-- scaled ingredient amounts
-- substitution examples
-- conversion examples
-
-### [`components/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components)
-
-This folder contains reusable code that is shared between screens.
-
-Important files right now:
-
-- [`components/kitchen-styles.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\kitchen-styles.ts)
-- [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
-
-#### `components/kitchen-styles.ts`
-
-This file contains shared style definitions.
-
-Why it exists:
-
-- to avoid repeating the same styles in multiple screen files
-- to keep route files easier to read
-- to make visual changes easier later
-
-#### `components/sample-data.ts`
-
-This file contains the sample data used by the prototype.
-
-That includes:
-
-- base recipe servings
-- sample ingredients
-- sample substitutions
-- sample conversions
-- a helper function for formatting numbers
-
-Why it exists:
-
-- to separate demo data from screen layout code
-- to prepare for a future move toward real structured recipe data
-
-### [`docs/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\docs)
-
-This folder is for internal project documentation and learning notes.
-
-This knowledge-base file lives here so we can keep building a record of the project as decisions are made.
+That was an important reminder that native-feeling runtime errors in Expo are sometimes dependency alignment problems rather than component bugs.
 
 ## Configuration Files
 
@@ -359,200 +417,63 @@ This knowledge-base file lives here so we can keep building a record of the proj
 
 This file defines:
 
-- project metadata
-- scripts
 - dependencies
-- dev dependencies
+- scripts
+- project metadata
 
-One important setting is:
+Important scripts currently include:
+
+- `start`
+- `android`
+- `ios`
+- `web`
+- `sync:recipes`
+- `sync:dictionary`
+
+It also sets:
 
 - `"main": "expo-router/entry"`
 
-That tells Expo to boot the app through Expo Router instead of a custom root file like `App.tsx`.
+That tells Expo to boot the app through Expo Router.
 
 ### [`app.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app.json)
 
-This file contains Expo app configuration.
+This file contains Expo app configuration such as:
 
-It controls things like:
+- app name and slug
+- Android and web settings
+- plugin setup
 
-- app name
-- app slug
-- icons
-- splash screen
-- Android settings
-- web settings
-- Expo plugins
-
-One important line is:
-
-- `"plugins": ["expo-router"]`
-
-That enables Expo Router's config integration.
+One important detail is the Expo Router plugin configuration that supports the routed app structure.
 
 ### [`README.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\README.md)
 
-The README is the quick project summary.
+The README is the shorter overview.
 
-This knowledge-base file is different.
-
-The README is for:
-
-- concise overview
-- setup summary
-- quick orientation
-
-This file is for:
+This knowledge base is where we keep:
 
 - deeper explanation
-- learning notes
-- architecture understanding
-- ongoing project reasoning
+- project history
+- architecture notes
+- lessons learned
 
-## What The App Does Right Now
+## Useful Commands
 
-The current app is still a prototype, not a finished product.
+```powershell
+corepack pnpm run web
+corepack pnpm run android
+corepack pnpm sync:recipes
+corepack pnpm sync:dictionary
+.\node_modules\.bin\tsc.cmd --noEmit
+npx expo-doctor
+npx expo install --check
+```
 
-It currently supports:
+## What Has Been Verified
 
-- a routed home screen that acts as a menu
-- a routed recipe screen
-- a routed conversions reference screen
-- a routed allergy substitutions reference screen
-- a routed My Recipes screen
-- recipe titles and categories sourced from the Obsidian Cooking folder
-- clickable recipe detail pages generated from Markdown notes
-- prep and cook time indicators when recipe notes include them
-- ingredients and directions parsed from Obsidian recipe files
-- serving controls on recipe pages with 1/4x, 1/2x, 2, 4, and 8 options
-- a shared settings menu with a gear icon in the header on every page
-- a saved dark mode preference
-- a saved cook mode preference that keeps the screen awake while the app is open
-- recipe scaling through serving-size buttons
-- sample substitutions
-- sample conversions
-- responsive layout for mobile and web
+The project has been checked with:
 
-It does not yet support:
-
-- saving recipes
-- importing recipes
-- user accounts
-- pantry tracking
-- cooking timers
-- real structured recipe creation
-
-## Settings System
-
-The app now has a shared settings menu that can be opened from any screen.
-
-### How it is accessed
-
-The settings menu is opened from a gear icon in the header.
-
-That gear icon lives in the shared layout, which means it appears across the routed screens instead of being added one page at a time.
-
-Important files:
-
-- [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
-- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
-
-### What settings exist right now
-
-There are currently two saved settings:
-
-- `Dark mode`
-- `Keep screen awake`
-
-These are meant to be practical first settings for a cooking app:
-
-- dark mode helps with reading comfort and overall preference
-- keep-awake mode helps when someone is actively cooking and does not want the screen turning off
-
-### How settings are stored
-
-Settings are stored locally on the device using AsyncStorage.
-
-That means:
-
-- the values persist between app launches
-- they are local to the device/browser storage
-- they do not require a backend or user account
-
-Important file:
-
-- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
-
-This context is responsible for:
-
-- loading saved settings on app startup
-- exposing the current values to the UI
-- saving changes when the user toggles a setting
-- opening and closing the settings modal
-
-### How dark mode works
-
-Dark mode is handled through a shared theme palette.
-
-Important file:
-
-- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
-
-This file defines:
-
-- a light palette
-- a dark palette
-
-The settings context chooses which palette is active, and screens read from that palette when setting:
-
-- page background colors
-- card backgrounds
-- text colors
-- border colors
-- header colors
-
-This is a useful pattern because it keeps theme values centralized instead of scattering hard-coded dark-mode colors across many files.
-
-### How keep-awake cook mode works
-
-The keep-awake setting uses Expo's keep-awake package.
-
-Dependency:
-
-- `expo-keep-awake`
-
-When the setting is enabled, the app requests that the screen stay awake while the app remains open.
-
-This is most useful on Android while cooking from a recipe screen.
-
-On web, support can depend more on the browser and device, so it is best understood as:
-
-- stronger on native
-- more limited on web
-
-### Why this system matters
-
-This is one of the first examples in the project where we added true app-wide state, not just screen-local state.
-
-That makes it a good learning milestone because it introduces:
-
-- shared context
-- persisted preferences
-- theme switching
-- device behavior integration
-
-It also creates a clear place to add future settings later, such as:
-
-- text size
-- default measurement system
-- always-open recipe in cook mode
-- favorite landing page
-
-## What Was Verified
-
-So far, two main checks were run:
-
-### TypeScript check
+### TypeScript
 
 ```powershell
 .\node_modules\.bin\tsc.cmd --noEmit
@@ -561,9 +482,28 @@ So far, two main checks were run:
 Purpose:
 
 - verify the TypeScript code compiles cleanly
-- catch type errors before runtime
 
-### Expo web export
+### Expo Doctor
+
+```powershell
+npx expo-doctor
+```
+
+Purpose:
+
+- verify the Expo dependency/config setup is healthy
+
+### Expo Version Check
+
+```powershell
+npx expo install --check
+```
+
+Purpose:
+
+- verify Expo package versions match the SDK expectations
+
+### Web Export
 
 ```powershell
 .\node_modules\.bin\expo.cmd export --platform web
@@ -572,49 +512,18 @@ Purpose:
 Purpose:
 
 - verify the app can bundle for web successfully
-- confirm the routed app builds correctly
-
-## Important Development Notes
-
-### Why commands use `corepack pnpm`
-
-`pnpm` is not installed globally on this machine right now.
-
-Because of that, the safest commands use `corepack`:
-
-```powershell
-corepack pnpm install
-corepack pnpm sync:recipes
-corepack pnpm run web
-corepack pnpm run android
-```
-
-### Generated folders
-
-Some folders are generated by tools and usually are not hand-edited:
-
-- `node_modules/`
-- `.expo/`
-- `dist/`
-
-General meaning:
-
-- `node_modules/` holds installed packages
-- `.expo/` holds Expo local development metadata
-- `dist/` holds exported web build output
 
 ## Architecture Direction
 
-The app is currently moving toward a structure like this:
+The project is moving toward a structure where Kitchen Helper becomes a practical cooking companion instead of just a recipe browser.
 
-1. home screen
-2. recipe screen
-3. recipe storage
-4. structured ingredient data
-5. conversions and substitutions as real features
-6. cooking mode
+Likely next layers include:
 
-The current routed setup is the foundation for that future work.
+1. a more dedicated cook-mode screen
+2. better recipe metadata normalization
+3. more structured recipe import flows
+4. more kitchen references and searchable helpers
+5. possibly local recipe creation or editing
 
 ## Change Log So Far
 
@@ -625,30 +534,35 @@ High-level sequence of what has happened:
 3. chose `pnpm` as the package manager
 4. created the Expo project
 5. added web support packages
-6. built a first cooking-app prototype screen
-7. added a README
+6. built the first cooking-app prototype screen
+7. added the README
 8. converted the app to Expo Router
-9. split the UI into real screens and shared component files
-10. added this knowledge-base document
-11. added menu routes for conversions, allergy substitutions, and My Recipes
-12. connected the My Recipes page to the actual Obsidian recipe inventory
-13. added generated Obsidian recipe pages with ingredients and directions parsing
-14. added serving controls and ingredient scaling to recipe detail pages
-15. updated conversion and substitution references from the chart resource
-16. added a shared settings menu with saved dark mode and keep-awake cook mode
+9. split the app into real routed screens and shared files
+10. added the knowledge base
+11. added menu routes for conversions, substitutions, and `My Recipes`
+12. connected `My Recipes` to the actual Obsidian recipe inventory
+13. added generated recipe detail pages with Markdown parsing
+14. added serving controls and ingredient scaling
+15. expanded the conversions and substitutions references
+16. added recipe filtering and searching
+17. added prep/cook time extraction and display
+18. added allergen and allergy-friendly tags
+19. added favorites with persistent storage
+20. added the shared settings system with dark mode and keep-awake
+21. debugged the Expo Go Android failure and fixed package alignment issues
+22. added the cooking dictionary page and dictionary generator
+23. added source citation for the glossary and cleaned up the parser output
 
 ## How To Grow This File
 
-As the project continues, this file can be expanded with sections like:
+As the project continues, this file can keep adding sections like:
 
-- state management
-- local storage
-- recipe data modeling
-- navigation patterns
-- styling strategy
-- Android build/release notes
-- debugging notes
-- lessons learned
+- recipe note formatting conventions
+- import workflows
+- state management decisions
+- release/build notes
+- testing strategy
+- debugging lessons learned
 
 ## Working Agreement For Explanations
 
@@ -659,8 +573,4 @@ Going forward, new technical changes can be added here with:
 3. what files were affected
 4. what concept it introduces
 
-That way this document can become a real project knowledge base instead of a one-time note.
-
-
-
-
+That keeps this document useful as both a project memory and a learning reference.

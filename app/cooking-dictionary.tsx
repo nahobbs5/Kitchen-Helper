@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  Linking,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ReferenceNav } from '../components/reference-nav';
 import { useAppSettings } from '../contexts/settings-context';
 import { cookingDictionaryEntries } from '../data/cooking-dictionary';
 
@@ -23,6 +25,7 @@ export default function CookingDictionaryScreen() {
   const letters = Array.from(new Set(cookingDictionaryEntries.map((entry) => entry.letter))).sort();
   const letterOptions = ['All', ...letters];
   const normalizedSearch = searchText.trim().toLowerCase();
+  const glossarySource = 'https://whatscookingamerica.net/glossary/';
 
   const visibleEntries = useMemo(
     () =>
@@ -54,9 +57,12 @@ export default function CookingDictionaryScreen() {
               This page turns your cooking glossary resource into a searchable kitchen reference, so
               terms and techniques are easy to look up while you cook.
             </Text>
-            <Text style={[styles.panelText, { color: palette.textSoft }]}>
-              Source: https://whatscookingamerica.net/glossary/
-            </Text>
+            <ReferenceNav />
+            <Pressable onPress={() => Linking.openURL(glossarySource)}>
+              <Text style={[styles.panelText, styles.menuCardLink, { color: palette.accent }]}>
+                Source: {glossarySource}
+              </Text>
+            </Pressable>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

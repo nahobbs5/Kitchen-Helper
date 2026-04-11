@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ReferenceNav } from '../components/reference-nav';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
@@ -69,20 +70,7 @@ export default function MyRecipesScreen() {
               gives the app a real recipe shelf to build from instead of placeholders.
             </Text>
 
-            <View style={styles.actionRow}>
-              <Pressable
-                onPress={() => router.push('/conversions')}
-                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Conversions</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => router.push('/allergy-substitutions')}
-                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Substitutions</Text>
-              </Pressable>
-            </View>
+            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
@@ -144,66 +132,64 @@ export default function MyRecipesScreen() {
               <Text style={[styles.panelTitle, { color: palette.text }]}>Recipes from Obsidian</Text>
               <View style={styles.listStack}>
                 {filteredRecipes.map((recipe) => (
-                    <Pressable
-                      key={recipe.slug}
-                      onPress={() => router.push(`/recipes/${recipe.slug}`)}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      <View style={styles.detailCardHeader}>
-                        <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
-                        <Pressable
-                          onPress={(event) => {
-                            event.stopPropagation();
-                            toggleFavorite(recipe.slug);
-                          }}
-                          style={[
-                            styles.starButton,
-                            { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                            isFavorite(recipe.slug) && styles.starButtonActive,
-                          ]}
-                        >
-                          <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                            {isFavorite(recipe.slug) ? '★' : '☆'}
-                          </Text>
-                        </Pressable>
+                  <Pressable
+                    key={recipe.slug}
+                    onPress={() => router.push(`/recipes/${recipe.slug}`)}
+                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
+                    <View style={styles.detailCardHeader}>
+                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
+                      <Pressable
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          toggleFavorite(recipe.slug);
+                        }}
+                        style={[
+                          styles.starButton,
+                          { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                          isFavorite(recipe.slug) && styles.starButtonActive,
+                        ]}
+                      >
+                        <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                          {isFavorite(recipe.slug) ? '★' : '☆'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                    {recipe.allergyFriendlyTags.length > 0 ? (
+                      <View style={styles.tagRow}>
+                        {recipe.allergyFriendlyTags.map((tag) => (
+                          <View key={tag} style={styles.allergyFriendlyTag}>
+                            <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
+                          </View>
+                        ))}
                       </View>
-                      {recipe.allergyFriendlyTags.length > 0 ? (
-                        <View style={styles.tagRow}>
-                          {recipe.allergyFriendlyTags.map((tag) => (
-                            <View key={tag} style={styles.allergyFriendlyTag}>
-                              <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      ) : null}
-                      {recipe.allergenTags.length > 0 ? (
-                        <View style={styles.tagRow}>
-                          {recipe.allergenTags.map((tag) => (
-                            <View key={tag} style={styles.allergenTag}>
-                              <Text style={styles.allergenTagText}>{tag}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      ) : null}
-                      {recipe.prepTime || recipe.cookTime ? (
-                        <View style={styles.tagRow}>
-                          {recipe.prepTime ? (
-                            <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                              <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
-                            </View>
-                          ) : null}
-                          {recipe.cookTime ? (
-                            <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                              <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
-                            </View>
-                          ) : null}
-                        </View>
-                      ) : null}
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                        Open this recipe to view ingredients and directions from the Markdown note.
-                      </Text>
-                      <Text style={[styles.menuCardLink, { color: palette.accent }]}>Open recipe</Text>
-                    </Pressable>
+                    ) : null}
+                    {recipe.allergenTags.length > 0 ? (
+                      <View style={styles.tagRow}>
+                        {recipe.allergenTags.map((tag) => (
+                          <View key={tag} style={styles.allergenTag}>
+                            <Text style={styles.allergenTagText}>{tag}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                    {recipe.prepTime || recipe.cookTime ? (
+                      <View style={styles.tagRow}>
+                        {recipe.prepTime ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
+                          </View>
+                        ) : null}
+                        {recipe.cookTime ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
+                    <Text style={[styles.menuCardLink, { color: palette.accent }]}>Open recipe</Text>
+                  </Pressable>
                 ))}
                 {filteredRecipes.length === 0 ? (
                   <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
@@ -254,9 +240,9 @@ export default function MyRecipesScreen() {
                 Use the note contents themselves
               </Text>
               <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                The app is currently showing recipe titles and categories from your Obsidian vault.
-                Next we can parse ingredients and directions from the Markdown so a recipe page uses
-                the real note content.
+                Your recipe library is now backed by the actual Obsidian notes in `Cooking/`, so
+                titles, ingredients, directions, and much of the metadata are already flowing into
+                the app.
               </Text>
 
               <View style={styles.actionRow}>

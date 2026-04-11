@@ -1,84 +1,88 @@
 # Kitchen Helper
 
-This project is an early prototype of a cooking app built with Expo and TypeScript.
+Kitchen Helper is a cross-platform cooking app prototype built with Expo, React Native, TypeScript, and Expo Router.
 
-The current app is a small cross-platform demo that shows how the idea could work on:
+The current app runs on:
 
 - Android
 - Web
 
-## What Has Happened So Far
+It is focused on practical kitchen utilities:
 
-We started with the product idea:
+- recipe scaling
+- substitutions
+- conversions
+- saved recipe browsing
+- glossary/reference lookups
 
-- a cooking app
-- recipe scaling like double or half
-- substitutions for missing ingredients
-- kitchen unit conversions
+## Current Status
 
-From there, we made a technical decision about the stack.
+The app currently includes:
 
-## Why Expo Was Chosen
+- a routed home screen that acts like a kitchen tools hub
+- a searchable conversions page
+- a searchable allergy substitutions page
+- a searchable cooking dictionary page
+- a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking)
+- clickable recipe detail pages generated from Markdown
+- ingredient scaling controls on recipe pages
+- favorites saved locally
+- a shared settings menu in the header
+- dark mode
+- a keep-screen-awake cook mode setting
 
-Expo is a React Native framework that helps us build one app that can run in more than one place.
+## Stack
 
-For this project, Expo gives us:
+This project currently uses:
+
+- Expo
+- React Native
+- TypeScript
+- Expo Router
+- pnpm
+- Metro
+- AsyncStorage
+
+## Why Expo
+
+Expo was chosen because it gives us:
 
 - Android support
-- Web support
+- web support
 - one shared codebase
-- a straightforward development workflow
+- a simpler development workflow for a prototype
 
-This is a good fit for a cooking app prototype because we can test the concept quickly without building separate Android and web apps from scratch.
+This is a good fit for a cooking app idea because we can build and test one product across platforms without splitting the app into separate native and web codebases.
 
-## Why `pnpm` Was Chosen
+## Why `pnpm`
 
-`pnpm` is the package manager used for installing JavaScript dependencies.
+`pnpm` is the package manager for this project.
 
 It was chosen because it is:
 
 - fast
 - space efficient
-- reliable for larger projects
+- reliable
 
-On this machine, `pnpm` was not globally installed, so the project currently uses `corepack pnpm ...` commands instead. `corepack` is included with modern Node.js and can run package managers like `pnpm` without requiring a separate manual install first.
+On this machine, `pnpm` is run through `corepack`, so the normal commands are:
+
+```powershell
+corepack pnpm install
+corepack pnpm run web
+corepack pnpm run android
+```
 
 ## Why We Did Not Use Vite Inside the App
 
-This is an important detail.
+Expo already uses Metro as its supported bundler for Android and web in this setup.
 
-Expo already has an official bundler workflow for both native apps and web apps. That workflow uses Metro.
-
-So the current setup is:
+So the current tool split is:
 
 - Expo for the app framework
 - Metro for bundling
-- `pnpm` for packages
+- `pnpm` for dependency management
 
-We did not wire Vite into the app itself because that would add complexity without helping the main goal right now. For an Expo app that targets Android and web, Metro is the supported and simplest path.
-
-If we ever want Vite later, the best use would probably be for a separate website, such as:
-
-- a landing page
-- a documentation site
-- an admin tool
-
-## Project Setup That Was Created
-
-A new Expo project was scaffolded in this folder:
-
-- [`C:\Users\Nathan\Documents\App Ideas\kitchen-helper`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper)
-
-It was created in a subfolder because the parent folder name, `App Ideas`, is not a valid Expo project name for app/package setup.
-
-The project now includes:
-
-- Expo SDK
-- React
-- React Native
-- TypeScript
-- Expo Router
-- web support packages
+If Vite is ever added later, it would make more sense for a separate site such as documentation, marketing, or an admin surface.
 
 ## App Architecture
 
@@ -88,158 +92,99 @@ At a high level, the app is organized into four pieces:
 Routes and screens
 
 2. `contexts/`
-Shared saved state like favorites and settings
+Shared app state like favorites and settings
 
 3. `data/`, `scripts/`, `utils/`, and `Cooking/`
-Recipe source files, generated recipe data, and scaling/parsing logic
+Recipe source files, generated data, and parsing/scaling logic
 
 4. `components/`
 Shared styles, theme palettes, and reusable UI pieces
 
 A simple way to think about it:
 
-- `Cooking/` holds the Obsidian recipe source files
-- `scripts/generate-obsidian-recipes.mjs` turns them into structured app data
-- `data/obsidian-recipes.ts` is what the app reads
-- `app/` renders screens from that data
-- `contexts/` adds app-wide behavior like favorites and settings
+- `Cooking/` contains the Obsidian recipe source files and resource files
+- `scripts/generate-obsidian-recipes.mjs` turns recipe notes into [`data/obsidian-recipes.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\obsidian-recipes.ts)
+- `scripts/generate-cooking-dictionary.mjs` turns the glossary resource into [`data/cooking-dictionary.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\data\cooking-dictionary.ts)
+- `app/` renders the screens from that data
+- `contexts/` handles shared state like favorites and settings
 - `components/` keeps the UI and theming consistent
 
-## Files That Were Updated
+## Main App Areas
 
-### Expo Router files
-
-The app no longer uses a single root `App.tsx` file.
-
-Instead, it now uses Expo Router with an `app/` folder:
+Important routed files:
 
 - [`app/_layout.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\_layout.tsx)
 - [`app/index.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\index.tsx)
+- [`app/conversions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\conversions.tsx)
+- [`app/cooking-dictionary.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\cooking-dictionary.tsx)
+- [`app/allergy-substitutions.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\allergy-substitutions.tsx)
+- [`app/my-recipes.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\my-recipes.tsx)
 - [`app/recipe.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipe.tsx)
+- [`app/recipes/[slug].tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app\recipes\[slug].tsx)
 
-What those files do:
-
-- `_layout.tsx` defines the shared navigation stack
-- `index.tsx` is the home screen
-- `recipe.tsx` is the sample recipe screen
-
-This is useful because each screen now has its own file and route instead of everything living in one large component.
-
-On web, that also means the screens can map naturally to URLs such as:
-
-- `/`
-- `/recipe`
-
-### Shared UI/data files
-
-To keep the routed screens cleaner, some shared code was moved into:
+Important shared files:
 
 - [`components/kitchen-styles.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\kitchen-styles.ts)
+- [`components/app-theme.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\app-theme.ts)
+- [`components/settings-menu.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\settings-menu.tsx)
 - [`components/sample-data.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\components\sample-data.ts)
+- [`contexts/favorites-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\favorites-context.tsx)
+- [`contexts/settings-context.tsx`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\contexts\settings-context.tsx)
+- [`utils/ingredient-scaling.ts`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\utils\ingredient-scaling.ts)
 
-These files hold:
+## Data Sources
 
-- common styles
-- sample ingredient data
-- sample conversions
-- sample substitutions
-- helper formatting logic
+### Obsidian Recipes
 
-### [`app.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\app.json)
+Recipe data comes from the [`Cooking/`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking) folder.
 
-This file contains Expo app configuration.
+The app parses those Markdown notes into structured recipe data including:
 
-So far, one small change was made:
+- title
+- category
+- ingredients
+- directions
+- servings
+- prep/cook/total time when available
+- allergen and allergy-friendly tags
 
-- the app display name was changed from `kitchen-helper` to `Kitchen Helper`
+### Cooking Dictionary
 
-This file will later matter for things like:
+The cooking dictionary page is generated from:
 
-- app name
-- icons
-- splash screen
-- Android configuration
-- web configuration
+- [`Cooking/Resources/Cooking Dictionary.md`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\Cooking\Resources\Cooking%20Dictionary.md)
 
-### [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json)
+The app displays that glossary as searchable term cards and cites the source:
 
-This file describes the project dependencies and scripts.
+- [What’s Cooking America glossary](https://whatscookingamerica.net/glossary/)
 
-It now includes the packages needed to run Expo on web as well as native:
+## Scripts
 
-- `expo`
-- `expo-router`
-- `react`
-- `react-native`
-- `react-dom`
-- `react-native-web`
-- `@expo/metro-runtime`
-
-It also includes the main run scripts:
+Useful scripts in [`package.json`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\package.json):
 
 - `start`
 - `android`
 - `ios`
 - `web`
-
-One important change was also made here:
-
-- the project entry point now uses `expo-router/entry`
-
-Another useful script now exists:
-
 - `sync:recipes`
+- `sync:dictionary`
 
-That script regenerates the app's recipe data from the Markdown files in the Cooking folder.
+Commands:
 
-Serving scaling is handled inside the app:
+```powershell
+corepack pnpm run web
+corepack pnpm run android
+corepack pnpm sync:recipes
+corepack pnpm sync:dictionary
+```
 
-- recipes with a declared serving count use 2, 4, and 8 as target servings
-- recipes without a declared serving count treat those buttons as multipliers
+Use `sync:recipes` after changing recipe Markdown files.
 
-### [`pnpm-lock.yaml`](C:\Users\Nathan\Documents\App Ideas\kitchen-helper\pnpm-lock.yaml)
-
-This file was generated when dependencies were installed.
-
-Its job is to lock exact package versions so installs stay consistent over time.
-
-## What The Current App Actually Does
-
-Right now, the app is a static but interactive prototype.
-
-It can:
-
-- show a home screen that works like a menu
-- navigate to a separate recipe screen
-- navigate to a conversions reference screen
-- navigate to an allergy substitutions reference screen
-- navigate to a My Recipes screen
-- show recipe titles and categories sourced from your Obsidian Cooking folder
-- open individual Obsidian-backed recipe pages
-- show prep time and cook time indicators where the Markdown note provides them
-- display ingredients and directions parsed from Markdown notes
-- scale recipe ingredients with Original, 1/4x, 1/2x, and quick 2, 4, 8 options
-- open a shared settings menu from any page
-- save a dark mode preference
-- save a keep-screen-awake cook mode preference
-- switch between sample serving sizes
-- recalculate ingredient quantities for the sample recipe
-- display example substitutions
-- display example conversions
-- adapt its layout for smaller and wider screens
-
-It does not yet:
-
-- save recipes
-- import recipes
-- parse ingredients from text
-- store user data
-- run a real substitution engine
-- support a full-screen dedicated cooking mode
+Use `sync:dictionary` after changing the cooking dictionary resource.
 
 ## Settings
 
-The app now has a shared settings menu available from the gear icon in the header.
+The app has a shared settings menu available from the gear icon in the header.
 
 Current saved settings:
 
@@ -249,78 +194,66 @@ Current saved settings:
 How it works:
 
 - settings are stored locally with AsyncStorage
-- dark mode switches the app between light and dark palettes
-- keep-screen-awake uses Expo's `expo-keep-awake` package
+- dark mode switches between light and dark palettes
+- keep-screen-awake uses `expo-keep-awake`
 
-This means the app now has one piece of true app-wide saved preference state, not just per-screen UI state.
+## Notes About Expo Go and Dependency Alignment
 
-## Verification That Was Run
+During development, Expo Go on Android was failing with a native error:
 
-We checked that the code works in two important ways.
+- `java.lang.String cannot be cast to java.lang.Boolean`
 
-### TypeScript check
+The real cause turned out to be Expo SDK dependency mismatches, not the UI code itself.
 
-We ran a TypeScript validation command to make sure the code compiles cleanly:
+The project was aligned to Expo SDK 54-compatible versions for:
+
+- `@react-native-async-storage/async-storage`
+- `expo-keep-awake`
+- `react-native-safe-area-context`
+- `react-native-screens`
+
+After that:
+
+- `npx expo-doctor` passed
+- `npx expo install --check` reported dependencies were up to date
+- Expo Go started working again
+
+This is a good reminder that Expo package version alignment matters a lot, especially when native modules are involved.
+
+## Verification
+
+The project has been checked with:
+
+### TypeScript
 
 ```powershell
 .\node_modules\.bin\tsc.cmd --noEmit
 ```
 
-That passed.
+### Expo Doctor
 
-### Web build check
+```powershell
+npx expo-doctor
+```
 
-We also ran an Expo web export to confirm the web version bundles correctly:
+### Expo Version Check
+
+```powershell
+npx expo install --check
+```
+
+### Web Export
 
 ```powershell
 .\node_modules\.bin\expo.cmd export --platform web
 ```
 
-That passed and generated a `dist` folder.
-
-## A Note About Command Usage
-
-Because `pnpm` is not globally available on this machine, the safest commands to use right now are:
-
-```powershell
-corepack pnpm install
-corepack pnpm sync:recipes
-corepack pnpm run web
-corepack pnpm run android
-```
-
-If you later install `pnpm` globally, we can simplify those commands.
-
-## Summary
-
-So far, we have:
-
-1. chosen Expo as the app framework
-2. chosen `pnpm` as the package manager
-3. kept Metro as the official bundler instead of forcing Vite into the app
-4. created a new Expo project
-5. added web support
-6. added Expo Router for file-based navigation
-7. split the app into multiple screens
-8. added menu pages for conversions, allergy substitutions, and My Recipes
-9. updated conversions and substitutions pages to reflect the chart resource
-9. kept the recipe preview as the scaling prototype
-10. connected My Recipes to parsed Obsidian recipe data
-11. added clickable recipe detail pages generated from Markdown
-12. added serving controls to Obsidian-backed recipe pages
-13. added a shared settings menu with saved dark mode and keep-awake cook mode
-14. verified TypeScript and web bundling
-
 ## Good Next Steps
 
-If we continue from here, the most natural next steps are:
+Natural next steps from here:
 
-1. split the app into multiple screens
-2. add real recipe data structures
-3. let users enter their own recipes
-4. save recipes locally
-5. build a real scaling and conversion workflow
-
-
-
-
+1. add a dedicated cooking mode screen
+2. improve dictionary formatting for very long entries
+3. add recipe search from the home screen
+4. standardize more recipe note formats so more metadata can be parsed cleanly
+5. add local recipe creation or import workflows
