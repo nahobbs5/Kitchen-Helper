@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "kitchen-helper",
+    "name": "Kitchen Helper",
     "slug": "kitchen-helper",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,6 +23,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
+    "plugins": ["expo-router"],
     "web": {
       "favicon": "./assets/favicon.png"
     }

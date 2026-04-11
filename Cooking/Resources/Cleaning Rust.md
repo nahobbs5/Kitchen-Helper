@@ -1,0 +1,3 @@
+- 1 Tsp Cream of Tartar
+- ¼ cup baking soda
+- ¼-⅓ cup hydrogen peroxide
