@@ -1,8 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
-import type { RecipeSection } from '../data/obsidian-recipes';
-import { inferRecipeTags } from '../utils/allergen-tags';
+import { obsidianRecipeMap, type RecipeSection } from '../data/obsidian-recipes';
+import {
+  allergenTagOptions,
+  allergyFriendlyTagOptions,
+  ensureAllergenTag,
+  ensureFriendlyTag,
+  inferRecipeTags,
+} from '../utils/allergen-tags';
 
 export type UserRecipe = {
   slug: string;
@@ -33,6 +39,15 @@ type NewUserRecipeInput = {
   allergenTags?: string[];
 };
 
+type BulkRecipeMetadataInput = {
+  slugs: string[];
+  category?: string | null;
+  cuisineRegion?: string | null;
+  applyCuisineRegion?: boolean;
+  allergenTagsToAdd?: string[];
+  allergyFriendlyTagsToAdd?: string[];
+};
+
 export type RecipeOverride = {
   slug: string;
   title: string;
@@ -54,6 +69,7 @@ type CustomRecipesContextValue = {
   lastDeletedRecipes: UserRecipe[];
   addRecipe: (input: NewUserRecipeInput) => UserRecipe;
   updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => UserRecipe | RecipeOverride | null;
+  bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => void;
   deleteRecipe: (slug: string) => void;
   deleteRecipes: (slugs: string[]) => void;
   restoreDeletedRecipes: () => void;
@@ -294,6 +310,107 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         });
 
         return updatedOverride;
+      },
+      bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => {
+        if (input.slugs.length === 0) {
+          return;
+        }
+
+        const allergenTagsToAdd = (input.allergenTagsToAdd ?? []).filter((tag): tag is (typeof allergenTagOptions)[number] =>
+          allergenTagOptions.includes(tag as (typeof allergenTagOptions)[number])
+        );
+        const allergyFriendlyTagsToAdd = (input.allergyFriendlyTagsToAdd ?? []).filter(
+          (tag): tag is (typeof allergyFriendlyTagOptions)[number] =>
+            allergyFriendlyTagOptions.includes(tag as (typeof allergyFriendlyTagOptions)[number])
+        );
+
+        setCustomRecipes((current) => {
+          const next = current.map((recipe) => {
+            if (!input.slugs.includes(recipe.slug)) {
+              return recipe;
+            }
+
+            let nextAllergenTags = [...recipe.allergenTags];
+            let nextFriendlyTags = [...recipe.allergyFriendlyTags];
+
+            allergyFriendlyTagsToAdd.forEach((tag) => {
+              const nextTags = ensureFriendlyTag(nextAllergenTags, nextFriendlyTags, tag);
+              nextAllergenTags = nextTags.allergenTags;
+              nextFriendlyTags = nextTags.allergyFriendlyTags;
+            });
+
+            allergenTagsToAdd.forEach((tag) => {
+              const nextTags = ensureAllergenTag(nextAllergenTags, nextFriendlyTags, tag);
+              nextAllergenTags = nextTags.allergenTags;
+              nextFriendlyTags = nextTags.allergyFriendlyTags;
+            });
+
+            return {
+              ...recipe,
+              category: input.category ?? recipe.category,
+              cuisineRegion: input.applyCuisineRegion ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null) : recipe.cuisineRegion,
+              allergenTags: nextAllergenTags,
+              allergyFriendlyTags: nextFriendlyTags,
+            };
+          });
+
+          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+
+        setRecipeOverrides((current) => {
+          const nextOverrides = [...current];
+
+          input.slugs.forEach((slug) => {
+            const baseRecipe = obsidianRecipeMap[slug];
+
+            if (!baseRecipe) {
+              return;
+            }
+
+            const existingOverride = nextOverrides.find((recipe) => recipe.slug === slug);
+            let nextAllergenTags = [...(existingOverride?.allergenTags ?? baseRecipe.allergenTags)];
+            let nextFriendlyTags = [...(existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags)];
+
+            allergyFriendlyTagsToAdd.forEach((tag) => {
+              const nextTags = ensureFriendlyTag(nextAllergenTags, nextFriendlyTags, tag);
+              nextAllergenTags = nextTags.allergenTags;
+              nextFriendlyTags = nextTags.allergyFriendlyTags;
+            });
+
+            allergenTagsToAdd.forEach((tag) => {
+              const nextTags = ensureAllergenTag(nextAllergenTags, nextFriendlyTags, tag);
+              nextAllergenTags = nextTags.allergenTags;
+              nextFriendlyTags = nextTags.allergyFriendlyTags;
+            });
+
+            const nextOverride: RecipeOverride = {
+              slug,
+              title: existingOverride?.title ?? baseRecipe.title,
+              category: input.category ?? existingOverride?.category ?? baseRecipe.category,
+              allergyFriendlyTags: nextFriendlyTags,
+              allergenTags: nextAllergenTags,
+              ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
+              directions: existingOverride?.directions ?? baseRecipe.directions,
+              notes: existingOverride?.notes ?? null,
+              cuisineRegion: input.applyCuisineRegion
+                ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null)
+                : (existingOverride?.cuisineRegion ?? null),
+              updatedAt: new Date().toISOString(),
+            };
+
+            const existingIndex = nextOverrides.findIndex((recipe) => recipe.slug === slug);
+
+            if (existingIndex >= 0) {
+              nextOverrides[existingIndex] = nextOverride;
+            } else {
+              nextOverrides.unshift(nextOverride);
+            }
+          });
+
+          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(nextOverrides)).catch(() => {});
+          return nextOverrides;
+        });
       },
     }),
     [customRecipes, lastDeletedRecipes, loaded, recipeOverrides]

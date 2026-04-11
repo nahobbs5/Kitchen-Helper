@@ -5,6 +5,7 @@ type FavoritesContextValue = {
   favoriteSlugs: string[];
   isFavorite: (slug: string) => boolean;
   toggleFavorite: (slug: string) => void;
+  favoriteRecipes: (slugs: string[]) => void;
   loaded: boolean;
 };
 
@@ -59,6 +60,17 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
             ? current.filter((entry) => entry !== slug)
             : [...current, slug];
 
+          AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+      },
+      favoriteRecipes: (slugs: string[]) => {
+        if (slugs.length === 0) {
+          return;
+        }
+
+        setFavoriteSlugs((current) => {
+          const next = [...new Set([...current, ...slugs])];
           AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });

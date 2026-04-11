@@ -146,3 +146,23 @@ export function toggleFriendlySelection(
       : [...allergyFriendlyTags, tag],
   };
 }
+
+export function ensureAllergenTag(
+  allergenTags: string[],
+  allergyFriendlyTags: string[],
+  tag: (typeof allergenTagOptions)[number]
+) {
+  return allergenTags.includes(tag)
+    ? { allergenTags, allergyFriendlyTags }
+    : toggleAllergenSelection(allergenTags, allergyFriendlyTags, tag);
+}
+
+export function ensureFriendlyTag(
+  allergenTags: string[],
+  allergyFriendlyTags: string[],
+  tag: (typeof allergyFriendlyTagOptions)[number]
+) {
+  return allergyFriendlyTags.includes(tag)
+    ? { allergenTags, allergyFriendlyTags }
+    : toggleFriendlySelection(allergenTags, allergyFriendlyTags, tag);
+}

@@ -17,6 +17,9 @@ import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
+import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
+
+const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
 
 export default function MyRecipesScreen() {
   const router = useRouter();
@@ -29,11 +32,18 @@ export default function MyRecipesScreen() {
   const [searchText, setSearchText] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedRecipeSlugs, setSelectedRecipeSlugs] = useState<string[]>([]);
+  const [selectionAnchorSlug, setSelectionAnchorSlug] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [showBulkMetadataEditor, setShowBulkMetadataEditor] = useState(false);
+  const [bulkCategory, setBulkCategory] = useState<(typeof bulkCategoryOptions)[number]>('Keep existing');
+  const [bulkCuisineRegion, setBulkCuisineRegion] = useState('');
+  const [bulkApplyCuisineRegion, setBulkApplyCuisineRegion] = useState(false);
+  const [bulkAllergenTagsToAdd, setBulkAllergenTagsToAdd] = useState<string[]>([]);
+  const [bulkFriendlyTagsToAdd, setBulkFriendlyTagsToAdd] = useState<string[]>([]);
   const [dismissProgress, setDismissProgress] = useState(0);
-  const { clearDeletedRecipes, customRecipes, deleteRecipes, lastDeletedRecipes, recipeOverrideMap, restoreDeletedRecipes } =
+  const { bulkUpdateRecipeMetadata, clearDeletedRecipes, customRecipes, deleteRecipes, lastDeletedRecipes, recipeOverrideMap, restoreDeletedRecipes } =
     useCustomRecipes();
-  const { favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
+  const { favoriteRecipes, favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
   const allRecipes = useMemo(
     () => [
       ...customRecipes,
@@ -176,6 +186,7 @@ export default function MyRecipesScreen() {
   function toggleSelectionMode() {
     setSelectionMode((current) => !current);
     setSelectedRecipeSlugs([]);
+    setSelectionAnchorSlug(null);
     setShowBulkDeleteConfirm(false);
   }
 
@@ -183,20 +194,48 @@ export default function MyRecipesScreen() {
     setSelectedRecipeSlugs((current) =>
       current.includes(slug) ? current.filter((value) => value !== slug) : [...current, slug]
     );
+    setSelectionAnchorSlug(slug);
+  }
+
+  function handleSelectionPress(slug: string, shiftKey?: boolean) {
+    if (shiftKey && selectionAnchorSlug) {
+      const anchorIndex = filteredRecipes.findIndex((recipe) => recipe.slug === selectionAnchorSlug);
+      const targetIndex = filteredRecipes.findIndex((recipe) => recipe.slug === slug);
+
+      if (anchorIndex >= 0 && targetIndex >= 0) {
+        const start = Math.min(anchorIndex, targetIndex);
+        const end = Math.max(anchorIndex, targetIndex);
+        const rangeSlugs = filteredRecipes.slice(start, end + 1).map((recipe) => recipe.slug);
+
+        setSelectedRecipeSlugs((current) => [...new Set([...current, ...rangeSlugs])]);
+        setSelectionAnchorSlug(slug);
+        return;
+      }
+    }
+
+    toggleRecipeSelection(slug);
   }
 
   function selectAllVisibleRecipes() {
     setSelectedRecipeSlugs(filteredRecipes.map((recipe) => recipe.slug));
+    setSelectionAnchorSlug(filteredRecipes.at(-1)?.slug ?? null);
   }
 
   function clearSelectedRecipes() {
     setSelectedRecipeSlugs([]);
+    setSelectionAnchorSlug(null);
     setShowBulkDeleteConfirm(false);
+    setShowBulkMetadataEditor(false);
   }
 
   const selectedRecipes = filteredRecipes.filter((recipe) => selectedRecipeSlugs.includes(recipe.slug));
   const selectedAppStorageRecipes = selectedRecipes.filter((recipe) => recipe.source === 'App Storage');
   const selectedVaultRecipes = selectedRecipes.filter((recipe) => recipe.source !== 'App Storage');
+  const canApplyBulkMetadata =
+    bulkCategory !== 'Keep existing' ||
+    bulkApplyCuisineRegion ||
+    bulkAllergenTagsToAdd.length > 0 ||
+    bulkFriendlyTagsToAdd.length > 0;
 
   function handleBulkDelete() {
     if (selectedAppStorageRecipes.length === 0) {
@@ -217,6 +256,48 @@ export default function MyRecipesScreen() {
     }
 
     setShowBulkDeleteConfirm(true);
+  }
+
+  function handleFavoriteSelected() {
+    if (selectedRecipeSlugs.length === 0) {
+      return;
+    }
+
+    favoriteRecipes(selectedRecipeSlugs);
+  }
+
+  function toggleBulkAllergenTag(tag: string) {
+    setBulkAllergenTagsToAdd((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
+    );
+  }
+
+  function toggleBulkFriendlyTag(tag: string) {
+    setBulkFriendlyTagsToAdd((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
+    );
+  }
+
+  function handleApplyBulkMetadata() {
+    if (!canApplyBulkMetadata || selectedRecipeSlugs.length === 0) {
+      return;
+    }
+
+    bulkUpdateRecipeMetadata({
+      slugs: selectedRecipeSlugs,
+      category: bulkCategory === 'Keep existing' ? null : bulkCategory,
+      cuisineRegion: bulkCuisineRegion,
+      applyCuisineRegion: bulkApplyCuisineRegion,
+      allergenTagsToAdd: bulkAllergenTagsToAdd,
+      allergyFriendlyTagsToAdd: bulkFriendlyTagsToAdd,
+    });
+
+    setShowBulkMetadataEditor(false);
+    setBulkCategory('Keep existing');
+    setBulkCuisineRegion('');
+    setBulkApplyCuisineRegion(false);
+    setBulkAllergenTagsToAdd([]);
+    setBulkFriendlyTagsToAdd([]);
   }
 
   useEffect(() => {
@@ -340,6 +421,18 @@ export default function MyRecipesScreen() {
                 </Text>
                 <View style={styles.actionRow}>
                   <Pressable
+                    onPress={handleFavoriteSelected}
+                    style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Favorite Selected</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setShowBulkMetadataEditor((current) => !current)}
+                    style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Edit Metadata</Text>
+                  </Pressable>
+                  <Pressable
                     onPress={selectAllVisibleRecipes}
                     style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
@@ -365,8 +458,152 @@ export default function MyRecipesScreen() {
                 </View>
                 {selectedVaultRecipes.length > 0 ? (
                   <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
-                    {selectedVaultRecipes.length} selected recipe{selectedVaultRecipes.length === 1 ? '' : 's'} are from Obsidian and will be skipped for delete.
+                    {selectedVaultRecipes.length} selected recipe{selectedVaultRecipes.length === 1 ? '' : 's'} can still use bulk favorites and metadata updates. Bulk delete still skips them.
                   </Text>
+                ) : null}
+                {showBulkMetadataEditor ? (
+                  <View
+                    style={[
+                      styles.noticeCard,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                    ]}
+                  >
+                    <Text style={[styles.noticeCardTitle, { color: palette.text }]}>Bulk metadata</Text>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Category</Text>
+                      <View style={styles.servingsRow}>
+                        {bulkCategoryOptions.map((option) => {
+                          const isActive = bulkCategory === option;
+
+                          return (
+                            <Pressable
+                              key={option}
+                              onPress={() => setBulkCategory(option)}
+                              style={[
+                                styles.servingsButton,
+                                { borderColor: palette.borderAlt },
+                                !isActive && { backgroundColor: palette.surface },
+                                isActive && styles.servingsButtonActive,
+                                isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.servingsButtonText,
+                                  { color: isActive ? palette.inverseText : palette.text },
+                                  isActive && styles.servingsButtonTextActive,
+                                ]}
+                              >
+                                {option}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Cuisine region</Text>
+                      <TextInput
+                        value={bulkCuisineRegion}
+                        onChangeText={setBulkCuisineRegion}
+                        placeholder="Optional cuisine region to apply"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                      <Pressable
+                        onPress={() => setBulkApplyCuisineRegion((current) => !current)}
+                        style={[
+                          styles.secondaryButton,
+                          { backgroundColor: bulkApplyCuisineRegion ? palette.accentSoft : palette.surface, borderColor: palette.borderAlt },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.secondaryButtonText,
+                            { color: bulkApplyCuisineRegion ? palette.inverseText : palette.accentText },
+                          ]}
+                        >
+                          {bulkApplyCuisineRegion ? 'Cuisine Will Be Applied' : 'Apply Cuisine Region'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Add allergy-friendly tags</Text>
+                      <View style={styles.tagRow}>
+                        {allergyFriendlyTagOptions.map((tag) => {
+                          const isActive = bulkFriendlyTagsToAdd.includes(tag);
+
+                          return (
+                            <Pressable
+                              key={tag}
+                              onPress={() => toggleBulkFriendlyTag(tag)}
+                              style={[
+                                styles.servingsButton,
+                                { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                                isActive && styles.allergyFriendlyTag,
+                                isActive && { borderColor: '#97bf72' },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.servingsButtonText,
+                                  { color: palette.text },
+                                  isActive && styles.allergyFriendlyTagText,
+                                ]}
+                              >
+                                {tag}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Add allergen tags</Text>
+                      <View style={styles.tagRow}>
+                        {allergenTagOptions.map((tag) => {
+                          const isActive = bulkAllergenTagsToAdd.includes(tag);
+
+                          return (
+                            <Pressable
+                              key={tag}
+                              onPress={() => toggleBulkAllergenTag(tag)}
+                              style={[
+                                styles.servingsButton,
+                                { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                                isActive && styles.allergenTag,
+                                isActive && { borderColor: '#e98d34' },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.servingsButtonText,
+                                  { color: palette.text },
+                                  isActive && styles.allergenTagText,
+                                ]}
+                              >
+                                {tag}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={handleApplyBulkMetadata}
+                        style={[
+                          styles.primaryButton,
+                          { backgroundColor: canApplyBulkMetadata ? palette.accent : palette.borderAlt },
+                        ]}
+                      >
+                        <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Apply Metadata</Text>
+                      </Pressable>
+                    </View>
+                  </View>
                 ) : null}
                 {showBulkDeleteConfirm ? (
                   <View
@@ -539,9 +776,9 @@ export default function MyRecipesScreen() {
                 {filteredRecipes.map((recipe) => (
                   <Pressable
                     key={recipe.slug}
-                    onPress={() => {
+                    onPress={(event) => {
                       if (selectionMode) {
-                        toggleRecipeSelection(recipe.slug);
+                        handleSelectionPress(recipe.slug, Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey));
                         return;
                       }
 
@@ -574,7 +811,10 @@ export default function MyRecipesScreen() {
                         <Pressable
                           onPress={(event) => {
                             event.stopPropagation();
-                            toggleRecipeSelection(recipe.slug);
+                            handleSelectionPress(
+                              recipe.slug,
+                              Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey)
+                            );
                           }}
                           style={[
                             styles.starButton,
