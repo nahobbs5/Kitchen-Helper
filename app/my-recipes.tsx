@@ -19,7 +19,7 @@ export default function MyRecipesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { openSettings, palette } = useAppSettings();
+  const { palette } = useAppSettings();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
   const { favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
@@ -70,12 +70,6 @@ export default function MyRecipesScreen() {
             </Text>
 
             <View style={styles.actionRow}>
-              <Pressable
-                onPress={openSettings}
-                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Settings</Text>
-              </Pressable>
               <Pressable
                 onPress={() => router.push('/conversions')}
                 style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}

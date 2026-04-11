@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { SettingsMenuModal } from '../components/settings-menu';
+import { SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
 import { FavoritesProvider } from '../contexts/favorites-context';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
 
@@ -28,6 +28,7 @@ function RootNavigator() {
         headerTitleStyle: {
           fontWeight: '700',
         },
+        headerRight: () => <SettingsGearButton />,
         contentStyle: {
           backgroundColor: palette.background,
         },

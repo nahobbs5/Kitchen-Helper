@@ -16,7 +16,7 @@ export default function ObsidianRecipeScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { openSettings, palette } = useAppSettings();
+  const { palette } = useAppSettings();
   const recipe = slug ? obsidianRecipeMap[slug] : undefined;
   const [multiplier, setMultiplier] = useState(1);
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -118,16 +118,6 @@ export default function ObsidianRecipeScreen() {
               note structure, showing the ingredients and directions, and letting you scale the
               ingredient list.
             </Text>
-
-            <View style={styles.actionRow}>
-              <Pressable
-                onPress={openSettings}
-                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Settings</Text>
-              </Pressable>
-            </View>
-
             {recipe.servings ? (
               <View style={styles.badgeRow}>
                 <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
