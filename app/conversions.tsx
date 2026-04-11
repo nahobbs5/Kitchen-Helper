@@ -16,7 +16,7 @@ import { useAppSettings } from '../contexts/settings-context';
 export default function ConversionsScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
+  const { openSettings, palette } = useAppSettings();
   const [activeSection, setActiveSection] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
 
@@ -61,6 +61,15 @@ export default function ConversionsScreen() {
               folder. It is meant to work like a quick kitchen reference people can reopen while
               cooking or baking.
             </Text>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={openSettings}
+                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Settings</Text>
+              </Pressable>
+            </View>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

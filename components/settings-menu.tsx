@@ -1,4 +1,4 @@
-import { Modal, Pressable, Switch, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useAppSettings } from '../contexts/settings-context';
@@ -35,96 +35,121 @@ export function SettingsMenuModal() {
     toggleKeepScreenAwake,
   } = useAppSettings();
 
+  if (!isSettingsOpen) {
+    return null;
+  }
+
   return (
-    <Modal
-      animationType="fade"
-      transparent
-      visible={isSettingsOpen}
-      onRequestClose={closeSettings}
-    >
-      <View style={styles.settingsOverlay}>
-        <Pressable style={styles.settingsBackdrop} onPress={closeSettings} />
+    <View style={styles.settingsOverlay}>
+      <Pressable style={styles.settingsBackdrop} onPress={closeSettings} />
+      <View
+        style={[
+          styles.settingsSheet,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsEyebrow, { color: palette.accentText }]}>Settings</Text>
+        <Text style={[styles.settingsTitle, { color: palette.text }]}>Kitchen preferences</Text>
+        <Text style={[styles.settingsBody, { color: palette.textMuted }]}>
+          These options are saved on this device so the app keeps the same feel the next time
+          you open it.
+        </Text>
+
         <View
           style={[
-            styles.settingsSheet,
+            styles.settingsSection,
             {
-              backgroundColor: palette.elevated,
-              borderColor: palette.borderAlt,
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
             },
           ]}
         >
-          <Text style={[styles.settingsEyebrow, { color: palette.accentText }]}>Settings</Text>
-          <Text style={[styles.settingsTitle, { color: palette.text }]}>Kitchen preferences</Text>
-          <Text style={[styles.settingsBody, { color: palette.textMuted }]}>
-            These options are saved on this device so the app keeps the same feel the next time
-            you open it.
-          </Text>
-
-          <View
-            style={[
-              styles.settingsSection,
-              {
-                backgroundColor: palette.surface,
-                borderColor: palette.border,
-              },
-            ]}
-          >
-            <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Appearance</Text>
-            <View style={styles.settingsRow}>
-              <View style={styles.settingsCopy}>
-                <Text style={[styles.settingsLabel, { color: palette.text }]}>Dark mode</Text>
-                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                  Switch the app to a darker reading palette on web and Android.
-                </Text>
-              </View>
-              <Switch
-                value={darkModeEnabled}
-                onValueChange={toggleDarkMode}
-                trackColor={{ false: '#b89b81', true: '#f0b35f' }}
-                thumbColor={darkModeEnabled ? '#7a2f1d' : '#fff7ea'}
-              />
+          <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Appearance</Text>
+          <View style={styles.settingsRow}>
+            <View style={styles.settingsCopy}>
+              <Text style={[styles.settingsLabel, { color: palette.text }]}>Dark mode</Text>
+              <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                Switch the app to a darker reading palette on web and Android.
+              </Text>
             </View>
+            <Pressable
+              onPress={() => toggleDarkMode()}
+              style={[
+                styles.numberButton,
+                {
+                  minWidth: 72,
+                  backgroundColor: darkModeEnabled ? palette.accentSoft : palette.elevatedAlt,
+                  borderColor: darkModeEnabled ? palette.accentSoft : palette.borderAlt,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.numberButtonText,
+                  { color: darkModeEnabled ? palette.accentContrastText : palette.text },
+                ]}
+              >
+                {darkModeEnabled ? 'On' : 'Off'}
+              </Text>
+            </Pressable>
           </View>
-
-          <View
-            style={[
-              styles.settingsSection,
-              {
-                backgroundColor: palette.surface,
-                borderColor: palette.border,
-              },
-            ]}
-          >
-            <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Cook mode</Text>
-            <View style={styles.settingsRow}>
-              <View style={styles.settingsCopy}>
-                <Text style={[styles.settingsLabel, { color: palette.text }]}>Keep screen awake</Text>
-                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                  Prevent the screen from turning off while the app stays open.
-                </Text>
-              </View>
-              <Switch
-                value={keepScreenAwake}
-                onValueChange={toggleKeepScreenAwake}
-                trackColor={{ false: '#b89b81', true: '#f0b35f' }}
-                thumbColor={keepScreenAwake ? '#7a2f1d' : '#fff7ea'}
-              />
-            </View>
-          </View>
-
-          <Pressable
-            onPress={closeSettings}
-            style={[
-              styles.settingsCloseButton,
-              {
-                backgroundColor: palette.accent,
-              },
-            ]}
-          >
-            <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>Done</Text>
-          </Pressable>
         </View>
+
+        <View
+          style={[
+            styles.settingsSection,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+            },
+          ]}
+        >
+          <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Cook mode</Text>
+          <View style={styles.settingsRow}>
+            <View style={styles.settingsCopy}>
+              <Text style={[styles.settingsLabel, { color: palette.text }]}>Keep screen awake</Text>
+              <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                Prevent the screen from turning off while the app stays open.
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => toggleKeepScreenAwake()}
+              style={[
+                styles.numberButton,
+                {
+                  minWidth: 72,
+                  backgroundColor: keepScreenAwake ? palette.accentSoft : palette.elevatedAlt,
+                  borderColor: keepScreenAwake ? palette.accentSoft : palette.borderAlt,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.numberButtonText,
+                  { color: keepScreenAwake ? palette.accentContrastText : palette.text },
+                ]}
+              >
+                {keepScreenAwake ? 'On' : 'Off'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <Pressable
+          onPress={closeSettings}
+          style={[
+            styles.settingsCloseButton,
+            {
+              backgroundColor: palette.accent,
+            },
+          ]}
+        >
+          <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>Done</Text>
+        </Pressable>
       </View>
-    </Modal>
+    </View>
   );
 }

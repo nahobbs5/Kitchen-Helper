@@ -16,7 +16,7 @@ const previewServingOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 export default function RecipeScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
+  const { openSettings, palette } = useAppSettings();
   const [servings, setServings] = useState(baseServings);
 
   const scaledIngredients = useMemo(() => {
@@ -45,6 +45,15 @@ export default function RecipeScreen() {
               This page is now its own route, which is exactly why Expo Router is useful. We can
               treat recipe viewing as a real screen instead of a block inside one giant component.
             </Text>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={openSettings}
+                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Settings</Text>
+              </Pressable>
+            </View>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

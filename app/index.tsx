@@ -35,7 +35,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
+  const { openSettings, palette } = useAppSettings();
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -65,6 +65,15 @@ export default function HomeScreen() {
               <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
                 My recipes
               </Text>
+            </View>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={openSettings}
+                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Settings</Text>
+              </Pressable>
             </View>
           </View>
 

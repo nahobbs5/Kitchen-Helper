@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions } from '../components/sample-data';
@@ -8,7 +8,7 @@ import { useAppSettings } from '../contexts/settings-context';
 export default function AllergySubstitutionsScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
+  const { openSettings, palette } = useAppSettings();
   const [searchText, setSearchText] = useState('');
   const normalizedSearch = searchText.trim().toLowerCase();
 
@@ -53,6 +53,15 @@ export default function AllergySubstitutionsScreen() {
               This screen is a quick reference for common allergy-aware swaps. It is not medical
               advice, but it gives the app a useful place to start for safer cooking alternatives.
             </Text>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={openSettings}
+                style={[styles.secondaryButton, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Settings</Text>
+              </Pressable>
+            </View>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
