@@ -31,6 +31,7 @@ function sectionText(items: { items: string[] }[]) {
 type EditableRecipe = (ObsidianRecipe & {
   notes: string | null;
   cuisineRegion: string | null;
+  sourceInfo: import('../../contexts/custom-recipes-context').RecipeSource;
 }) | import('../../contexts/custom-recipes-context').UserRecipe;
 
 export default function EditRecipeScreen() {
@@ -58,6 +59,7 @@ export default function EditRecipeScreen() {
             directions: override?.directions ?? obsidianRecipe.directions,
             notes: override?.notes ?? null,
             cuisineRegion: override?.cuisineRegion ?? null,
+            sourceInfo: override?.sourceInfo ?? null,
           }
         : undefined;
 
@@ -123,6 +125,7 @@ export default function EditRecipeScreen() {
       directionsText: directions,
       notes,
       cuisineRegion,
+      sourceInfo: recipe?.sourceInfo ?? null,
       allergenTags,
       allergyFriendlyTags,
     }, effectiveSource);
@@ -538,6 +541,21 @@ export default function EditRecipeScreen() {
                 ) : (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
                 )}
+                {recipe.sourceInfo?.websiteName ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Website: {recipe.sourceInfo.websiteName}
+                  </Text>
+                ) : null}
+                {recipe.sourceInfo?.author ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Author: {recipe.sourceInfo.author}
+                  </Text>
+                ) : null}
+                {recipe.sourceInfo?.url ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Source: {recipe.sourceInfo.url}
+                  </Text>
+                ) : null}
                 {allergenTags.length > 0 ? (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
                     Allergens: {allergenTags.join(', ')}

@@ -24,6 +24,7 @@ import {
   toggleFriendlySelection,
 } from '../utils/allergen-tags';
 import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
+import { parseRecipeFromHtml } from '../utils/web-recipe-import';
 
 const categoryOptions = [
   { label: 'Appetizer', value: 'Appetizers' },
@@ -33,8 +34,9 @@ const categoryOptions = [
   { label: 'Dessert', value: 'Dessert' },
 ] as const;
 
-type EntryMode = 'manual' | 'photo';
+type EntryMode = 'manual' | 'photo' | 'website';
 type OcrState = 'idle' | 'recognizing' | 'done' | 'error';
+type WebsiteImportState = 'idle' | 'loading' | 'done' | 'error';
 
 export default function AddRecipeScreen() {
   const router = useRouter();
@@ -48,8 +50,12 @@ export default function AddRecipeScreen() {
   const [ocrError, setOcrError] = useState('');
   const [ocrRawText, setOcrRawText] = useState('');
   const [selectedImageUri, setSelectedImageUri] = useState('');
+  const [websiteImportState, setWebsiteImportState] = useState<WebsiteImportState>('idle');
+  const [websiteImportError, setWebsiteImportError] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
   const [category, setCategory] = useState<string>('Entree');
   const [recipeName, setRecipeName] = useState('');
+  const [sourceInfo, setSourceInfo] = useState<{ websiteName: string | null; author: string | null; url: string | null } | null>(null);
   const [ingredients, setIngredients] = useState('');
   const [directions, setDirections] = useState('');
   const [notes, setNotes] = useState('');
@@ -108,6 +114,7 @@ export default function AddRecipeScreen() {
       directionsText: directions,
       notes,
       cuisineRegion,
+      sourceInfo,
       allergenTags,
       allergyFriendlyTags,
     });
@@ -153,6 +160,56 @@ export default function AddRecipeScreen() {
 
     if (parsed.notesText) {
       setNotes(parsed.notesText);
+    }
+  }
+
+  async function handleImportFromWebsite() {
+    const trimmedUrl = websiteUrl.trim();
+    setWebsiteImportError('');
+
+    if (!trimmedUrl) {
+      setWebsiteImportState('error');
+      setWebsiteImportError('A recipe URL is required before import can run.');
+      return;
+    }
+
+    setWebsiteImportState('loading');
+
+    try {
+      const response = await fetch(trimmedUrl);
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const html = await response.text();
+      const imported = parseRecipeFromHtml(trimmedUrl, html);
+
+      if (imported.title) {
+        setRecipeName(imported.title);
+      }
+
+      if (imported.suggestedCategory) {
+        setCategory(imported.suggestedCategory);
+      }
+
+      if (imported.ingredientsText) {
+        setIngredients(imported.ingredientsText);
+      }
+
+      if (imported.directionsText) {
+        setDirections(imported.directionsText);
+      }
+
+      setSourceInfo(imported.source);
+      setWebsiteImportState('done');
+    } catch (error) {
+      setWebsiteImportState('error');
+      setWebsiteImportError(
+        Platform.OS === 'web'
+          ? 'Website import failed. Many sites block browser-side fetching with CORS, so this mode is more reliable in the native app.'
+          : 'Website import failed for this page. The site may block scraping or may not expose recipe data in a parseable format.'
+      );
     }
   }
 
@@ -225,9 +282,8 @@ export default function AddRecipeScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe form</Text>
             <Text style={[styles.title, { color: palette.text }]}>Add a new recipe</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              You can enter a recipe manually or start with a photo and let on-device OCR prefill
-              the form. Either way, the result still lands in the same editable recipe form before
-              you save it.
+              You can enter a recipe manually, start with a photo, or import from a website. Each
+              mode fills the same editable recipe form before you save it.
             </Text>
 
             <View style={styles.actionRow}>
@@ -246,7 +302,7 @@ export default function AddRecipeScreen() {
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Input modes</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Manual or photo import</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Manual, photo, or website import</Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
               Photo import uses local OCR to pull text from a recipe image, then tries to split it
               into title, ingredients, directions, and notes. It is designed to save typing, not
@@ -262,6 +318,9 @@ export default function AddRecipeScreen() {
               </View>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
                 <Text style={[styles.tagText, { color: palette.tagText }]}>Photo OCR</Text>
+              </View>
+              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                <Text style={[styles.tagText, { color: palette.tagText }]}>Website import</Text>
               </View>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
                 <Text style={[styles.tagText, { color: palette.tagText }]}>Editable before save</Text>
@@ -283,6 +342,7 @@ export default function AddRecipeScreen() {
                     {[
                       { label: 'Manual entry', value: 'manual' as const },
                       { label: 'Photo OCR', value: 'photo' as const },
+                      { label: 'Website', value: 'website' as const },
                     ].map((option) => {
                       const isActive = entryMode === option.value;
 
@@ -360,6 +420,51 @@ export default function AddRecipeScreen() {
                         }}
                         resizeMode="cover"
                       />
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {entryMode === 'website' ? (
+                  <View style={styles.formField}>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe website</Text>
+                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                      Paste a recipe URL. We will look for structured recipe data and use it to prefill
+                      the form, including website and author details when available.
+                    </Text>
+                    <TextInput
+                      value={websiteUrl}
+                      onChangeText={setWebsiteUrl}
+                      placeholder="https://example.com/recipe"
+                      placeholderTextColor={palette.searchPlaceholder}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      style={[
+                        styles.formInput,
+                        { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                      ]}
+                    />
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={handleImportFromWebsite}
+                        style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                      >
+                        <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                          Import Website Recipe
+                        </Text>
+                      </Pressable>
+                    </View>
+                    {websiteImportState === 'loading' ? (
+                      <Text style={[styles.formHint, { color: palette.accentText }]}>
+                        Scanning the website for recipe data...
+                      </Text>
+                    ) : null}
+                    {websiteImportError ? (
+                      <Text style={[styles.formHint, { color: palette.accent }]}>{websiteImportError}</Text>
+                    ) : null}
+                    {Platform.OS === 'web' ? (
+                      <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                        Browser CORS rules will block some sites. Native builds are more reliable for this mode.
+                      </Text>
                     ) : null}
                   </View>
                 ) : null}
@@ -640,6 +745,21 @@ export default function AddRecipeScreen() {
                 ) : (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
                 )}
+                {entryMode === 'website' && sourceInfo?.websiteName ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Website: {sourceInfo.websiteName}
+                  </Text>
+                ) : null}
+                {entryMode === 'website' && sourceInfo?.author ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Author: {sourceInfo.author}
+                  </Text>
+                ) : null}
+                {entryMode === 'website' && sourceInfo?.url ? (
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    Source: {sourceInfo.url}
+                  </Text>
+                ) : null}
                 {allergenTags.length > 0 ? (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
                     Allergens: {allergenTags.join(', ')}
@@ -677,11 +797,15 @@ export default function AddRecipeScreen() {
             <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
               <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>OCR notes</Text>
               <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Local photo import</Text>
-              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                The local OCR path is meant to reduce typing, especially for printed recipes or clean
-                screenshots. It will not perfectly understand every recipe layout, so the result is
-                intentionally routed into the normal editable form.
-              </Text>
+                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
+                  The local OCR path is meant to reduce typing, especially for printed recipes or clean
+                  screenshots. It will not perfectly understand every recipe layout, so the result is
+                  intentionally routed into the normal editable form.
+                </Text>
+                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
+                  Website import looks for recipe schema first. When a site does not expose clean
+                  structured data, the import can be partial and may need manual cleanup.
+                </Text>
               <View style={styles.listStack}>
                 <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                   {missingRequiredFields.length === 0

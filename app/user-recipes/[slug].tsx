@@ -141,6 +141,25 @@ export default function UserRecipeScreen() {
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This recipe was added directly inside the app and saved into local app storage.
             </Text>
+            {recipe.sourceInfo ? (
+              <View style={styles.listStack}>
+                {recipe.sourceInfo.websiteName ? (
+                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
+                    Website: {recipe.sourceInfo.websiteName}
+                  </Text>
+                ) : null}
+                {recipe.sourceInfo.author ? (
+                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
+                    Author: {recipe.sourceInfo.author}
+                  </Text>
+                ) : null}
+                {recipe.sourceInfo.url ? (
+                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
+                    Source: {recipe.sourceInfo.url}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
             <View style={styles.actionRow}>
               <Pressable
                 onPress={() => router.push({ pathname: '/edit-recipe/[slug]', params: { slug: recipe.slug } })}

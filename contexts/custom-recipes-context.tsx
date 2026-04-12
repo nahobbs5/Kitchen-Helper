@@ -10,6 +10,12 @@ import {
   inferRecipeTags,
 } from '../utils/allergen-tags';
 
+export type RecipeSource = {
+  websiteName: string | null;
+  author: string | null;
+  url: string | null;
+} | null;
+
 export type UserRecipe = {
   slug: string;
   title: string;
@@ -25,6 +31,7 @@ export type UserRecipe = {
   directions: RecipeSection[];
   notes: string | null;
   cuisineRegion: string | null;
+  sourceInfo: RecipeSource;
   createdAt: string;
 };
 
@@ -35,6 +42,7 @@ type NewUserRecipeInput = {
   directionsText: string;
   notes?: string;
   cuisineRegion?: string | null;
+  sourceInfo?: RecipeSource;
   allergyFriendlyTags?: string[];
   allergenTags?: string[];
 };
@@ -58,6 +66,7 @@ export type RecipeOverride = {
   directions: RecipeSection[];
   notes: string | null;
   cuisineRegion: string | null;
+  sourceInfo: RecipeSource;
   updatedAt: string;
 };
 
@@ -81,6 +90,23 @@ const CUSTOM_RECIPES_KEY = 'kitchen-helper.custom-recipes';
 const RECIPE_OVERRIDES_KEY = 'kitchen-helper.recipe-overrides';
 
 const CustomRecipesContext = createContext<CustomRecipesContextValue | undefined>(undefined);
+
+function normalizeSource(source: unknown, legacy?: { sourceWebsite?: unknown; sourceAuthor?: unknown; sourceUrl?: unknown }): RecipeSource {
+  if (source && typeof source === 'object') {
+    const record = source as Record<string, unknown>;
+    const websiteName = typeof record.websiteName === 'string' && record.websiteName.trim() ? record.websiteName.trim() : null;
+    const author = typeof record.author === 'string' && record.author.trim() ? record.author.trim() : null;
+    const url = typeof record.url === 'string' && record.url.trim() ? record.url.trim() : null;
+
+    return websiteName || author || url ? { websiteName, author, url } : null;
+  }
+
+  const websiteName = typeof legacy?.sourceWebsite === 'string' && legacy.sourceWebsite.trim() ? legacy.sourceWebsite.trim() : null;
+  const author = typeof legacy?.sourceAuthor === 'string' && legacy.sourceAuthor.trim() ? legacy.sourceAuthor.trim() : null;
+  const url = typeof legacy?.sourceUrl === 'string' && legacy.sourceUrl.trim() ? legacy.sourceUrl.trim() : null;
+
+  return websiteName || author || url ? { websiteName, author, url } : null;
+}
 
 function slugify(value: string) {
   return value
@@ -116,12 +142,26 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
         if (customValue) {
           const parsedCustom = JSON.parse(customValue);
-          setCustomRecipes(Array.isArray(parsedCustom) ? parsedCustom : []);
+          setCustomRecipes(
+            Array.isArray(parsedCustom)
+              ? parsedCustom.map((recipe) => ({
+                  ...recipe,
+                  sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
+                }))
+              : []
+          );
         }
 
         if (overridesValue) {
           const parsedOverrides = JSON.parse(overridesValue);
-          setRecipeOverrides(Array.isArray(parsedOverrides) ? parsedOverrides : []);
+          setRecipeOverrides(
+            Array.isArray(parsedOverrides)
+              ? parsedOverrides.map((recipe) => ({
+                  ...recipe,
+                  sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
+                }))
+              : []
+          );
         }
 
         if (active) {
@@ -184,6 +224,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             directions: toSection(input.directionsText),
             notes: input.notes?.trim() ? input.notes.trim() : null,
             cuisineRegion: input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null,
+            sourceInfo: normalizeSource(input.sourceInfo),
             createdAt: new Date().toISOString(),
           };
 
@@ -252,6 +293,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         const directionsSection = toSection(input.directionsText);
         const notes = input.notes?.trim() ? input.notes.trim() : null;
         const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
+        const sourceInfo = normalizeSource(input.sourceInfo);
         const allergyFriendlyTags = input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags;
         const allergenTags = input.allergenTags ?? inferredTags.allergenTags;
 
@@ -274,6 +316,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                 directions: directionsSection,
                 notes,
                 cuisineRegion,
+                sourceInfo,
               };
 
               return updatedRecipe;
@@ -299,6 +342,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             directions: directionsSection,
             notes,
             cuisineRegion,
+            sourceInfo,
             updatedAt: new Date().toISOString(),
           };
 
@@ -396,6 +440,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               cuisineRegion: input.applyCuisineRegion
                 ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null)
                 : (existingOverride?.cuisineRegion ?? null),
+              sourceInfo: existingOverride?.sourceInfo ?? null,
               updatedAt: new Date().toISOString(),
             };
 
