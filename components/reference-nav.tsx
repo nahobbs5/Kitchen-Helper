@@ -6,6 +6,7 @@ import { useCookTimer } from '../contexts/cook-timer-context';
 import { useAppSettings } from '../contexts/settings-context';
 
 const referenceLinks = [
+  { href: '/', label: 'Main Menu' },
   { href: '/conversions', label: 'Conversions' },
   { href: '/allergy-substitutions', label: 'Substitutions' },
   { href: '/cooking-dictionary', label: 'Cooking Dictionary' },
