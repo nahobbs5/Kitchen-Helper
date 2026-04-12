@@ -12,6 +12,7 @@ Current core areas:
 
 - recipe browsing from Obsidian notes
 - recipe creation and editing in app storage
+- photo-based recipe import with local OCR-assisted prefill
 - ingredient scaling
 - kitchen conversions
 - allergy-friendly substitutions
@@ -301,6 +302,7 @@ Current capabilities:
 - a searchable cooking dictionary page with letter filters
 - a `My Recipes` page backed by real Obsidian recipe notes
 - recipe creation in app storage
+- photo-based recipe import that prefills the add-recipe form
 - recipe editing for both app-created and imported recipes
 - filtering recipes by category, cuisine region, favorites, and allergen tags
 - multi-select recipe filters for category, cuisine region, and allergen tags
@@ -439,6 +441,33 @@ This context stores:
 - recently deleted recipe data for undo
 
 This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault.
+
+## Local OCR Recipe Import
+
+The add-recipe flow now has two starting modes:
+
+- manual entry
+- photo OCR
+
+The photo path works like this:
+
+- pick a recipe image from the device
+- run local OCR on the image
+- parse the recognized text into title, ingredients, directions, and notes
+- prefill the normal add-recipe form for review
+
+Important files:
+
+- [`app/add-recipe.tsx`](app/add-recipe.tsx)
+- [`utils/ocr-recipe-parser.ts`](utils/ocr-recipe-parser.ts)
+- [`app.json`](app.json)
+
+One important implementation detail:
+
+- this OCR path uses a native ML Kit module
+- that means it is intended for a native development build rather than Expo Go
+
+That tradeoff is worth calling out early so the feature feels predictable during testing.
 
 ## Bulk Selection And Bulk Actions
 

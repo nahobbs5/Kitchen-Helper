@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const projectRoot = process.cwd();
-const sourcePath = path.join(projectRoot, 'Cooking', 'Resources', 'Cooking Dictionary.md');
+const sourcePath = path.join(projectRoot, 'Cooking', 'Resources', 'New Custom Cooking Dictionary.md');
 const outputPath = path.join(projectRoot, 'data', 'cooking-dictionary.ts');
 
 function stripMarkdown(value) {
@@ -11,93 +11,73 @@ function stripMarkdown(value) {
     .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
-    .replace(/^\s*>\s?/gm, '')
-    .replace(/^\s*#+\s*/gm, '')
+    .replace(/`([^`]+)`/g, '$1')
     .replace(/[ \t]+/g, ' ')
     .trim();
 }
 
-function cleanBlock(lines) {
+function normalizeForSorting(value) {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function cleanDefinition(lines) {
   return lines
-    .map((line) => line.replace(/\u00a0/g, ' ').trim())
-    .filter((line) => line && line !== '–' && line !== '&nbsp;')
-    .filter((line) => !/^###\s+Sign Up for our Newsletter/i.test(line))
-    .filter((line) => !/^###\s+Seasonal Recipes/i.test(line))
-    .filter((line) => !/^###\s+Newest Recipes/i.test(line))
-    .filter((line) => !/^###\s+Most Viewed Recipes/i.test(line))
-    .filter((line) => !/^Search for:/i.test(line))
-    .filter((line) => !/^America's most trusted culinary resource/i.test(line))
-    .filter((line) => !/^Home$/i.test(line))
-    .filter((line) => !/^Recipe Indexes$/i.test(line))
-    .filter((line) => !/^Food History$/i.test(line))
-    .filter((line) => !/^Cooking Articles$/i.test(line))
-    .filter((line) => !/^Culinary Dictionary Index$/i.test(line))
-    .filter((line) => !/^Pin\d*$/i.test(line))
-    .filter((line) => !/^Share$/i.test(line))
-    .filter((line) => !/^Tweet$/i.test(line))
-    .filter((line) => !/^Yum\d*$/i.test(line))
-    .filter((line) => !/^Email$/i.test(line))
-    .filter((line) => !/^Top$/i.test(line))
-    .filter((line) => !/^What's Cooking America/i.test(line))
-    .map((line) => stripMarkdown(line))
-    .filter(Boolean);
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/^[-*]\s*/, ''))
+    .map(stripMarkdown)
+    .filter(Boolean)
+    .join('\n');
 }
 
 function parseEntries(markdown) {
   const lines = markdown.split(/\r?\n/);
   const entries = [];
-  let active = null;
+  let activeLetter = null;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
 
-    if (/^###\s+Sign Up for our Newsletter/i.test(line)) {
-      break;
-    }
-
-    const termMatch = line.match(/^\*\*([^*]+)\*\*$/);
-    if (termMatch) {
-      if (active) {
-        entries.push(active);
-      }
-
-      active = {
-        term: stripMarkdown(termMatch[1]),
-        lines: [],
-      };
+    if (!line || line === '---') {
       continue;
     }
 
-    if (active) {
-      active.lines.push(rawLine);
+    const letterMatch = line.match(/^##\s+([A-Z])$/i);
+    const entryMatch = line.match(/^\*\*([^*]+)\*\*\s+—\s+(.+)$/);
+
+    if (letterMatch) {
+      activeLetter = letterMatch[1].toUpperCase();
+      continue;
+    }
+
+    if (entryMatch) {
+      const term = stripMarkdown(entryMatch[1]).trim();
+      const definition = stripMarkdown(entryMatch[2]).trim();
+      const normalizedTerm = normalizeForSorting(term);
+      const letter = activeLetter ?? (/^[a-z]/i.test(normalizedTerm) ? normalizedTerm[0].toUpperCase() : '#');
+
+      entries.push({
+        term,
+        letter,
+        definition,
+      });
+      continue;
     }
   }
 
-  if (active) {
-    entries.push(active);
-  }
-
   return entries
-    .map((entry) => {
-      const cleanedLines = cleanBlock(entry.lines);
-      const definition = cleanedLines.join('\n');
-      const firstLetter = /^[a-z]/i.test(entry.term) ? entry.term[0].toUpperCase() : '#';
+    .filter((entry) => entry.term && entry.definition)
+    .sort((left, right) => {
+      const letterCompare = left.letter.localeCompare(right.letter);
 
-      return {
-        term: entry.term,
-        letter: firstLetter,
-        definition,
-      };
-    })
-    .filter((entry) => entry.definition.length > 0)
-    .filter(
-      (entry) =>
-        !(
-          entry.term ===
-            'An outstanding and large culinary dictionary and glossary that includes the definitions and history of cooking, food, and beverage terms.' ||
-          /Please click on a letter below to alphabetically search/i.test(entry.definition)
-        )
-    );
+      if (letterCompare !== 0) {
+        return letterCompare;
+      }
+
+      return normalizeForSorting(left.term).localeCompare(normalizeForSorting(right.term), undefined, {
+        sensitivity: 'base',
+      });
+    });
 }
 
 async function main() {

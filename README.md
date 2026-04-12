@@ -37,6 +37,7 @@ The app currently includes:
 - dark mode
 - a keep-screen-awake cook mode setting
 - a shared cook timer popup with up to three timers
+- photo-based recipe import with local OCR-assisted prefill
 
 ## Stack
 
@@ -235,6 +236,7 @@ How it works:
 The app now supports:
 
 - adding recipes directly in the app
+- starting new recipes from a photo with local OCR-assisted prefill
 - editing any recipe in the UI
 - local overrides for Obsidian-backed recipes
 - deleting app-saved recipes
@@ -248,6 +250,15 @@ Recipe metadata now includes:
 - allergy-friendly tags
 
 Allergen tags are auto-detected from recipe content and can still be edited manually.
+
+The OCR import path is intentionally review-first:
+
+- pick a recipe image
+- extract text locally on device
+- prefill the normal recipe form
+- review and save manually
+
+Right now, the local OCR module is intended for a native development build rather than Expo Go.
 
 ## Bulk Actions
 

@@ -23,7 +23,15 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Kitchen Helper uses your photo library so you can import a recipe from an image."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }

@@ -1,14 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  Linking,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ReferenceNav } from '../components/reference-nav';
@@ -21,12 +12,16 @@ export default function CookingDictionaryScreen() {
   const { palette } = useAppSettings();
   const [activeLetter, setActiveLetter] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
+  const availableLetters = useMemo(
+    () => new Set(cookingDictionaryEntries.map((entry) => entry.letter)),
+    []
+  );
 
-  const letters = Array.from(new Set(cookingDictionaryEntries.map((entry) => entry.letter))).sort();
-  const letterOptions = ['All', ...letters];
+  const letterOptions = [
+    'All',
+    ...Array.from({ length: 26 }, (_, index) => String.fromCharCode(65 + index)),
+  ];
   const normalizedSearch = searchText.trim().toLowerCase();
-  const glossarySource = 'https://whatscookingamerica.net/glossary/';
-
   const visibleEntries = useMemo(
     () =>
       cookingDictionaryEntries.filter((entry) => {
@@ -54,15 +49,10 @@ export default function CookingDictionaryScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Reference page</Text>
             <Text style={[styles.title, { color: palette.text }]}>Cooking dictionary</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This page turns your cooking glossary resource into a searchable kitchen reference, so
+              This page turns your custom cooking glossary into a searchable kitchen reference, so
               terms and techniques are easy to look up while you cook.
             </Text>
             <ReferenceNav />
-            <Pressable onPress={() => Linking.openURL(glossarySource)}>
-              <Text style={[styles.panelText, styles.menuCardLink, { color: palette.accent }]}>
-                Source: {glossarySource}
-              </Text>
-            </Pressable>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
@@ -89,19 +79,36 @@ export default function CookingDictionaryScreen() {
             <View style={styles.numberGrid}>
               {letterOptions.map((letter) => {
                 const isActive = activeLetter === letter;
+                const isAvailable = letter === 'All' || availableLetters.has(letter);
 
                 return (
                   <Pressable
                     key={letter}
-                    onPress={() => setActiveLetter(letter)}
+                    onPress={() => {
+                      if (!isAvailable) {
+                        return;
+                      }
+
+                      setActiveLetter(letter);
+                    }}
+                    disabled={!isAvailable}
                     style={[
                       styles.numberButton,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      !isAvailable && styles.numberButtonDisabled,
+                      !isAvailable && { backgroundColor: palette.elevated, borderColor: palette.border },
                       isActive && styles.numberButtonActive,
                       isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                     ]}
                   >
-                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{letter}</Text>
+                    <Text
+                      style={[
+                        styles.numberButtonText,
+                        { color: isAvailable ? palette.text : palette.textSoft },
+                      ]}
+                    >
+                      {letter}
+                    </Text>
                   </Pressable>
                 );
               })}

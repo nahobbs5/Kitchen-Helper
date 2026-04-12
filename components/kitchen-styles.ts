@@ -421,6 +421,9 @@ export const kitchenStyles = StyleSheet.create({
     backgroundColor: '#e4b66b',
     borderColor: '#e4b66b',
   },
+  numberButtonDisabled: {
+    opacity: 0.45,
+  },
   numberButtonText: {
     color: '#2a2118',
     fontWeight: '800',

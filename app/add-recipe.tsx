@@ -1,6 +1,16 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import {
+  Image,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ReferenceNav } from '../components/reference-nav';
@@ -13,6 +23,7 @@ import {
   toggleAllergenSelection,
   toggleFriendlySelection,
 } from '../utils/allergen-tags';
+import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
 
 const categoryOptions = [
   { label: 'Appetizer', value: 'Appetizers' },
@@ -22,6 +33,9 @@ const categoryOptions = [
   { label: 'Dessert', value: 'Dessert' },
 ] as const;
 
+type EntryMode = 'manual' | 'photo';
+type OcrState = 'idle' | 'recognizing' | 'done' | 'error';
+
 export default function AddRecipeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -29,6 +43,11 @@ export default function AddRecipeScreen() {
   const { palette } = useAppSettings();
   const { addRecipe } = useCustomRecipes();
 
+  const [entryMode, setEntryMode] = useState<EntryMode>('manual');
+  const [ocrState, setOcrState] = useState<OcrState>('idle');
+  const [ocrError, setOcrError] = useState('');
+  const [ocrRawText, setOcrRawText] = useState('');
+  const [selectedImageUri, setSelectedImageUri] = useState('');
   const [category, setCategory] = useState<string>('Entree');
   const [recipeName, setRecipeName] = useState('');
   const [ingredients, setIngredients] = useState('');
@@ -40,6 +59,7 @@ export default function AddRecipeScreen() {
   const [allergenTouched, setAllergenTouched] = useState(false);
   const [friendlyTouched, setFriendlyTouched] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
+
   const detectedTags = useMemo(
     () =>
       inferRecipeTags({
@@ -62,6 +82,7 @@ export default function AddRecipeScreen() {
   );
 
   const canSave = missingRequiredFields.length === 0;
+  const supportsLocalOcr = Platform.OS !== 'web';
 
   useEffect(() => {
     if (!allergenTouched) {
@@ -115,6 +136,81 @@ export default function AddRecipeScreen() {
     setAllergyFriendlyTags(detectedTags.allergyFriendlyTags);
   }
 
+  function applyOcrResult(rawText: string) {
+    const parsed = parseOcrRecipeText(rawText);
+
+    if (parsed.title) {
+      setRecipeName(parsed.title);
+    }
+
+    if (parsed.ingredientsText) {
+      setIngredients(parsed.ingredientsText);
+    }
+
+    if (parsed.directionsText) {
+      setDirections(parsed.directionsText);
+    }
+
+    if (parsed.notesText) {
+      setNotes(parsed.notesText);
+    }
+  }
+
+  async function handlePickRecipePhoto() {
+    setOcrError('');
+
+    if (!supportsLocalOcr) {
+      setOcrState('error');
+      setOcrError('Local OCR is currently set up for native builds. On web, use manual entry for now.');
+      return;
+    }
+
+    const ImagePicker = await import('expo-image-picker');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setOcrState('error');
+      setOcrError('Photo access is needed to import a recipe from an image.');
+      return;
+    }
+
+    const selection = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (selection.canceled || !selection.assets[0]?.uri) {
+      return;
+    }
+
+    const imageUri = selection.assets[0].uri;
+    setSelectedImageUri(imageUri);
+    setOcrState('recognizing');
+    setOcrRawText('');
+
+    try {
+      const { recognizeText } = await import('@infinitered/react-native-mlkit-text-recognition');
+      const result = await recognizeText(imageUri);
+      const recognizedText = result.text?.trim() ?? '';
+
+      if (!recognizedText) {
+        setOcrState('error');
+        setOcrError('No readable recipe text was found in that image. Try a clearer photo or use manual entry.');
+        return;
+      }
+
+      setOcrRawText(recognizedText);
+      applyOcrResult(recognizedText);
+      setOcrState('done');
+    } catch (error) {
+      setOcrState('error');
+      setOcrError(
+        'Local OCR needs a native development build with ML Kit available. If you are testing in Expo Go, this import mode will not be available there yet.'
+      );
+    }
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
@@ -129,9 +225,9 @@ export default function AddRecipeScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe form</Text>
             <Text style={[styles.title, { color: palette.text }]}>Add a new recipe</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This is the first step toward adding recipes inside the app. For now, it is a clean
-              manual-entry form. Later we can turn this into a choice screen for manual entry,
-              importing, or pulling from existing files.
+              You can enter a recipe manually or start with a photo and let on-device OCR prefill
+              the form. Either way, the result still lands in the same editable recipe form before
+              you save it.
             </Text>
 
             <View style={styles.actionRow}>
@@ -139,45 +235,36 @@ export default function AddRecipeScreen() {
                 onPress={() => router.push('/my-recipes')}
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
-              <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
                   Back to My Recipes
-              </Text>
-            </Pressable>
-          </View>
+                </Text>
+              </Pressable>
+            </View>
 
             <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>What this form covers</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Core recipe details first</Text>
-              <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              This first version covers the required fields you called out: category, recipe name,
-              ingredients, and directions. Notes are optional, and cuisine-region tagging can be
-              layered in next.
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Input modes</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Manual or photo import</Text>
+            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
+              Photo import uses local OCR to pull text from a recipe image, then tries to split it
+              into title, ingredients, directions, and notes. It is designed to save typing, not
+              to replace reviewing the result.
             </Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Required fields are marked with `*`.
+              Required fields are still marked with `*`.
             </Text>
 
             <View style={styles.tagRow}>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Required: category</Text>
+                <Text style={[styles.tagText, { color: palette.tagText }]}>Manual entry</Text>
               </View>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Required: name</Text>
+                <Text style={[styles.tagText, { color: palette.tagText }]}>Photo OCR</Text>
               </View>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Required: ingredients</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Required: directions</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Optional: notes</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Optional: cuisine region</Text>
+                <Text style={[styles.tagText, { color: palette.tagText }]}>Editable before save</Text>
               </View>
             </View>
           </View>
@@ -186,10 +273,97 @@ export default function AddRecipeScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Manual entry</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe form</Text>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe entry</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Choose how to start</Text>
 
               <View style={styles.formStack}>
+                <View style={styles.formField}>
+                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Entry mode</Text>
+                  <View style={styles.servingsRow}>
+                    {[
+                      { label: 'Manual entry', value: 'manual' as const },
+                      { label: 'Photo OCR', value: 'photo' as const },
+                    ].map((option) => {
+                      const isActive = entryMode === option.value;
+
+                      return (
+                        <Pressable
+                          key={option.value}
+                          onPress={() => setEntryMode(option.value)}
+                          style={[
+                            styles.servingsButton,
+                            { borderColor: palette.borderAlt },
+                            !isActive && { backgroundColor: palette.surface },
+                            isActive && styles.servingsButtonActive,
+                            isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.servingsButtonText,
+                              { color: isActive ? palette.inverseText : palette.text },
+                              isActive && styles.servingsButtonTextActive,
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                {entryMode === 'photo' ? (
+                  <View style={styles.formField}>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe photo</Text>
+                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                      Pick a recipe image from your device. We will run local OCR, then prefill the
+                      form below so you can review it before saving.
+                    </Text>
+                    {!supportsLocalOcr ? (
+                      <Text style={[styles.formHint, { color: palette.accent }]}>
+                        Local OCR is currently configured for native builds. On web, use manual
+                        entry for now.
+                      </Text>
+                    ) : (
+                      <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                        This OCR path uses a native ML Kit module, so it is intended for a dev
+                        build rather than Expo Go.
+                      </Text>
+                    )}
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={handlePickRecipePhoto}
+                        style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                      >
+                        <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                          + Pick Recipe Photo
+                        </Text>
+                      </Pressable>
+                    </View>
+                    {ocrState === 'recognizing' ? (
+                      <Text style={[styles.formHint, { color: palette.accentText }]}>
+                        Reading the recipe image and filling the form...
+                      </Text>
+                    ) : null}
+                    {ocrError ? (
+                      <Text style={[styles.formHint, { color: palette.accent }]}>{ocrError}</Text>
+                    ) : null}
+                    {selectedImageUri ? (
+                      <Image
+                        source={{ uri: selectedImageUri }}
+                        style={{
+                          width: '100%',
+                          height: 220,
+                          borderRadius: 18,
+                          marginTop: 8,
+                        }}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+                  </View>
+                ) : null}
+
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Category *</Text>
                   <Text style={[styles.formHint, { color: palette.textSoft }]}>
@@ -263,7 +437,7 @@ export default function AddRecipeScreen() {
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Ingredients *</Text>
                   <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    One ingredient per line works best for a future parser.
+                    One ingredient per line works best for parsing and scaling later.
                   </Text>
                   <TextInput
                     value={ingredients}
@@ -306,7 +480,9 @@ export default function AddRecipeScreen() {
 
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Notes</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>Optional notes, tips, or serving reminders.</Text>
+                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                    Optional notes, tips, serving reminders, or OCR cleanup notes.
+                  </Text>
                   <TextInput
                     value={notes}
                     onChangeText={setNotes}
@@ -362,7 +538,9 @@ export default function AddRecipeScreen() {
                         { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                       ]}
                     >
-                      <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Auto-detect tags</Text>
+                      <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                        Auto-detect tags
+                      </Text>
                     </Pressable>
                   </View>
                 </View>
@@ -413,7 +591,9 @@ export default function AddRecipeScreen() {
                       { backgroundColor: canSave ? palette.accent : palette.borderAlt },
                     ]}
                   >
-                    <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Save Recipe</Text>
+                    <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                      Save Recipe
+                    </Text>
                   </Pressable>
                 </View>
               </View>
@@ -472,30 +652,45 @@ export default function AddRecipeScreen() {
                 ) : null}
               </View>
 
+              {ocrRawText ? (
+                <View
+                  style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                >
+                  <Text style={[styles.helperCardTitle, { color: palette.text }]}>OCR text preview</Text>
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    {ocrRawText}
+                  </Text>
+                </View>
+              ) : null}
+
               <View
                 style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
               >
                 <Text style={[styles.helperCardTitle, { color: palette.text }]}>How save works right now</Text>
                 <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                  Saving now writes the recipe into local app storage and sends you back to `My
-                  Recipes`, where the new recipe will appear in the shared library.
+                  Saving writes the recipe into local app storage and sends you back to `My Recipes`,
+                  where the new recipe appears in the shared library.
                 </Text>
               </View>
             </View>
 
             <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Optional metadata</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Cuisine region tag</Text>
+              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>OCR notes</Text>
+              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Local photo import</Text>
               <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                This field is now part of the form, so you can tag recipes with values like
-                `American`, `European`, `Asian`, or `Mexican`. Later we can turn that into its own
-                filter in the recipe library.
+                The local OCR path is meant to reduce typing, especially for printed recipes or clean
+                screenshots. It will not perfectly understand every recipe layout, so the result is
+                intentionally routed into the normal editable form.
               </Text>
               <View style={styles.listStack}>
                 <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                   {missingRequiredFields.length === 0
                     ? 'All required fields are currently filled in for this draft.'
                     : `Still missing: ${missingRequiredFields.join(', ')}.`}
+                </Text>
+                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
+                  Best results usually come from straight, high-contrast photos with clear section
+                  headings like Ingredients and Directions.
                 </Text>
               </View>
             </View>
