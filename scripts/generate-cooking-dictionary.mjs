@@ -20,16 +20,6 @@ function normalizeForSorting(value) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-function cleanDefinition(lines) {
-  return lines
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.replace(/^[-*]\s*/, ''))
-    .map(stripMarkdown)
-    .filter(Boolean)
-    .join('\n');
-}
-
 function parseEntries(markdown) {
   const lines = markdown.split(/\r?\n/);
   const entries = [];
@@ -56,11 +46,7 @@ function parseEntries(markdown) {
       const normalizedTerm = normalizeForSorting(term);
       const letter = activeLetter ?? (/^[a-z]/i.test(normalizedTerm) ? normalizedTerm[0].toUpperCase() : '#');
 
-      entries.push({
-        term,
-        letter,
-        definition,
-      });
+      entries.push({ term, letter, definition });
       continue;
     }
   }
@@ -69,20 +55,60 @@ function parseEntries(markdown) {
     .filter((entry) => entry.term && entry.definition)
     .sort((left, right) => {
       const letterCompare = left.letter.localeCompare(right.letter);
-
-      if (letterCompare !== 0) {
-        return letterCompare;
-      }
-
+      if (letterCompare !== 0) return letterCompare;
       return normalizeForSorting(left.term).localeCompare(normalizeForSorting(right.term), undefined, {
         sensitivity: 'base',
       });
     });
 }
 
+function splitIntoSections(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const sections = { general: [], spices: [], alcohol: [], instruments: [] };
+  let currentSection = 'general';
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    // Single # headings mark section boundaries — detect and switch, don't pass through
+    if (/^#\s+/.test(line) && !/^##/.test(line)) {
+      if (/spic/i.test(line)) {
+        currentSection = 'spices';
+      } else if (/alcohol/i.test(line)) {
+        currentSection = 'alcohol';
+      } else if (/instrument/i.test(line)) {
+        currentSection = 'instruments';
+      }
+      continue;
+    }
+
+    sections[currentSection].push(rawLine);
+  }
+
+  return sections;
+}
+
 async function main() {
   const markdown = await fs.readFile(sourcePath, 'utf8');
-  const entries = parseEntries(markdown);
+  const sections = splitIntoSections(markdown);
+
+  const generalEntries = parseEntries(sections.general.join('\n'));
+  const spicesEntries = parseEntries(sections.spices.join('\n'));
+  const alcoholEntries = parseEntries(sections.alcohol.join('\n'));
+  const instrumentsEntries = parseEntries(sections.instruments.join('\n'));
+
+  const allEntries = [
+    ...generalEntries,
+    ...spicesEntries,
+    ...alcoholEntries,
+    ...instrumentsEntries,
+  ].sort((left, right) => {
+    const letterCompare = left.letter.localeCompare(right.letter);
+    if (letterCompare !== 0) return letterCompare;
+    return normalizeForSorting(left.term).localeCompare(normalizeForSorting(right.term), undefined, {
+      sensitivity: 'base',
+    });
+  });
 
   const fileContents = `export type DictionaryEntry = {
   term: string;
@@ -90,10 +116,23 @@ async function main() {
   definition: string;
 };
 
-export const cookingDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(entries, null, 2)};\n`;
+export const generalDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(generalEntries, null, 2)};
+
+export const spicesDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(spicesEntries, null, 2)};
+
+export const alcoholDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(alcoholEntries, null, 2)};
+
+export const instrumentsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(instrumentsEntries, null, 2)};
+
+export const cookingDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(allEntries, null, 2)};\n`;
 
   await fs.writeFile(outputPath, fileContents, 'utf8');
-  console.log(`Generated ${entries.length} dictionary entries -> ${path.relative(projectRoot, outputPath)}`);
+  console.log(`Generated entries -> ${path.relative(projectRoot, outputPath)}`);
+  console.log(`  General:     ${generalEntries.length}`);
+  console.log(`  Spices:      ${spicesEntries.length}`);
+  console.log(`  Alcohol:     ${alcoholEntries.length}`);
+  console.log(`  Instruments: ${instrumentsEntries.length}`);
+  console.log(`  All:         ${allEntries.length}`);
 }
 
 main().catch((error) => {
