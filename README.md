@@ -38,6 +38,7 @@ The app currently includes:
 - a keep-screen-awake cook mode setting
 - a shared cook timer popup with up to three timers
 - photo-based recipe import with local OCR-assisted prefill
+- website-based recipe import with source attribution
 
 ## Stack
 
@@ -177,6 +178,7 @@ That includes:
 - recipes created directly in the app
 - local edits to Obsidian-backed recipes
 - bulk metadata changes
+- website-imported recipe source attribution
 
 This lets the app treat all recipes as editable without changing the original Markdown files in the `Cooking` vault.
 
@@ -184,11 +186,9 @@ This lets the app treat all recipes as editable without changing the original Ma
 
 The cooking dictionary page is generated from:
 
-- [`Cooking/Resources/Cooking Dictionary.md`]
+- [`Cooking/Resources/New Custom Cooking Dictionary.md`]
 
-The app displays that glossary as searchable term cards and cites the source:
-
-- [What’s Cooking America glossary](https://whatscookingamerica.net/glossary/)
+The dictionary generator parses that glossary format into searchable app data in [`data/cooking-dictionary.ts`].
 
 ## Scripts
 
@@ -237,6 +237,7 @@ The app now supports:
 
 - adding recipes directly in the app
 - starting new recipes from a photo with local OCR-assisted prefill
+- starting new recipes from a website URL with schema-first import
 - editing any recipe in the UI
 - local overrides for Obsidian-backed recipes
 - deleting app-saved recipes
@@ -259,6 +260,22 @@ The OCR import path is intentionally review-first:
 - review and save manually
 
 Right now, the local OCR module is intended for a native development build rather than Expo Go.
+
+The website import path is also review-first:
+
+- paste a recipe URL
+- fetch the page
+- extract recipe data from structured markup when available
+- prefill the normal recipe form
+- keep website attribution separate from notes
+
+Website imports save a dedicated `Source` block with:
+
+- website name
+- author when available
+- source URL
+
+On web, this importer is less reliable because many recipe sites block browser fetches with CORS. Native builds are the better target for this feature.
 
 ## Bulk Actions
 
@@ -315,6 +332,17 @@ After that:
 - Expo Go started working again
 
 This is a good reminder that Expo package version alignment matters a lot, especially when native modules are involved.
+
+## Native OCR And Dev Builds
+
+The local OCR path uses a native ML Kit module, so it is intended for a native development build rather than Expo Go.
+
+That means the practical split is:
+
+- Expo Go for general UI work
+- Android dev builds for testing OCR and other native-only behavior
+
+Android Studio and the Android SDK are the expected toolchain for that workflow.
 
 ## Verification
 

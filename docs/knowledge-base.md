@@ -13,6 +13,7 @@ Current core areas:
 - recipe browsing from Obsidian notes
 - recipe creation and editing in app storage
 - photo-based recipe import with local OCR-assisted prefill
+- website-based recipe import with source attribution
 - ingredient scaling
 - kitchen conversions
 - allergy-friendly substitutions
@@ -132,6 +133,7 @@ Right now it stores:
 - app-created recipes
 - local overrides for imported recipes
 - deleted-recipe undo state
+- website-import source attribution
 
 ## Why This Setup Was Chosen
 
@@ -248,11 +250,12 @@ How this layer works:
 - recipe resources also live there, including the glossary file and conversion resources
 - `scripts/generate-obsidian-recipes.mjs` parses the recipe notes
 - that script writes structured output into [`data/obsidian-recipes.ts`]
-- `scripts/generate-cooking-dictionary.mjs` parses [`Cooking/Resources/Cooking Dictionary.md`]
+- `scripts/generate-cooking-dictionary.mjs` parses [`Cooking/Resources/New Custom Cooking Dictionary.md`]
 - that script writes structured glossary output into [`data/cooking-dictionary.ts`]
 - route files read those generated data files to render screens
 - [`utils/allergen-tags.ts`] helps detect and normalize allergen tags
 - [`utils/ingredient-scaling.ts`] scales ingredient text for recipe pages
+- [`utils/web-recipe-import.ts`] parses recipe pages for website import
 - [`components/sample-data.ts`] still provides curated prototype content for reference pages and the preview recipe screen
 
 ### 4. Shared Components and Theming
@@ -303,6 +306,7 @@ Current capabilities:
 - a `My Recipes` page backed by real Obsidian recipe notes
 - recipe creation in app storage
 - photo-based recipe import that prefills the add-recipe form
+- website import that prefills the add-recipe form
 - recipe editing for both app-created and imported recipes
 - filtering recipes by category, cuisine region, favorites, and allergen tags
 - multi-select recipe filters for category, cuisine region, and allergen tags
@@ -373,17 +377,20 @@ That means:
 
 The cooking dictionary page is based on:
 
-- [`Cooking/Resources/Cooking Dictionary.md`]
+- [`Cooking/Resources/New Custom Cooking Dictionary.md`]
 
 The parser converts that glossary into [`data/cooking-dictionary.ts`], which the app renders as searchable term cards.
 
-The page also cites the source used for the glossary:
+The current parser supports the newer custom glossary format:
 
-- [What’s Cooking America glossary](https://whatscookingamerica.net/glossary/)
+- `## A`
+- `**Term** — Definition`
 
-One cleanup detail that mattered here:
+Recent cleanup details that mattered here:
 
-- the parser was adjusted so the glossary intro block was not treated as a fake dictionary entry
+- the page now uses a full `A-Z` selector
+- letters with no entries are visibly disabled
+- sorting was adjusted to behave more like a real glossary
 
 ## Settings System
 
@@ -439,15 +446,17 @@ This context stores:
 - local edits to imported recipes
 - bulk metadata changes
 - recently deleted recipe data for undo
+- website import attribution through a dedicated `Source` structure
 
 This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault.
 
-## Local OCR Recipe Import
+## Local OCR And Website Recipe Import
 
-The add-recipe flow now has two starting modes:
+The add-recipe flow now has three starting modes:
 
 - manual entry
 - photo OCR
+- website
 
 The photo path works like this:
 
@@ -468,6 +477,32 @@ One important implementation detail:
 - that means it is intended for a native development build rather than Expo Go
 
 That tradeoff is worth calling out early so the feature feels predictable during testing.
+
+The website path works like this:
+
+- paste a recipe URL
+- fetch the page
+- look for recipe JSON-LD or other structured recipe metadata
+- extract title, ingredients, directions, and suggested category when possible
+- extract attribution metadata such as website name, author, and source URL
+- prefill the normal add-recipe form for review
+
+Important files:
+
+- [`app/add-recipe.tsx`](app/add-recipe.tsx)
+- [`utils/web-recipe-import.ts`](utils/web-recipe-import.ts)
+- [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
+
+Important product decision:
+
+- attribution metadata does not get pushed into `notes`
+- website-imported recipes store a dedicated `Source` block instead
+- saved recipe pages render that `Source` block directly under the title area
+
+Important limitation:
+
+- this importer is less reliable on web because many sites block direct browser fetches with CORS
+- native builds are the more reliable environment for URL import
 
 ## Bulk Selection And Bulk Actions
 
@@ -707,6 +742,8 @@ High-level sequence of what has happened:
 27. added delete flows, undo notices, and the confirm-delete setting
 28. added bulk selection, bulk favorites, bulk metadata, and shift-click range selection
 29. added a shared cook timer popup with audio, vibration, and timer progress UI
+30. added website-based recipe import with dedicated source attribution
+31. replaced the old glossary source with a custom cooking dictionary and updated the parser
 
 ## How To Grow This File
 
