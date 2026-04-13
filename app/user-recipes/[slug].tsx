@@ -4,7 +4,6 @@ import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } 
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { ReferenceNav } from '../../components/reference-nav';
-import { ScaledDirectionsList } from '../../components/scaled-directions-list';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
@@ -142,31 +141,12 @@ export default function UserRecipeScreen() {
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This recipe was added directly inside the app and saved into local app storage.
             </Text>
-            {recipe.sourceInfo ? (
-              <View style={styles.listStack}>
-                {recipe.sourceInfo.websiteName ? (
-                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                    Website: {recipe.sourceInfo.websiteName}
-                  </Text>
-                ) : null}
-                {recipe.sourceInfo.author ? (
-                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                    Author: {recipe.sourceInfo.author}
-                  </Text>
-                ) : null}
-                {recipe.sourceInfo.url ? (
-                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                    Source: {recipe.sourceInfo.url}
-                  </Text>
-                ) : null}
-              </View>
-            ) : null}
             <View style={styles.actionRow}>
               <Pressable
                 onPress={() => router.push({ pathname: '/edit-recipe/[slug]', params: { slug: recipe.slug } })}
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
-                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Edit Recipe</Text>
+                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>✏️ Edit Recipe</Text>
               </Pressable>
               <Pressable
                 onPress={handleDeletePress}
@@ -312,15 +292,27 @@ export default function UserRecipeScreen() {
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
               <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe steps</Text>
-              <ScaledDirectionsList
-                slug={recipe.slug}
-                source="custom"
-                baseDirections={recipe.originalDirections}
-                displayDirections={recipe.directions}
-                stepOverrides={recipe.directionStepOverrides}
-                scale={multiplier}
-                palette={palette}
-              />
+              <View style={styles.listStack}>
+                {recipe.directions.length > 0 ? (
+                  recipe.directions.map((section, sectionIndex) => (
+                    <View
+                      key={`${section.title ?? 'directions'}-${sectionIndex}`}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
+                      {section.items.map((item, itemIndex) => (
+                        <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                          {itemIndex + 1}. {item}
+                        </Text>
+                      ))}
+                    </View>
+                  ))
+                ) : (
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No directions were saved.</Text>
+                  </View>
+                )}
+              </View>
             </View>
 
             {(recipe.notes || recipe.cuisineRegion) ? (

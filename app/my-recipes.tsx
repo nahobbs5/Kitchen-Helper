@@ -908,7 +908,6 @@ export default function MyRecipesScreen() {
                         ) : null}
                       </View>
                     ) : null}
-                    <Text style={[styles.menuCardLink, { color: palette.accent }]}>Open recipe</Text>
                   </Pressable>
                 ))}
                 {filteredRecipes.length === 0 ? (

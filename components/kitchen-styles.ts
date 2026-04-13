@@ -350,50 +350,6 @@ export const kitchenStyles = StyleSheet.create({
     lineHeight: 21,
     color: '#5b4c3b',
   },
-  directionHighlight: {
-    fontWeight: '800',
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  editedDirectionCard: {
-    borderColor: '#d3b183',
-  },
-  directionStepHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  directionStepMeta: {
-    flex: 1,
-    gap: 4,
-  },
-  directionStepNumber: {
-    fontSize: 16,
-    lineHeight: 20,
-    fontWeight: '800',
-  },
-  directionAnnotationStack: {
-    gap: 8,
-    marginTop: 4,
-  },
-  directionAnnotationCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 4,
-  },
-  directionAnnotationLabel: {
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    fontWeight: '800',
-  },
-  directionAnnotationText: {
-    fontSize: 13,
-    lineHeight: 19,
-  },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -537,8 +493,7 @@ export const kitchenStyles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   formTextAreaCompact: {
-    minHeight: 96,
-    textAlignVertical: 'top',
+    minHeight: 110,
   },
   helperCard: {
     borderRadius: 18,
@@ -676,13 +631,42 @@ export const kitchenStyles = StyleSheet.create({
   settingsSheet: {
     width: '100%',
     maxWidth: 420,
+    maxHeight: '88%',
     borderRadius: 28,
     borderWidth: 1,
     padding: 24,
+  },
+  settingsScroll: {
+    width: '100%',
+  },
+  settingsScrollContent: {
     gap: 16,
+    paddingBottom: 4,
   },
   timerSheet: {
-    maxWidth: 520,
+    maxWidth: 460,
+    padding: 20,
+    gap: 12,
+    margin: 16,
+  },
+  timerModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  timerCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  timerCloseText: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 20,
   },
   settingsEyebrow: {
     fontSize: 12,
@@ -738,8 +722,52 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
+  directionHighlight: {
+    borderRadius: 6,
+    paddingHorizontal: 2,
+  },
+  editedDirectionCard: {
+    borderWidth: 2,
+    borderColor: '#d1a65c',
+  },
+  directionStepHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  directionStepMeta: {
+    flex: 1,
+    gap: 4,
+  },
+  directionStepNumber: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '800',
+  },
+  directionAnnotationStack: {
+    gap: 10,
+  },
+  directionAnnotationCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  directionAnnotationLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '800',
+  },
+  directionAnnotationText: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
   timerStack: {
     gap: 12,
+    paddingHorizontal: 12,
   },
   timerHeaderRow: {
     flexDirection: 'row',
@@ -755,7 +783,7 @@ export const kitchenStyles = StyleSheet.create({
     maxWidth: 160,
   },
   timerTrack: {
-    height: 14,
+    height: 10,
     borderRadius: 999,
     overflow: 'hidden',
   },

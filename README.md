@@ -36,6 +36,7 @@ The app currently includes:
 - a shared settings menu in the header
 - dark mode
 - a keep-screen-awake cook mode setting
+- a PDF export action for the full recipe library
 - a shared cook timer popup with up to three timers
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
@@ -53,6 +54,9 @@ This project currently uses:
 - Metro
 - AsyncStorage
 - expo-audio
+- expo-print
+- expo-sharing
+- expo-file-system
 - react-native-svg
 
 ## Why Expo
@@ -227,6 +231,7 @@ Current saved settings:
 - `Dark mode`
 - `Keep screen awake`
 - `Confirm delete`
+- `Export all recipes to PDF` action
 
 How it works:
 
@@ -234,6 +239,9 @@ How it works:
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
 - confirm delete asks before deleting a saved app recipe and does not apply to bulk deletes
+- export builds a single cookbook-style PDF from the full merged recipe library
+- on web, export downloads a PDF file
+- on Android, export first tries to save to a folder you choose and falls back to share if needed
 
 ## Recipe Management
 
@@ -365,6 +373,25 @@ After that:
 - Expo Go started working again
 
 This is a good reminder that Expo package version alignment matters a lot, especially when native modules are involved.
+
+## PDF Export
+
+The settings menu now includes a one-shot export action:
+
+- `Export all recipes to PDF`
+
+Current behavior:
+
+- exports the full recipe library, not the currently filtered `My Recipes` view
+- includes app-created recipes plus Obsidian-backed recipes with local overrides applied
+- includes title, category, cuisine region, time fields, tags, ingredients, directions, notes, and source attribution when present
+- produces a single cookbook-style PDF
+
+Platform behavior:
+
+- web uses `html2pdf.js` to download the generated PDF
+- Android uses `expo-print` to render the PDF, then tries to save it through the Android folder picker
+- if no Android folder is chosen, the app falls back to the native share sheet
 
 ## Native OCR And Dev Builds
 

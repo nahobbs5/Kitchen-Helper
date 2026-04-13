@@ -23,6 +23,7 @@ Current core areas:
 - bulk recipe management
 - cook timers
 - app-wide settings
+- full-library PDF export
 
 The app currently runs on:
 
@@ -41,6 +42,9 @@ The project currently uses:
 - Metro
 - AsyncStorage
 - expo-audio
+- expo-print
+- expo-sharing
+- expo-file-system
 - react-native-svg
 
 ## How These Tools Fit Together
@@ -224,6 +228,7 @@ What this layer currently handles:
 - dark mode
 - keep-screen-awake cook mode
 - the confirm-delete preference
+- the export action entry point in settings
 - the shared cook-timer popup and timer state
 - opening and closing the settings overlay
 - persistence through AsyncStorage
@@ -333,6 +338,7 @@ Current capabilities:
 - a shared settings menu from the header gear
 - dark mode
 - keep-screen-awake cook mode
+- a full-library PDF export from settings
 - a shared cook timer popup with up to three timers
 - responsive layouts for both Android and web
 
@@ -445,6 +451,7 @@ Current saved settings:
 - `Dark mode`
 - `Keep screen awake`
 - `Confirm delete`
+- `Export all recipes to PDF` action
 
 How it works:
 
@@ -453,9 +460,40 @@ How it works:
 - keep-awake mode uses `expo-keep-awake`
 - confirm delete controls whether single app-recipe deletion asks first
 - bulk delete still always confirms, even if the single-delete setting is turned off
+- export builds a single cookbook-style PDF from the effective merged recipe library
+- web export downloads the file through `html2pdf.js`
+- Android export renders the PDF with `expo-print` and tries to save it through the folder picker before falling back to share
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
 
 This was a useful architecture milestone because it introduced real app-wide persisted state.
+
+## PDF Export
+
+The app now supports exporting the full recipe library to a single PDF from Settings.
+
+Important files:
+
+- [`components/settings-menu.tsx`](components/settings-menu.tsx)
+- [`utils/export-recipes.ts`](utils/export-recipes.ts)
+- [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
+
+Current behavior:
+
+- the export uses the same effective recipe view the app treats as canonical
+- app-created recipes are included
+- Obsidian recipes are included
+- local overrides are treated as canonical for export
+- the PDF includes metadata, tags, ingredients, directions, notes, and source attribution when present
+- web downloads the PDF
+- Android tries to save the PDF into a folder selected by the user and falls back to the share sheet if that step is skipped
+
+Implementation notes:
+
+- the export pipeline first builds a normalized `ExportRecipe[]` list
+- it then renders cookbook-style HTML
+- native uses `expo-print`
+- web uses `html2pdf.js`
+- Android file saving uses `expo-file-system`
 
 ## Favorites System
 
@@ -788,6 +826,7 @@ High-level sequence of what has happened:
 30. added website-based recipe import with dedicated source attribution
 31. replaced the old glossary source with a custom cooking dictionary and updated the parser
 32. added a scaled-directions pipeline with per-step analysis, highlights, and local step overrides
+33. added full-library PDF export from settings for web and Android
 
 ## How To Grow This File
 

@@ -105,7 +105,6 @@ export default function HomeScreen() {
                     <Text style={[styles.menuCardEyebrow, { color: palette.accentText }]}>{item.eyebrow}</Text>
                     <Text style={[styles.menuCardTitle, { color: palette.text }]}>{item.title}</Text>
                     <Text style={[styles.menuCardBody, { color: palette.textMuted }]}>{item.body}</Text>
-                    <Text style={[styles.menuCardLink, { color: palette.accent }]}>Open screen</Text>
                   </Pressable>
                 ))}
               </View>

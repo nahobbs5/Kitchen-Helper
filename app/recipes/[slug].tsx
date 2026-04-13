@@ -4,7 +4,6 @@ import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } 
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { ReferenceNav } from '../../components/reference-nav';
-import { ScaledDirectionsList } from '../../components/scaled-directions-list';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
@@ -35,7 +34,6 @@ export default function ObsidianRecipeScreen() {
         directions: override?.directions ?? baseRecipe.directions,
         notes: override?.notes ?? null,
         cuisineRegion: override?.cuisineRegion ?? null,
-        sourceInfo: override?.sourceInfo ?? null,
       }
     : undefined;
   const [multiplier, setMultiplier] = useState(1);
@@ -138,25 +136,6 @@ export default function ObsidianRecipeScreen() {
               note structure, showing the ingredients and directions, and letting you scale the
               ingredient list.
             </Text>
-            {recipe.sourceInfo ? (
-              <View style={styles.listStack}>
-                {recipe.sourceInfo.websiteName ? (
-                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                    Website: {recipe.sourceInfo.websiteName}
-                  </Text>
-                ) : null}
-                {recipe.sourceInfo.author ? (
-                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                    Author: {recipe.sourceInfo.author}
-                  </Text>
-                ) : null}
-                {recipe.sourceInfo.url ? (
-                  <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                    Source: {recipe.sourceInfo.url}
-                  </Text>
-                ) : null}
-              </View>
-            ) : null}
             <View style={styles.actionRow}>
               <Pressable
                 onPress={() =>
@@ -167,7 +146,7 @@ export default function ObsidianRecipeScreen() {
                 }
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
-                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Edit Recipe</Text>
+                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>✏️ Edit Recipe</Text>
               </Pressable>
             </View>
             <ReferenceNav />
@@ -324,15 +303,29 @@ export default function ObsidianRecipeScreen() {
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
               <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe steps</Text>
-              <ScaledDirectionsList
-                slug={recipe.slug}
-                source="obsidian"
-                baseDirections={baseRecipe?.directions ?? recipe.directions}
-                displayDirections={recipe.directions}
-                stepOverrides={override?.directionStepOverrides ?? {}}
-                scale={multiplier}
-                palette={palette}
-              />
+              <View style={styles.listStack}>
+                {recipe.directions.length > 0 ? (
+                  recipe.directions.map((section, sectionIndex) => (
+                    <View
+                      key={`${section.title ?? 'directions'}-${sectionIndex}`}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
+                      {section.items.map((item, itemIndex) => (
+                        <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                          {itemIndex + 1}. {item}
+                        </Text>
+                      ))}
+                    </View>
+                  ))
+                ) : (
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      No directions were detected in this note.
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
 
             <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>

@@ -199,7 +199,7 @@ export default function CookingDictionaryScreen() {
           <Text style={[styles.panelTitle, { color: palette.text }]}>{TAB_LABELS[activeTab]}</Text>
           <View style={styles.listStack}>
             {groupedEntries.map((group) => (
-              <View key={`${activeTab}-${group.letter}`}>
+              <View key={`${activeTab}-${group.letter}`} style={{ gap: 14 }}>
                 <Text
                   style={[
                     styles.panelEyebrow,

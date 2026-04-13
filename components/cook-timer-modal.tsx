@@ -42,7 +42,7 @@ export function CookTimerModal() {
   }
 
   return (
-    <View style={styles.settingsOverlay} pointerEvents="box-none">
+    <View style={styles.settingsOverlay}>
       <Pressable style={styles.settingsBackdrop} onPress={closeCookTimer} />
       <SafeAreaView
         style={[
@@ -54,11 +54,18 @@ export function CookTimerModal() {
           },
         ]}
       >
-        <Text style={[styles.settingsEyebrow, { color: palette.accentText }]}>Cook Timer</Text>
-        <Text style={[styles.settingsTitle, { color: palette.text }]}>Kitchen timers</Text>
-        <Text style={[styles.settingsBody, { color: palette.textMuted }]}>
-          Add up to three timers. Use whole minutes like `5` or `mm:ss` like `1:30`.
-        </Text>
+        <View style={styles.timerModalHeader}>
+          <View style={{ alignItems: 'center', flex: 1 }}>
+            <Text style={[styles.settingsEyebrow, { color: palette.accentText }]}>Cook Timer</Text>
+            <Text style={[styles.settingsTitle, { color: palette.text, fontSize: 20 }]}>Kitchen timers</Text>
+          </View>
+          <Pressable
+            onPress={closeCookTimer}
+            style={[styles.timerCloseButton, { position: 'absolute', right: 0, top: 0, backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+          >
+            <Text style={[styles.timerCloseText, { color: palette.text }]}>✕</Text>
+          </Pressable>
+        </View>
 
         <View style={styles.timerStack}>
           {timers.map((timer) => {
@@ -75,6 +82,8 @@ export function CookTimerModal() {
                   {
                     backgroundColor: palette.surface,
                     borderColor: palette.border,
+                    padding: 12,
+                    gap: 10,
                   },
                 ]}
               >
@@ -180,6 +189,8 @@ export function CookTimerModal() {
             styles.settingsCloseButton,
             {
               backgroundColor: palette.accent,
+              marginHorizontal: 12,
+              marginBottom: 12,
             },
           ]}
         >

@@ -146,6 +146,13 @@ export const allergySubstitutions: AllergySubstitution[] = [
     notes: 'Best for binding in muffins, pancakes, and quick breads.',
   },
   {
+    allergy: 'Egg-free',
+    avoid: '1 egg',
+    swap: '1/4 cup applesauce',
+    ratio: '1 egg replacement',
+    notes: 'Keeps baked goods moist; best for denser cakes and muffins.',
+  },
+  {
     allergy: 'Gluten-free',
     avoid: 'Soy sauce',
     swap: 'Tamari labeled gluten-free',
