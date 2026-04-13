@@ -47,7 +47,7 @@ export default function MyRecipesScreen() {
   const allRecipes = useMemo(
     () => [
       ...customRecipes,
-      ...obsidianRecipes.map((recipe) => {
+      ...obsidianRecipes.filter((recipe) => !recipeOverrideMap[recipe.slug]?.deleted).map((recipe) => {
         const override = recipeOverrideMap[recipe.slug];
 
         return override
@@ -228,9 +228,6 @@ export default function MyRecipesScreen() {
     setShowBulkMetadataEditor(false);
   }
 
-  const selectedRecipes = filteredRecipes.filter((recipe) => selectedRecipeSlugs.includes(recipe.slug));
-  const selectedAppStorageRecipes = selectedRecipes.filter((recipe) => recipe.source === 'App Storage');
-  const selectedVaultRecipes = selectedRecipes.filter((recipe) => recipe.source !== 'App Storage');
   const canApplyBulkMetadata =
     bulkCategory !== 'Keep existing' ||
     bulkApplyCuisineRegion ||
@@ -238,20 +235,18 @@ export default function MyRecipesScreen() {
     bulkFriendlyTagsToAdd.length > 0;
 
   function handleBulkDelete() {
-    if (selectedAppStorageRecipes.length === 0) {
+    if (selectedRecipeSlugs.length === 0) {
       return;
     }
 
-    deleteRecipes(selectedAppStorageRecipes.map((recipe) => recipe.slug));
-    setSelectedRecipeSlugs((current) =>
-      current.filter((slug) => !selectedAppStorageRecipes.some((recipe) => recipe.slug === slug))
-    );
+    deleteRecipes(selectedRecipeSlugs);
+    setSelectedRecipeSlugs([]);
     setShowBulkDeleteConfirm(false);
     setSelectionMode(false);
   }
 
   function handleBulkDeletePress() {
-    if (selectedAppStorageRecipes.length === 0) {
+    if (selectedRecipeSlugs.length === 0) {
       return;
     }
 
@@ -448,19 +443,14 @@ export default function MyRecipesScreen() {
                     onPress={handleBulkDeletePress}
                     style={[
                       styles.dangerButton,
-                      selectedAppStorageRecipes.length === 0 && { backgroundColor: palette.borderAlt },
+                      selectedRecipeSlugs.length === 0 && { backgroundColor: palette.borderAlt },
                     ]}
                   >
                     <Text style={styles.dangerButtonText}>
-                      🗑 Delete {selectedAppStorageRecipes.length} Recipe{selectedAppStorageRecipes.length === 1 ? '' : 's'}
+                      🗑 Delete {selectedRecipeSlugs.length} Recipe{selectedRecipeSlugs.length === 1 ? '' : 's'}
                     </Text>
                   </Pressable>
                 </View>
-                {selectedVaultRecipes.length > 0 ? (
-                  <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
-                    {selectedVaultRecipes.length} selected recipe{selectedVaultRecipes.length === 1 ? '' : 's'} can still use bulk favorites and metadata updates. Bulk delete still skips them.
-                  </Text>
-                ) : null}
                 {showBulkMetadataEditor ? (
                   <View
                     style={[
@@ -613,10 +603,10 @@ export default function MyRecipesScreen() {
                     ]}
                   >
                     <Text style={[styles.dangerCardTitle, { color: palette.text }]}>
-                      Delete {selectedAppStorageRecipes.length} recipe{selectedAppStorageRecipes.length === 1 ? '' : 's'}?
+                      Delete {selectedRecipeSlugs.length} recipe{selectedRecipeSlugs.length === 1 ? '' : 's'}?
                     </Text>
                     <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
-                      This removes the selected app-stored recipes from the library. You can still undo right after.
+                      This removes the selected recipes from the library. Imported recipes are hidden locally, and app-saved recipes can still be undone right after.
                     </Text>
                     <View style={styles.actionRow}>
                       <Pressable

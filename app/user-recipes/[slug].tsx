@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Share, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { ShareIcon } from '../../components/share-icon';
 import { ReferenceNav } from '../../components/reference-nav';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
@@ -21,6 +22,22 @@ export default function UserRecipeScreen() {
   const { confirmDeleteEnabled, palette } = useAppSettings();
   const { customRecipeMap, deleteRecipe, loaded } = useCustomRecipes();
   const { isFavorite, toggleFavorite } = useFavorites();
+
+  function handleShare() {
+    if (!recipe) return;
+    const lines: string[] = [`🍽️ ${recipe.title}`];
+    if (recipe.servings) lines.push(`Serves: ${recipe.servings}`);
+    if (recipe.prepTime) lines.push(`Prep: ${recipe.prepTime}`);
+    if (recipe.cookTime) lines.push(`Cook: ${recipe.cookTime}`);
+    if (recipe.ingredients?.length) {
+      lines.push('', 'Ingredients:', ...recipe.ingredients.map((i) => `• ${i}`));
+    }
+    if (recipe.directions?.length) {
+      lines.push('', 'Directions:', ...recipe.directions.map((d, idx) => `${idx + 1}. ${d}`));
+    }
+    if (recipe.notes) lines.push('', `Notes: ${recipe.notes}`);
+    Share.share({ title: recipe.title, message: lines.join('\n') });
+  }
   const [multiplier, setMultiplier] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const normalizedSlug = Array.isArray(slug) ? slug[0] : slug;
@@ -125,18 +142,26 @@ export default function UserRecipeScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
             <View style={styles.detailCardHeader}>
               <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
-              <Pressable
-                onPress={() => toggleFavorite(recipe.slug)}
-                style={[
-                  styles.starButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isFavorite(recipe.slug) && styles.starButtonActive,
-                ]}
-              >
-                <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                  {isFavorite(recipe.slug) ? '★' : '☆'}
-                </Text>
-              </Pressable>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable
+                  onPress={handleShare}
+                  style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+                >
+                  <ShareIcon color={palette.accentText} />
+                </Pressable>
+                <Pressable
+                  onPress={() => toggleFavorite(recipe.slug)}
+                  style={[
+                    styles.starButton,
+                    { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                    isFavorite(recipe.slug) && styles.starButtonActive,
+                  ]}
+                >
+                  <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                    {isFavorite(recipe.slug) ? '★' : '☆'}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This recipe was added directly inside the app and saved into local app storage.

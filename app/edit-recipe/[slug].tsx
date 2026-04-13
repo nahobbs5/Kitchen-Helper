@@ -52,7 +52,7 @@ export default function EditRecipeScreen() {
       return customRecipe;
     }
 
-    if (!obsidianRecipe) {
+    if (!obsidianRecipe || override?.deleted) {
       return undefined;
     }
 
@@ -142,19 +142,15 @@ export default function EditRecipeScreen() {
   }
 
   function handleDelete() {
-    if (!normalizedSlug || effectiveSource !== 'custom') {
+    if (!normalizedSlug) {
       return;
     }
 
-    deleteRecipe(normalizedSlug);
+    deleteRecipe(normalizedSlug, effectiveSource);
     router.replace('/my-recipes');
   }
 
   function handleDeletePress() {
-    if (effectiveSource !== 'custom') {
-      return;
-    }
-
     if (!confirmDeleteEnabled) {
       handleDelete();
       return;
@@ -480,13 +476,11 @@ export default function EditRecipeScreen() {
                   >
                     <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Save Changes</Text>
                   </Pressable>
-                  {effectiveSource === 'custom' ? (
-                    <Pressable onPress={handleDeletePress} style={styles.dangerButton}>
-                      <Text style={styles.dangerButtonText}>🗑 Delete Recipe</Text>
-                    </Pressable>
-                  ) : null}
+                  <Pressable onPress={handleDeletePress} style={styles.dangerButton}>
+                    <Text style={styles.dangerButtonText}>🗑 Delete Recipe</Text>
+                  </Pressable>
                 </View>
-                {effectiveSource === 'custom' && showDeleteConfirm ? (
+                {showDeleteConfirm ? (
                   <View
                     style={[
                       styles.dangerCard,
@@ -497,7 +491,9 @@ export default function EditRecipeScreen() {
                       Delete {recipe.title}?
                     </Text>
                     <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
-                      This removes the recipe from local app storage and returns you to `My Recipes`.
+                      {effectiveSource === 'custom'
+                        ? 'This removes the recipe from local app storage and returns you to `My Recipes`.'
+                        : 'This hides the imported recipe from the app library and returns you to `My Recipes`. The original Obsidian note is not deleted.'}
                     </Text>
                     <View style={styles.actionRow}>
                       <Pressable

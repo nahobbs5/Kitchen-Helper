@@ -75,6 +75,7 @@ export type RecipeOverride = {
   notes: string | null;
   cuisineRegion: string | null;
   sourceInfo: RecipeSource;
+  deleted: boolean;
   updatedAt: string;
 };
 
@@ -89,7 +90,7 @@ type CustomRecipesContextValue = {
   bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => void;
   updateDirectionStep: (slug: string, stepId: string, text: string, source: 'custom' | 'obsidian') => void;
   resetDirectionStep: (slug: string, stepId: string, source: 'custom' | 'obsidian') => void;
-  deleteRecipe: (slug: string) => void;
+  deleteRecipe: (slug: string, source?: 'custom' | 'obsidian') => void;
   deleteRecipes: (slugs: string[]) => void;
   restoreDeletedRecipes: () => void;
   clearDeletedRecipes: () => void;
@@ -165,6 +166,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                       ? ((recipe as Record<string, unknown>).directionStepOverrides as Record<string, string>)
                       : {},
                   sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
+                  deleted: Boolean((recipe as Record<string, unknown>).deleted),
                 }))
               : []
           );
@@ -260,7 +262,39 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
         return createdRecipe;
       },
-      deleteRecipe: (slug: string) => {
+      deleteRecipe: (slug: string, source: 'custom' | 'obsidian' = 'custom') => {
+        if (source === 'obsidian') {
+          setRecipeOverrides((current) => {
+            const baseRecipe = obsidianRecipeMap[slug];
+
+            if (!baseRecipe) {
+              return current;
+            }
+
+            const existingOverride = current.find((recipe) => recipe.slug === slug);
+            const nextOverride: RecipeOverride = {
+              slug,
+              title: existingOverride?.title ?? baseRecipe.title,
+              category: existingOverride?.category ?? baseRecipe.category,
+              allergyFriendlyTags: existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+              allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
+              ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
+              directions: existingOverride?.directions ?? baseRecipe.directions,
+              directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
+              notes: existingOverride?.notes ?? null,
+              cuisineRegion: existingOverride?.cuisineRegion ?? null,
+              sourceInfo: existingOverride?.sourceInfo ?? null,
+              deleted: true,
+              updatedAt: new Date().toISOString(),
+            };
+
+            const next = [nextOverride, ...current.filter((recipe) => recipe.slug !== slug)];
+            AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
+            return next;
+          });
+          return;
+        }
+
         setCustomRecipes((current) => {
           const removedRecipes = current.filter((recipe) => recipe.slug === slug);
           const next = current.filter((recipe) => recipe.slug !== slug);
@@ -280,6 +314,48 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
           setLastDeletedRecipes(removedRecipes);
           AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+
+        setRecipeOverrides((current) => {
+          const deletedOverrides = slugs
+            .filter((slug) => !customRecipes.some((recipe) => recipe.slug === slug))
+            .map((slug) => {
+              const baseRecipe = obsidianRecipeMap[slug];
+
+              if (!baseRecipe) {
+                return null;
+              }
+
+              const existingOverride = current.find((recipe) => recipe.slug === slug);
+
+              const nextOverride: RecipeOverride = {
+                slug,
+                title: existingOverride?.title ?? baseRecipe.title,
+                category: existingOverride?.category ?? baseRecipe.category,
+                allergyFriendlyTags: existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+                allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
+                ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
+                directions: existingOverride?.directions ?? baseRecipe.directions,
+                directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
+                notes: existingOverride?.notes ?? null,
+                cuisineRegion: existingOverride?.cuisineRegion ?? null,
+                sourceInfo: existingOverride?.sourceInfo ?? null,
+                deleted: true,
+                updatedAt: new Date().toISOString(),
+              };
+
+              return nextOverride;
+            })
+            .filter(Boolean) as RecipeOverride[];
+
+          if (deletedOverrides.length === 0) {
+            return current;
+          }
+
+          const deletedSlugs = new Set(deletedOverrides.map((recipe) => recipe.slug));
+          const next = [...deletedOverrides, ...current.filter((recipe) => !deletedSlugs.has(recipe.slug))];
+          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });
       },
@@ -373,6 +449,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             notes,
             cuisineRegion,
             sourceInfo,
+            deleted: false,
             updatedAt: new Date().toISOString(),
           };
 
@@ -472,6 +549,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                 ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null)
                 : (existingOverride?.cuisineRegion ?? null),
               sourceInfo: existingOverride?.sourceInfo ?? null,
+              deleted: false,
               updatedAt: new Date().toISOString(),
             };
 
@@ -544,6 +622,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             notes: existingOverride?.notes ?? null,
             cuisineRegion: existingOverride?.cuisineRegion ?? null,
             sourceInfo: existingOverride?.sourceInfo ?? null,
+            deleted: false,
             updatedAt: new Date().toISOString(),
           };
 
@@ -603,6 +682,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             ...existingOverride,
             directions: nextDirections,
             directionStepOverrides: buildDirectionStepOverrides(baseRecipe.directions, nextDirections),
+            deleted: false,
             updatedAt: new Date().toISOString(),
           };
 

@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Share, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { ShareIcon } from '../../components/share-icon';
 import { ReferenceNav } from '../../components/reference-nav';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
@@ -19,11 +20,11 @@ export default function ObsidianRecipeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
-  const { recipeOverrideMap } = useCustomRecipes();
+  const { confirmDeleteEnabled, palette } = useAppSettings();
+  const { deleteRecipe, recipeOverrideMap } = useCustomRecipes();
   const baseRecipe = slug ? obsidianRecipeMap[slug] : undefined;
   const override = slug ? recipeOverrideMap[slug] : undefined;
-  const recipe = baseRecipe
+  const recipe = baseRecipe && !override?.deleted
     ? {
         ...baseRecipe,
         title: override?.title ?? baseRecipe.title,
@@ -37,7 +38,46 @@ export default function ObsidianRecipeScreen() {
       }
     : undefined;
   const [multiplier, setMultiplier] = useState(1);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
+
+  function handleDelete() {
+    if (!recipe) {
+      return;
+    }
+
+    deleteRecipe(recipe.slug, 'obsidian');
+    router.replace('/my-recipes');
+  }
+
+  function handleDeletePress() {
+    if (!recipe) {
+      return;
+    }
+
+    if (!confirmDeleteEnabled) {
+      handleDelete();
+      return;
+    }
+
+    setShowDeleteConfirm((current) => !current);
+  }
+
+  function handleShare() {
+    if (!recipe) return;
+    const lines: string[] = [`🍽️ ${recipe.title}`];
+    if (recipe.servings) lines.push(`Serves: ${recipe.servings}`);
+    if (recipe.prepTime) lines.push(`Prep: ${recipe.prepTime}`);
+    if (recipe.cookTime) lines.push(`Cook: ${recipe.cookTime}`);
+    if (recipe.ingredients?.length) {
+      lines.push('', 'Ingredients:', ...recipe.ingredients.map((i) => `• ${i}`));
+    }
+    if (recipe.directions?.length) {
+      lines.push('', 'Directions:', ...recipe.directions.map((d, idx) => `${idx + 1}. ${d}`));
+    }
+    if (recipe.notes) lines.push('', `Notes: ${recipe.notes}`);
+    Share.share({ title: recipe.title, message: lines.join('\n') });
+  }
 
   const baseServings = useMemo(() => extractBaseServings(recipe?.servings ?? null), [recipe?.servings]);
 
@@ -118,18 +158,26 @@ export default function ObsidianRecipeScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
             <View style={styles.detailCardHeader}>
               <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
-              <Pressable
-                onPress={() => toggleFavorite(recipe.slug)}
-                style={[
-                  styles.starButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isFavorite(recipe.slug) && styles.starButtonActive,
-                ]}
-              >
-                <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                  {isFavorite(recipe.slug) ? '★' : '☆'}
-                </Text>
-              </Pressable>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable
+                  onPress={handleShare}
+                  style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+                >
+                  <ShareIcon color={palette.accentText} />
+                </Pressable>
+                <Pressable
+                  onPress={() => toggleFavorite(recipe.slug)}
+                  style={[
+                    styles.starButton,
+                    { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                    isFavorite(recipe.slug) && styles.starButtonActive,
+                  ]}
+                >
+                  <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                    {isFavorite(recipe.slug) ? '★' : '☆'}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page is generated from your Obsidian Markdown note. The app is now reading the
@@ -148,7 +196,37 @@ export default function ObsidianRecipeScreen() {
               >
                 <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>✏️ Edit Recipe</Text>
               </Pressable>
+              <Pressable onPress={handleDeletePress} style={styles.dangerButton}>
+                <Text style={styles.dangerButtonText}>🗑 Delete Recipe</Text>
+              </Pressable>
             </View>
+            {showDeleteConfirm ? (
+              <View
+                style={[
+                  styles.dangerCard,
+                  { backgroundColor: palette.elevatedAlt, borderColor: '#d47a5b' },
+                ]}
+              >
+                <Text style={[styles.dangerCardTitle, { color: palette.text }]}>Delete {recipe.title}?</Text>
+                <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
+                  This hides the imported recipe from the app library. The original Obsidian note is not deleted.
+                </Text>
+                <View style={styles.actionRow}>
+                  <Pressable
+                    onPress={() => setShowDeleteConfirm(false)}
+                    style={[
+                      styles.secondaryButton,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                    ]}
+                  >
+                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
+                  </Pressable>
+                  <Pressable onPress={handleDelete} style={styles.dangerButton}>
+                    <Text style={styles.dangerButtonText}>Delete {recipe.title}</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
             <ReferenceNav />
             {recipe.cuisineRegion ? (
               <View style={styles.tagRow}>
