@@ -350,6 +350,50 @@ export const kitchenStyles = StyleSheet.create({
     lineHeight: 21,
     color: '#5b4c3b',
   },
+  directionHighlight: {
+    fontWeight: '800',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  editedDirectionCard: {
+    borderColor: '#d3b183',
+  },
+  directionStepHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  directionStepMeta: {
+    flex: 1,
+    gap: 4,
+  },
+  directionStepNumber: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '800',
+  },
+  directionAnnotationStack: {
+    gap: 8,
+    marginTop: 4,
+  },
+  directionAnnotationCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  directionAnnotationLabel: {
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    fontWeight: '800',
+  },
+  directionAnnotationText: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -490,6 +534,10 @@ export const kitchenStyles = StyleSheet.create({
   },
   formTextArea: {
     minHeight: 140,
+    textAlignVertical: 'top',
+  },
+  formTextAreaCompact: {
+    minHeight: 96,
     textAlignVertical: 'top',
   },
   helperCard: {

@@ -15,6 +15,7 @@ Current core areas:
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
 - ingredient scaling
+- scaled directions with per-step annotations
 - kitchen conversions
 - allergy-friendly substitutions
 - cooking glossary lookups
@@ -241,6 +242,7 @@ Important files:
 - [`scripts/generate-cooking-dictionary.mjs`]
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
+- [`utils/scaled-directions.ts`]
 - [`components/sample-data.ts`]
 - [`Cooking/`](Cooking)
 
@@ -255,6 +257,7 @@ How this layer works:
 - route files read those generated data files to render screens
 - [`utils/allergen-tags.ts`] helps detect and normalize allergen tags
 - [`utils/ingredient-scaling.ts`] scales ingredient text for recipe pages
+- [`utils/scaled-directions.ts`] normalizes direction steps, detects scale-sensitive cues, and generates step annotations
 - [`utils/web-recipe-import.ts`] parses recipe pages for website import
 - [`components/sample-data.ts`] still provides curated prototype content for reference pages and the preview recipe screen
 
@@ -268,6 +271,7 @@ Important files:
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
 - [`components/reference-nav.tsx`]
+- [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
 
@@ -308,6 +312,7 @@ Current capabilities:
 - photo-based recipe import that prefills the add-recipe form
 - website import that prefills the add-recipe form
 - recipe editing for both app-created and imported recipes
+- per-step direction editing with local overrides
 - filtering recipes by category, cuisine region, favorites, and allergen tags
 - multi-select recipe filters for category, cuisine region, and allergen tags
 - searching recipes by title, category, cuisine region, and allergy tags
@@ -372,6 +377,38 @@ That means:
 - the vault stays untouched
 - the app can still support edits, tags, and metadata cleanup
 - imported recipes and app-created recipes behave much more similarly in the UI
+
+## Scaled Directions
+
+Recipe directions are now treated as normalized steps internally, even though the source content still comes from simple text sections.
+
+Important files:
+
+- [`utils/scaled-directions.ts`](utils/scaled-directions.ts)
+- [`components/scaled-directions-list.tsx`](components/scaled-directions-list.tsx)
+- [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
+
+Current behavior:
+
+- directions are normalized into stable step objects with step IDs
+- each step is analyzed for scaling-sensitive cues such as:
+  - time mentions
+  - temperatures
+  - vessel dimensions and equipment words
+  - surface-cooking verbs like `sear` or `fry`
+  - deep-cook verbs like `bake` or `roast`
+  - doneness cues like `golden`, `set`, or `toothpick`
+- the UI preserves the original direction text and adds annotations on top of it
+- scale-related warnings are generated per step rather than rewriting recipe prose
+- edited steps are stored as local per-step overrides
+- reset returns the step to the original source text and re-enables automatic annotations
+
+Important product decision:
+
+- timers stay visible as original times
+- temperatures are highlighted, not scaled
+- doneness cues are emphasized because they remain more reliable than the timer when scale changes
+- once a step is edited, the app stops auto-appending annotations to that step until it is reset
 
 ## Cooking Dictionary
 
@@ -447,6 +484,7 @@ This context stores:
 - bulk metadata changes
 - recently deleted recipe data for undo
 - website import attribution through a dedicated `Source` structure
+- original directions plus per-step direction overrides for scaled recipe editing
 
 This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault.
 
@@ -503,6 +541,11 @@ Important limitation:
 
 - this importer is less reliable on web because many sites block direct browser fetches with CORS
 - native builds are the more reliable environment for URL import
+
+One useful integration detail:
+
+- website-imported instruction strings now go through the same direction-step splitter used by the scaled-directions system
+- that keeps imported directions more consistent with imported Markdown notes and app-authored recipes
 
 ## Bulk Selection And Bulk Actions
 
@@ -744,6 +787,7 @@ High-level sequence of what has happened:
 29. added a shared cook timer popup with audio, vibration, and timer progress UI
 30. added website-based recipe import with dedicated source attribution
 31. replaced the old glossary source with a custom cooking dictionary and updated the parser
+32. added a scaled-directions pipeline with per-step analysis, highlights, and local step overrides
 
 ## How To Grow This File
 

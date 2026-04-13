@@ -1,3 +1,5 @@
+import { splitDirectionsText } from './scaled-directions';
+
 type ImportedRecipe = {
   title: string;
   source: {
@@ -95,10 +97,7 @@ function extractInstructions(value: unknown): string[] {
   }
 
   if (typeof value === 'string') {
-    return value
-      .split(/\r?\n/)
-      .map((line) => normalizeText(line))
-      .filter(Boolean);
+    return splitDirectionsText(normalizeText(value));
   }
 
   if (Array.isArray(value)) {

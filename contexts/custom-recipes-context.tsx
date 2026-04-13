@@ -9,6 +9,11 @@ import {
   ensureFriendlyTag,
   inferRecipeTags,
 } from '../utils/allergen-tags';
+import {
+  buildDirectionStepOverrides,
+  replaceDirectionStepText,
+  toDirectionSections,
+} from '../utils/scaled-directions';
 
 export type RecipeSource = {
   websiteName: string | null;
@@ -28,7 +33,9 @@ export type UserRecipe = {
   allergyFriendlyTags: string[];
   allergenTags: string[];
   ingredients: RecipeSection[];
+  originalDirections: RecipeSection[];
   directions: RecipeSection[];
+  directionStepOverrides: Record<string, string>;
   notes: string | null;
   cuisineRegion: string | null;
   sourceInfo: RecipeSource;
@@ -64,6 +71,7 @@ export type RecipeOverride = {
   allergenTags: string[];
   ingredients: RecipeSection[];
   directions: RecipeSection[];
+  directionStepOverrides: Record<string, string>;
   notes: string | null;
   cuisineRegion: string | null;
   sourceInfo: RecipeSource;
@@ -79,6 +87,8 @@ type CustomRecipesContextValue = {
   addRecipe: (input: NewUserRecipeInput) => UserRecipe;
   updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => UserRecipe | RecipeOverride | null;
   bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => void;
+  updateDirectionStep: (slug: string, stepId: string, text: string, source: 'custom' | 'obsidian') => void;
+  resetDirectionStep: (slug: string, stepId: string, source: 'custom' | 'obsidian') => void;
   deleteRecipe: (slug: string) => void;
   deleteRecipes: (slugs: string[]) => void;
   restoreDeletedRecipes: () => void;
@@ -146,6 +156,14 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             Array.isArray(parsedCustom)
               ? parsedCustom.map((recipe) => ({
                   ...recipe,
+                  originalDirections: Array.isArray((recipe as Record<string, unknown>).originalDirections)
+                    ? ((recipe as Record<string, unknown>).originalDirections as RecipeSection[])
+                    : (recipe as Record<string, unknown>).directions as RecipeSection[],
+                  directionStepOverrides:
+                    (recipe as Record<string, unknown>).directionStepOverrides &&
+                    typeof (recipe as Record<string, unknown>).directionStepOverrides === 'object'
+                      ? ((recipe as Record<string, unknown>).directionStepOverrides as Record<string, string>)
+                      : {},
                   sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
                 }))
               : []
@@ -158,6 +176,11 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             Array.isArray(parsedOverrides)
               ? parsedOverrides.map((recipe) => ({
                   ...recipe,
+                  directionStepOverrides:
+                    (recipe as Record<string, unknown>).directionStepOverrides &&
+                    typeof (recipe as Record<string, unknown>).directionStepOverrides === 'object'
+                      ? ((recipe as Record<string, unknown>).directionStepOverrides as Record<string, string>)
+                      : {},
                   sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
                 }))
               : []
@@ -221,7 +244,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             allergyFriendlyTags: input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags,
             allergenTags: input.allergenTags ?? inferredTags.allergenTags,
             ingredients: toSection(input.ingredientsText),
-            directions: toSection(input.directionsText),
+            originalDirections: toDirectionSections(input.directionsText),
+            directions: toDirectionSections(input.directionsText),
+            directionStepOverrides: {},
             notes: input.notes?.trim() ? input.notes.trim() : null,
             cuisineRegion: input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null,
             sourceInfo: normalizeSource(input.sourceInfo),
@@ -290,7 +315,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           notes: input.notes,
         });
         const ingredientsSection = toSection(input.ingredientsText);
-        const directionsSection = toSection(input.directionsText);
+        const directionsSection = toDirectionSections(input.directionsText);
         const notes = input.notes?.trim() ? input.notes.trim() : null;
         const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
         const sourceInfo = normalizeSource(input.sourceInfo);
@@ -313,6 +338,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                 allergyFriendlyTags,
                 allergenTags,
                 ingredients: ingredientsSection,
+                directionStepOverrides: buildDirectionStepOverrides(recipe.originalDirections, directionsSection),
                 directions: directionsSection,
                 notes,
                 cuisineRegion,
@@ -332,6 +358,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         let updatedOverride: RecipeOverride | null = null;
 
         setRecipeOverrides((current) => {
+          const baseRecipe = obsidianRecipeMap[slug];
           const override: RecipeOverride = {
             slug,
             title,
@@ -340,6 +367,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             allergenTags,
             ingredients: ingredientsSection,
             directions: directionsSection,
+            directionStepOverrides: baseRecipe
+              ? buildDirectionStepOverrides(baseRecipe.directions, directionsSection)
+              : {},
             notes,
             cuisineRegion,
             sourceInfo,
@@ -436,6 +466,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               allergenTags: nextAllergenTags,
               ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
               directions: existingOverride?.directions ?? baseRecipe.directions,
+              directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
               notes: existingOverride?.notes ?? null,
               cuisineRegion: input.applyCuisineRegion
                 ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null)
@@ -455,6 +486,129 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
           AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(nextOverrides)).catch(() => {});
           return nextOverrides;
+        });
+      },
+      updateDirectionStep: (slug: string, stepId: string, text: string, source: 'custom' | 'obsidian') => {
+        const nextText = text.trim();
+
+        if (!nextText) {
+          return;
+        }
+
+        if (source === 'custom') {
+          setCustomRecipes((current) => {
+            const next = current.map((recipe) => {
+              if (recipe.slug !== slug) {
+                return recipe;
+              }
+
+              const nextDirections = replaceDirectionStepText(recipe.directions, stepId, nextText);
+
+              return {
+                ...recipe,
+                directions: nextDirections,
+                directionStepOverrides: buildDirectionStepOverrides(recipe.originalDirections, nextDirections),
+              };
+            });
+
+            AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
+            return next;
+          });
+
+          return;
+        }
+
+        setRecipeOverrides((current) => {
+          const baseRecipe = obsidianRecipeMap[slug];
+
+          if (!baseRecipe) {
+            return current;
+          }
+
+          const existingOverride = current.find((recipe) => recipe.slug === slug);
+          const nextDirections = replaceDirectionStepText(
+            existingOverride?.directions ?? baseRecipe.directions,
+            stepId,
+            nextText
+          );
+
+          const nextOverride: RecipeOverride = {
+            slug,
+            title: existingOverride?.title ?? baseRecipe.title,
+            category: existingOverride?.category ?? baseRecipe.category,
+            allergyFriendlyTags: existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+            allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
+            ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
+            directions: nextDirections,
+            directionStepOverrides: buildDirectionStepOverrides(baseRecipe.directions, nextDirections),
+            notes: existingOverride?.notes ?? null,
+            cuisineRegion: existingOverride?.cuisineRegion ?? null,
+            sourceInfo: existingOverride?.sourceInfo ?? null,
+            updatedAt: new Date().toISOString(),
+          };
+
+          const next = [nextOverride, ...current.filter((recipe) => recipe.slug !== slug)];
+          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+      },
+      resetDirectionStep: (slug: string, stepId: string, source: 'custom' | 'obsidian') => {
+        if (source === 'custom') {
+          setCustomRecipes((current) => {
+            const next = current.map((recipe) => {
+              if (recipe.slug !== slug) {
+                return recipe;
+              }
+
+              const stepNumber = Number(stepId.replace('step-', ''));
+              const originalText = recipe.originalDirections.flatMap((section) => section.items)[stepNumber - 1];
+
+              if (!originalText) {
+                return recipe;
+              }
+
+              const nextDirections = replaceDirectionStepText(recipe.directions, stepId, originalText);
+
+              return {
+                ...recipe,
+                directions: nextDirections,
+                directionStepOverrides: buildDirectionStepOverrides(recipe.originalDirections, nextDirections),
+              };
+            });
+
+            AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
+            return next;
+          });
+
+          return;
+        }
+
+        setRecipeOverrides((current) => {
+          const baseRecipe = obsidianRecipeMap[slug];
+
+          if (!baseRecipe) {
+            return current;
+          }
+
+          const existingOverride = current.find((recipe) => recipe.slug === slug);
+          const stepNumber = Number(stepId.replace('step-', ''));
+          const originalText = baseRecipe.directions.flatMap((section) => section.items)[stepNumber - 1];
+
+          if (!existingOverride || !originalText) {
+            return current;
+          }
+
+          const nextDirections = replaceDirectionStepText(existingOverride.directions, stepId, originalText);
+          const nextOverride: RecipeOverride = {
+            ...existingOverride,
+            directions: nextDirections,
+            directionStepOverrides: buildDirectionStepOverrides(baseRecipe.directions, nextDirections),
+            updatedAt: new Date().toISOString(),
+          };
+
+          const next = [nextOverride, ...current.filter((recipe) => recipe.slug !== slug)];
+          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
         });
       },
     }),

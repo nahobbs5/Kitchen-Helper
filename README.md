@@ -39,6 +39,7 @@ The app currently includes:
 - a shared cook timer popup with up to three timers
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
+- scaled directions with per-step warnings, cue highlights, and local step edits
 
 ## Stack
 
@@ -142,6 +143,7 @@ Important shared files:
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
 - [`components/reference-nav.tsx`]
+- [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
 - [`components/sample-data.ts`]
@@ -151,6 +153,7 @@ Important shared files:
 - [`contexts/settings-context.tsx`]
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
+- [`utils/scaled-directions.ts`]
 
 ## Data Sources
 
@@ -179,6 +182,7 @@ That includes:
 - local edits to Obsidian-backed recipes
 - bulk metadata changes
 - website-imported recipe source attribution
+- per-step direction overrides for scaled recipe guidance
 
 This lets the app treat all recipes as editable without changing the original Markdown files in the `Cooking` vault.
 
@@ -239,6 +243,7 @@ The app now supports:
 - starting new recipes from a photo with local OCR-assisted prefill
 - starting new recipes from a website URL with schema-first import
 - editing any recipe in the UI
+- editing individual direction steps directly from recipe pages
 - local overrides for Obsidian-backed recipes
 - deleting app-saved recipes
 - restoring recently deleted recipes from an undo banner
@@ -251,6 +256,14 @@ Recipe metadata now includes:
 - allergy-friendly tags
 
 Allergen tags are auto-detected from recipe content and can still be edited manually.
+
+Scaled directions now use a step-based annotation pipeline:
+
+- original direction text stays visible
+- each step is normalized internally
+- the app detects timers, temperatures, equipment references, doneness cues, and cooking-method risks per step
+- the app adds hints on top of the source text instead of rewriting recipe prose
+- edited direction steps are stored locally and can be reset back to the original text
 
 The OCR import path is intentionally review-first:
 
@@ -289,6 +302,26 @@ On web, this importer is less reliable because many recipe sites block browser f
 - bulk metadata editing
 
 Bulk delete always asks for confirmation, regardless of the normal delete-confirm setting.
+
+## Scaled Directions
+
+Recipe pages now use a shared scaled-directions pipeline.
+
+Current behavior:
+
+- directions are normalized into step objects internally
+- original times stay visible and are marked as original timing when scaled
+- target temperatures and doneness cues are visually emphasized
+- scaled-up surface cooking steps can show crowding warnings
+- scaled-up baking or roasting steps can show depth warnings
+- vessel-size references can show equipment-check notes
+- users can edit and reset individual steps directly on recipe pages
+
+Important files:
+
+- [`components/scaled-directions-list.tsx`]
+- [`utils/scaled-directions.ts`]
+- [`contexts/custom-recipes-context.tsx`]
 
 ## Cook Timer
 
