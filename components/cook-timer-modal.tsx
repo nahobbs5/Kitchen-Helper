@@ -42,7 +42,7 @@ export function CookTimerModal() {
   }
 
   return (
-    <View style={styles.settingsOverlay}>
+    <View style={styles.settingsOverlay} pointerEvents="box-none">
       <Pressable style={styles.settingsBackdrop} onPress={closeCookTimer} />
       <SafeAreaView
         style={[

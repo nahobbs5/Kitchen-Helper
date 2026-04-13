@@ -47,21 +47,26 @@ export default function EditRecipeScreen() {
   const obsidianRecipe = normalizedSlug ? obsidianRecipeMap[normalizedSlug] : undefined;
   const override = normalizedSlug ? recipeOverrideMap[normalizedSlug] : undefined;
   const effectiveSource: 'custom' | 'obsidian' = normalizedSource === 'obsidian' ? 'obsidian' : 'custom';
-  const recipe: EditableRecipe | undefined =
-    effectiveSource === 'custom'
-      ? customRecipe
-      : obsidianRecipe
-        ? {
-            ...obsidianRecipe,
-            title: override?.title ?? obsidianRecipe.title,
-            category: override?.category ?? obsidianRecipe.category,
-            ingredients: override?.ingredients ?? obsidianRecipe.ingredients,
-            directions: override?.directions ?? obsidianRecipe.directions,
-            notes: override?.notes ?? null,
-            cuisineRegion: override?.cuisineRegion ?? null,
-            sourceInfo: override?.sourceInfo ?? null,
-          }
-        : undefined;
+  const recipe: EditableRecipe | undefined = useMemo(() => {
+    if (effectiveSource === 'custom') {
+      return customRecipe;
+    }
+
+    if (!obsidianRecipe) {
+      return undefined;
+    }
+
+    return {
+      ...obsidianRecipe,
+      title: override?.title ?? obsidianRecipe.title,
+      category: override?.category ?? obsidianRecipe.category,
+      ingredients: override?.ingredients ?? obsidianRecipe.ingredients,
+      directions: override?.directions ?? obsidianRecipe.directions,
+      notes: override?.notes ?? null,
+      cuisineRegion: override?.cuisineRegion ?? null,
+      sourceInfo: override?.sourceInfo ?? null,
+    };
+  }, [customRecipe, effectiveSource, obsidianRecipe, override]);
 
   const [category, setCategory] = useState<string>(recipe?.category ?? 'Entree');
   const [recipeName, setRecipeName] = useState(recipe?.title ?? '');
@@ -212,7 +217,7 @@ export default function EditRecipeScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <Stack.Screen options={{ title: `Edit ${recipe.title}` }} />
-      <ScrollView contentContainerStyle={styles.page}>
+      <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View
           style={[
             styles.hero,
