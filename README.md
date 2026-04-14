@@ -259,6 +259,68 @@ If you want to save the report to a file for review:
 node scripts/review-documentation.mjs --output .\\dist\\documentation-review.md
 ```
 
+## Tester Setup
+
+There are currently two practical tester paths, depending on whether the goal is general feature coverage or full native-feature validation.
+
+### Web tester
+
+Requires:
+
+- Node.js
+- Corepack
+- the repo checked out locally
+- a browser
+
+Commands:
+
+```powershell
+corepack pnpm install
+corepack pnpm run web
+```
+
+Covers:
+
+- recipe browsing
+- filtering and search
+- editing
+- settings
+- cook timer UI
+- reference pages
+- general web PDF export behavior
+
+### Android tester
+
+Requires:
+
+- Node.js
+- Corepack
+- Android Studio
+- Android SDK / platform tools
+- Java configured through Android Studio or `JAVA_HOME`
+- an Android emulator or USB-debuggable Android phone
+
+Commands:
+
+```powershell
+corepack pnpm install
+corepack pnpm run android
+```
+
+Covers:
+
+- native OCR testing
+- Android file/share flows
+- keep-awake behavior
+- full native feature validation
+
+### Current limitations
+
+- `Expo Go` is acceptable for some general UI checks
+- `Expo Go` is not the right target for OCR/native-module validation
+- website import is less reliable on web because of browser CORS restrictions
+- the easiest tester path is web; the most complete tester path is Android dev build
+
 ## Settings
 
 The app has a shared settings menu available from the gear icon in the header.
