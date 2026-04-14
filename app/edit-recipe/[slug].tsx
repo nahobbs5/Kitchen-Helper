@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
-import { ReferenceNav } from '../../components/reference-nav';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useAppSettings } from '../../contexts/settings-context';
 import type { ObsidianRecipe } from '../../data/obsidian-recipes';
@@ -245,7 +244,6 @@ export default function EditRecipeScreen() {
               </Pressable>
             </View>
 
-            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

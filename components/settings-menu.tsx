@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -6,6 +7,28 @@ import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useCookTimer } from '../contexts/cook-timer-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { buildExportRecipes, exportRecipesToPdf } from '../utils/export-recipes';
+
+export function ReferenceButton() {
+  const router = useRouter();
+  const { palette } = useAppSettings();
+
+  return (
+    <Pressable
+      onPress={() => router.push('/reference')}
+      accessibilityRole="button"
+      accessibilityLabel="Open kitchen reference"
+      style={[
+        styles.settingsGearButton,
+        {
+          backgroundColor: palette.elevated,
+          borderColor: palette.borderAlt,
+        },
+      ]}
+    >
+      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>📖</Text>
+    </Pressable>
+  );
+}
 
 export function CookTimerButton() {
   const { openCookTimer } = useCookTimer();

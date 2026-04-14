@@ -14,7 +14,6 @@ import {
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
-import { ReferenceNav } from '../components/reference-nav';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
@@ -626,7 +625,6 @@ export default function MyRecipesScreen() {
               </View>
             ) : null}
 
-            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

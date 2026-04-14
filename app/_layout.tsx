@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { View } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
-import { CookTimerButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { CookTimerButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
@@ -40,6 +40,7 @@ function RootNavigator() {
         headerBackVisible: true,
         headerRight: () => (
           <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>
+            <ReferenceButton />
             <CookTimerButton />
             <SettingsGearButton />
           </View>
@@ -53,6 +54,7 @@ function RootNavigator() {
         name="index"
         options={{ title: 'Kitchen Helper', headerBackVisible: false }}
       />
+      <Stack.Screen name="reference" options={{ title: 'Kitchen Reference' }} />
       <Stack.Screen name="conversions" options={{ title: 'Conversions' }} />
       <Stack.Screen name="cooking-dictionary" options={{ title: 'Cooking Dictionary' }} />
       <Stack.Screen name="allergy-substitutions" options={{ title: 'Substitutions' }} />

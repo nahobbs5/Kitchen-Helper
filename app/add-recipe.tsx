@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
-import { ReferenceNav } from '../components/reference-nav';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import {
@@ -297,7 +296,6 @@ export default function AddRecipeScreen() {
               </Pressable>
             </View>
 
-            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

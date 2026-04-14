@@ -4,7 +4,6 @@ import { Pressable, SafeAreaView, ScrollView, Share, Text, useWindowDimensions, 
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { ShareIcon } from '../../components/share-icon';
-import { ReferenceNav } from '../../components/reference-nav';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
@@ -207,7 +206,6 @@ export default function UserRecipeScreen() {
                 </View>
               </View>
             ) : null}
-            <ReferenceNav />
             <View style={styles.tagRow}>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
                 <Text style={[styles.tagText, { color: palette.tagText }]}>Saved in app</Text>

@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
-import { ReferenceNav } from '../components/reference-nav';
 import { conversionSections } from '../components/sample-data';
 import { useAppSettings } from '../contexts/settings-context';
 
@@ -62,7 +61,6 @@ export default function ConversionsScreen() {
               folder. It is meant to work like a quick kitchen reference people can reopen while
               cooking or baking.
             </Text>
-            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

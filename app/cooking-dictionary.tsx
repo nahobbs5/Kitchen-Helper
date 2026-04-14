@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
-import { ReferenceNav } from '../components/reference-nav';
 import { useAppSettings } from '../contexts/settings-context';
 import {
   alcoholDictionaryEntries,
@@ -107,7 +106,6 @@ export default function CookingDictionaryScreen() {
               This page turns your custom cooking glossary into a searchable kitchen reference, so
               terms and techniques are easy to look up while you cook.
             </Text>
-            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

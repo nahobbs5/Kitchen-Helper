@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
-import { ReferenceNav } from '../components/reference-nav';
 import {
   baseIngredients,
   baseServings,
@@ -46,7 +45,6 @@ export default function RecipeScreen() {
               This page is now its own route, which is exactly why Expo Router is useful. We can
               treat recipe viewing as a real screen instead of a block inside one giant component.
             </Text>
-            <ReferenceNav />
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>

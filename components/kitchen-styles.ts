@@ -649,6 +649,9 @@ export const kitchenStyles = StyleSheet.create({
     gap: 12,
     margin: 16,
   },
+  referenceSheet: {
+    maxWidth: 560,
+  },
   timerModalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
