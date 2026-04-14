@@ -140,32 +140,30 @@ export default function UserRecipeScreen() {
         >
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
-            <View style={styles.detailCardHeader}>
-              <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Pressable
-                  onPress={handleShare}
-                  style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
-                >
-                  <ShareIcon color={palette.accentText} />
-                </Pressable>
-                <Pressable
-                  onPress={() => toggleFavorite(recipe.slug)}
-                  style={[
-                    styles.starButton,
-                    { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                    isFavorite(recipe.slug) && styles.starButtonActive,
-                  ]}
-                >
-                  <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                    {isFavorite(recipe.slug) ? '★' : '☆'}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
+            <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This recipe was added directly inside the app and saved into local app storage.
             </Text>
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={handleShare}
+                style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+              >
+                <ShareIcon color={palette.accentText} />
+              </Pressable>
+              <Pressable
+                onPress={() => toggleFavorite(recipe.slug)}
+                style={[
+                  styles.starButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isFavorite(recipe.slug) && styles.starButtonActive,
+                ]}
+              >
+                <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                  {isFavorite(recipe.slug) ? '★' : '☆'}
+                </Text>
+              </Pressable>
+            </View>
             <View style={styles.actionRow}>
               <Pressable
                 onPress={() => router.push({ pathname: '/edit-recipe/[slug]', params: { slug: recipe.slug } })}

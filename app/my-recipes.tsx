@@ -4,6 +4,7 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
+  Share,
   Text,
   TextInput,
   useWindowDimensions,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
 import { ReferenceNav } from '../components/reference-nav';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
@@ -820,21 +822,43 @@ export default function MyRecipesScreen() {
                           </Text>
                         </Pressable>
                       ) : (
-                        <Pressable
-                          onPress={(event) => {
-                            event.stopPropagation();
-                            toggleFavorite(recipe.slug);
-                          }}
-                          style={[
-                            styles.starButton,
-                            { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                            isFavorite(recipe.slug) && styles.starButtonActive,
-                          ]}
-                        >
-                          <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                            {isFavorite(recipe.slug) ? '★' : '☆'}
-                          </Text>
-                        </Pressable>
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <Pressable
+                            onPress={(event) => {
+                              event.stopPropagation();
+                              const lines: string[] = [`🍽️ ${recipe.title}`];
+                              if (recipe.servings) lines.push(`Serves: ${recipe.servings}`);
+                              if (recipe.prepTime) lines.push(`Prep: ${recipe.prepTime}`);
+                              if (recipe.cookTime) lines.push(`Cook: ${recipe.cookTime}`);
+                              if (recipe.ingredients?.length) {
+                                lines.push('', 'Ingredients:', ...recipe.ingredients.map((i: string) => `• ${i}`));
+                              }
+                              if (recipe.directions?.length) {
+                                lines.push('', 'Directions:', ...recipe.directions.map((d: string, idx: number) => `${idx + 1}. ${d}`));
+                              }
+                              if (recipe.notes) lines.push('', `Notes: ${recipe.notes}`);
+                              Share.share({ title: recipe.title, message: lines.join('\n') });
+                            }}
+                            style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+                          >
+                            <ShareIcon color={palette.accentText} />
+                          </Pressable>
+                          <Pressable
+                            onPress={(event) => {
+                              event.stopPropagation();
+                              toggleFavorite(recipe.slug);
+                            }}
+                            style={[
+                              styles.starButton,
+                              { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                              isFavorite(recipe.slug) && styles.starButtonActive,
+                            ]}
+                          >
+                            <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                              {isFavorite(recipe.slug) ? '★' : '☆'}
+                            </Text>
+                          </Pressable>
+                        </View>
                       )}
                     </View>
                     {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
