@@ -219,6 +219,7 @@ Important route files:
 - [`app/_layout.tsx`]
 - [`app/add-recipe.tsx`]
 - [`app/index.tsx`]
+- [`app/reference.tsx`]
 - [`app/conversions.tsx`]
 - [`app/cooking-dictionary.tsx`]
 - [`app/allergy-substitutions.tsx`]
@@ -261,6 +262,7 @@ What this layer currently handles:
 - favorite recipe slugs
 - dark mode
 - keep-screen-awake cook mode
+- the number of cook-timer slots
 - the confirm-delete preference
 - the export action entry point in settings
 - the shared cook-timer popup and timer state
@@ -309,7 +311,6 @@ Important files:
 - [`components/cook-timer-modal.tsx`]
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
-- [`components/reference-nav.tsx`]
 - [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
@@ -319,7 +320,7 @@ What this layer does:
 - centralizes shared styles
 - defines the light and dark palettes
 - provides the shared settings gear and overlay
-- provides the shared reference navigation row
+- provides the shared header actions for reference, cook timer, and settings
 - provides the shared cook timer popup
 - provides the delete notice pie-timer UI
 - keeps route files focused on screen behavior instead of duplicated UI plumbing
@@ -343,9 +344,8 @@ The app is still a prototype, but it is already useful.
 Current capabilities:
 
 - a home screen that acts as a kitchen tools hub
-- a searchable conversions page with section filters
-- a searchable allergy substitutions page
-- a searchable cooking dictionary page with letter filters
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
+- dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - a `My Recipes` page backed by real Obsidian recipe notes
 - recipe creation in app storage
 - photo-based recipe import that prefills the add-recipe form
@@ -373,14 +373,13 @@ Current capabilities:
 - dark mode
 - keep-screen-awake cook mode
 - a full-library PDF export from settings
-- a shared cook timer popup with up to three timers
+- a shared cook timer popup with a configurable number of timer slots
 - responsive layouts for both Android and web
 
 What it does not yet support:
 
 - user accounts
 - sync across devices
-- recipe authoring inside the app
 - pantry tracking
 - grocery list generation
 - dedicated step-linked cooking mode
@@ -484,6 +483,7 @@ Current saved settings:
 
 - `Dark mode`
 - `Keep screen awake`
+- `Number of timers`
 - `Confirm delete`
 - `Export all recipes to PDF` action
 
@@ -492,6 +492,7 @@ How it works:
 - settings are stored locally with AsyncStorage
 - dark mode swaps between centralized light and dark palettes
 - keep-awake mode uses `expo-keep-awake`
+- timer count controls how many timer slots the shared cook timer exposes and is clamped to `1-6`
 - confirm delete controls whether single app-recipe deletion asks first
 - bulk delete still always confirms, even if the single-delete setting is turned off
 - export builds a single cookbook-style PDF from the effective merged recipe library
@@ -635,8 +636,9 @@ Current bulk behaviors include:
 
 One important product decision here:
 
-- bulk delete is still limited to recipes the app owns in storage
-- imported recipes can still be selected for bulk metadata and favorites because those operate through local overrides instead of file deletion
+- bulk delete applies to the full visible library
+- imported recipes are hidden locally through recipe overrides instead of deleting the source Markdown files
+- app-saved recipes still use the undo banner because they are removed from app storage
 
 ## Allergen And Metadata Tagging
 
@@ -664,17 +666,18 @@ The visual system is also intentional:
 
 ## Cook Timer
 
-The app now includes a shared cook timer popup available from the same reference navigation pattern used for conversions, substitutions, and the cooking dictionary.
+The app now includes a shared cook timer popup available from the header on every screen.
 
 Important files:
 
 - [`components/cook-timer-modal.tsx`]
 - [`contexts/cook-timer-context.tsx`]
-- [`components/reference-nav.tsx`]
+- [`components/settings-menu.tsx`]
+- [`contexts/settings-context.tsx`]
 
 Current behavior:
 
-- up to three timers
+- configurable timer slots from `1-6`
 - custom timer names
 - whole-minute or `mm:ss` input
 - shrinking horizontal progress bars
@@ -726,6 +729,7 @@ Important scripts currently include:
 - `android`
 - `ios`
 - `web`
+- `review:docs`
 - `sync:recipes`
 - `sync:dictionary`
 

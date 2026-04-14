@@ -21,9 +21,8 @@ It is focused on practical kitchen utilities:
 The app currently includes:
 
 - a routed home screen that acts like a kitchen tools hub
-- a searchable conversions page
-- a searchable allergy substitutions page
-- a searchable cooking dictionary page
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
+- dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
 - locally created recipes stored in app storage
 - clickable recipe detail pages generated from Markdown
@@ -37,7 +36,7 @@ The app currently includes:
 - dark mode
 - a keep-screen-awake cook mode setting
 - a PDF export action for the full recipe library
-- a shared cook timer popup with up to three timers
+- a shared cook timer popup with a configurable number of timer slots
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
 - scaled directions with per-step warnings, cue highlights, and local step edits
@@ -132,6 +131,7 @@ Important routed files:
 - [`app/_layout.tsx`]
 - [`app/add-recipe.tsx`]
 - [`app/index.tsx`]
+- [`app/reference.tsx`]
 - [`app/conversions.tsx`]
 - [`app/cooking-dictionary.tsx`]
 - [`app/allergy-substitutions.tsx`]
@@ -146,7 +146,6 @@ Important shared files:
 - [`components/cook-timer-modal.tsx`]
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
-- [`components/reference-nav.tsx`]
 - [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
@@ -268,6 +267,7 @@ Current saved settings:
 
 - `Dark mode`
 - `Keep screen awake`
+- `Number of timers`
 - `Confirm delete`
 - `Export all recipes to PDF` action
 
@@ -276,6 +276,7 @@ How it works:
 - settings are stored locally with AsyncStorage
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
+- number of timers controls how many cook-timer slots are available and is clamped to `1-6`
 - confirm delete asks before deleting a saved app recipe and does not apply to bulk deletes
 - export builds a single cookbook-style PDF from the full merged recipe library
 - on web, export downloads a PDF file
@@ -371,11 +372,11 @@ Important files:
 
 ## Cook Timer
 
-The app now includes a shared cook timer popup available anywhere the reference nav appears.
+The app now includes a shared cook timer popup available from the header.
 
 Current timer behavior:
 
-- up to three timers
+- configurable timer slots from `1-6`
 - custom names
 - minutes or `mm:ss` input
 - shrinking horizontal progress bars
@@ -387,7 +388,8 @@ Important files:
 
 - [`components/cook-timer-modal.tsx`]
 - [`contexts/cook-timer-context.tsx`]
-- [`components/reference-nav.tsx`]
+- [`components/settings-menu.tsx`]
+- [`contexts/settings-context.tsx`]
 
 ## Notes About Expo Go and Dependency Alignment
 
