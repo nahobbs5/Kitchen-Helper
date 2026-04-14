@@ -3,8 +3,31 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
+import { useCookTimer } from '../contexts/cook-timer-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { buildExportRecipes, exportRecipesToPdf } from '../utils/export-recipes';
+
+export function CookTimerButton() {
+  const { openCookTimer } = useCookTimer();
+  const { palette } = useAppSettings();
+
+  return (
+    <Pressable
+      onPress={openCookTimer}
+      accessibilityRole="button"
+      accessibilityLabel="Open cook timer"
+      style={[
+        styles.settingsGearButton,
+        {
+          backgroundColor: palette.elevated,
+          borderColor: palette.borderAlt,
+        },
+      ]}
+    >
+      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>⏳</Text>
+    </Pressable>
+  );
+}
 
 export function SettingsGearButton() {
   const { openSettings, palette } = useAppSettings();

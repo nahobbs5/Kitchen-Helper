@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Pressable, SafeAreaView, Text, TextInput, Vibration, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, TextInput, Vibration, useWindowDimensions, View } from 'react-native';
 import { useAudioPlayer } from 'expo-audio';
 
 import { kitchenStyles as styles } from './kitchen-styles';
@@ -21,6 +21,8 @@ export function CookTimerModal() {
     updateTimerLabel,
   } = useCookTimer();
   const { palette } = useAppSettings();
+  const { width } = useWindowDimensions();
+  const isWide = width >= 960;
   const player = useAudioPlayer(timerBeep);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export function CookTimerModal() {
             backgroundColor: palette.elevated,
             borderColor: palette.borderAlt,
           },
+          isWide && { padding: 20, gap: 20 },
         ]}
       >
         <View style={styles.timerModalHeader}>
@@ -67,7 +70,7 @@ export function CookTimerModal() {
           </Pressable>
         </View>
 
-        <View style={styles.timerStack}>
+        <ScrollView style={styles.timerStack} contentContainerStyle={{ gap: 8, paddingVertical: 8 }}>
           {timers.map((timer) => {
             const progress = timer.durationMs > 0 ? timer.remainingMs / timer.durationMs : 0;
             const hasFinished = !timer.active && timer.durationMs > 0 && timer.remainingMs === 0;
@@ -181,7 +184,7 @@ export function CookTimerModal() {
               </View>
             );
           })}
-        </View>
+        </ScrollView>
 
         <Pressable
           onPress={closeCookTimer}

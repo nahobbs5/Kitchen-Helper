@@ -1,7 +1,8 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
-import { SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { CookTimerButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
@@ -37,7 +38,12 @@ function RootNavigator() {
           fontWeight: '700',
         },
         headerBackVisible: true,
-        headerRight: () => <SettingsGearButton />,
+        headerRight: () => (
+          <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>
+            <CookTimerButton />
+            <SettingsGearButton />
+          </View>
+        ),
         contentStyle: {
           backgroundColor: palette.background,
         },
