@@ -631,8 +631,7 @@ export default function MyRecipesScreen() {
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Vault snapshot</Text>
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Filter by recipe type here on the page, or tap one of the folder cards below for the
-              same result. Favorites and newly added app recipes show up in the same library view.
+              Search or filter your recipes.
             </Text>
 
             <TextInput
@@ -934,7 +933,7 @@ export default function MyRecipesScreen() {
             </View>
           </View>
 
-          <View style={styles.secondaryColumn}>
+          {isWide ? <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe folders</Text>
               <Text style={[styles.panelTitle, { color: palette.text }]}>Organized from your vault</Text>
@@ -987,7 +986,7 @@ export default function MyRecipesScreen() {
                 </Pressable>
               </View>
             </View>
-          </View>
+          </View> : null}
         </View>
       </ScrollView>
     </SafeAreaView>
