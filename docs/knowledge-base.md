@@ -117,6 +117,7 @@ On this machine it is run through `corepack`, so most commands look like:
 corepack pnpm install
 corepack pnpm run web
 corepack pnpm run android
+corepack pnpm run review:docs
 corepack pnpm sync:recipes
 corepack pnpm sync:dictionary
 ```
@@ -166,6 +167,39 @@ Important top-level areas:
 - [`README.md`](README.md)
 - [`package.json`](package.json)
 - [`app.json`](app.json)
+
+## Documentation Review Workflow
+
+The project now has a manual, draft-only documentation review script.
+
+Command:
+
+```powershell
+corepack pnpm run review:docs
+```
+
+Purpose:
+
+- inspect the current repo state before proposing documentation updates
+- detect user-visible feature changes, architecture changes, dependency changes, and workflow changes
+- compare those findings against `README.md` and `docs/knowledge-base.md`
+- produce a structured draft report without editing either file
+
+The report always uses this structure:
+
+- `New since last docs update`
+- `README changes needed`
+- `Knowledge-base changes needed`
+- `Potential stale statements to remove`
+- `Confidence / manual review notes`
+
+This matters because not all project changes are made inside Codex, so documentation updates must be derived from the repo itself rather than chat history.
+
+If you want to save the report instead of printing it only to the terminal:
+
+```powershell
+node scripts/review-documentation.mjs --output .\\dist\\documentation-review.md
+```
 
 ## App Architecture
 

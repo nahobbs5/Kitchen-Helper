@@ -959,29 +959,6 @@ export default function MyRecipesScreen() {
                 </Pressable>
               </View>
             </View>
-
-            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Next integration step</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>
-                Use the note contents themselves
-              </Text>
-              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                Your recipe library is now backed by the actual Obsidian notes in `Cooking/`, so
-                titles, ingredients, directions, and much of the metadata are already flowing into
-                the app.
-              </Text>
-
-              <View style={styles.actionRow}>
-                <Pressable
-                  onPress={() => router.push('/recipe')}
-                  style={[styles.primaryButton, { backgroundColor: palette.accent }]}
-                >
-                  <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                    Open recipe preview
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
           </View> : null}
         </View>
       </ScrollView>

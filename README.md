@@ -206,6 +206,7 @@ Useful scripts in [`package.json`](package.json):
 - `android`
 - `ios`
 - `web`
+- `review:docs`
 - `sync:recipes`
 - `sync:dictionary`
 
@@ -214,6 +215,7 @@ Commands:
 ```powershell
 corepack pnpm run web
 corepack pnpm run android
+corepack pnpm run review:docs
 corepack pnpm sync:recipes
 corepack pnpm sync:dictionary
 ```
@@ -221,6 +223,42 @@ corepack pnpm sync:dictionary
 Use `sync:recipes` after changing recipe Markdown files.
 
 Use `sync:dictionary` after changing the cooking dictionary resource.
+
+Use `review:docs` to generate a draft-only documentation delta report after reviewing the current repo state.
+
+## Documentation Review
+
+The project now includes a manual documentation review workflow instead of automatic doc edits.
+
+Run:
+
+```powershell
+corepack pnpm run review:docs
+```
+
+What it does:
+
+- inspects the repo first instead of relying on chat history
+- reviews app routes, components, contexts, scripts, utilities, and package changes
+- compares the detected app state against `README.md` and `docs/knowledge-base.md`
+- prints a structured draft report with:
+  - `New since last docs update`
+  - `README changes needed`
+  - `Knowledge-base changes needed`
+  - `Potential stale statements to remove`
+  - `Confidence / manual review notes`
+
+What it does not do:
+
+- it does not edit docs
+- it does not assume all recent changes came from Codex
+- it does not treat conversation history as source of truth
+
+If you want to save the report to a file for review:
+
+```powershell
+node scripts/review-documentation.mjs --output .\\dist\\documentation-review.md
+```
 
 ## Settings
 

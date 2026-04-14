@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
@@ -84,10 +84,13 @@ export function SettingsMenuModal() {
     isSettingsOpen,
     keepScreenAwake,
     palette,
+    timerCount,
     toggleConfirmDelete,
     toggleDarkMode,
     toggleKeepScreenAwake,
+    setTimerCount,
   } = useAppSettings();
+  const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
   const { customRecipes, loaded, recipeOverrideMap } = useCustomRecipes();
 
   const exportRecipes = useMemo(
@@ -181,6 +184,42 @@ export function SettingsMenuModal() {
                   {darkModeEnabled ? 'On' : 'Off'}
                 </Text>
               </Pressable>
+            </View>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsCopy}>
+                <Text style={[styles.settingsLabel, { color: palette.text }]}>Number of timers</Text>
+                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                  How many timer slots to show in the cook timer (1–6).
+                </Text>
+              </View>
+              <TextInput
+                value={timerCountInput}
+                onChangeText={(text) => {
+                  setTimerCountInput(text);
+                  const n = parseInt(text, 10);
+                  if (!isNaN(n) && n >= 1 && n <= 6) {
+                    setTimerCount(n);
+                  }
+                }}
+                onBlur={() => {
+                  const n = parseInt(timerCountInput, 10);
+                  if (isNaN(n) || n < 1 || n > 6) {
+                    setTimerCountInput(String(timerCount));
+                  }
+                }}
+                keyboardType="number-pad"
+                maxLength={1}
+                style={[
+                  styles.numberButton,
+                  {
+                    width: 72,
+                    textAlign: 'center',
+                    backgroundColor: palette.elevatedAlt,
+                    borderColor: palette.borderAlt,
+                    color: palette.text,
+                  },
+                ]}
+              />
             </View>
           </View>
 
@@ -316,7 +355,7 @@ export function SettingsMenuModal() {
               },
             ]}
           >
-            <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>Done</Text>
+            <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>Save</Text>
           </Pressable>
         </ScrollView>
       </View>

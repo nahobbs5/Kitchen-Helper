@@ -1,4 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import { useAppSettings } from './settings-context';
 
 export type CookTimerSlot = {
   id: number;
@@ -23,16 +24,18 @@ type CookTimerContextValue = {
   resetTimer: (id: number) => void;
 };
 
-const initialTimers: CookTimerSlot[] = [1, 2, 3].map((id) => ({
-  id,
-  label: '',
-  durationInput: '',
-  durationMs: 0,
-  remainingMs: 0,
-  endAt: null,
-  active: false,
-  hasStarted: false,
-}));
+function makeTimers(count: number): CookTimerSlot[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    label: '',
+    durationInput: '',
+    durationMs: 0,
+    remainingMs: 0,
+    endAt: null,
+    active: false,
+    hasStarted: false,
+  }));
+}
 
 const CookTimerContext = createContext<CookTimerContextValue | undefined>(undefined);
 
@@ -90,9 +93,48 @@ export function formatTimerRemaining(ms: number) {
 }
 
 export function CookTimerProvider({ children }: PropsWithChildren) {
+  const { timerCount } = useAppSettings();
   const [completedEventCount, setCompletedEventCount] = useState(0);
   const [isCookTimerOpen, setIsCookTimerOpen] = useState(false);
-  const [timers, setTimers] = useState<CookTimerSlot[]>(initialTimers);
+  const [timers, setTimers] = useState<CookTimerSlot[]>(() => makeTimers(timerCount));
+
+  useEffect(() => {
+    setTimers((current) => {
+      if (current.length === timerCount) {
+        return current;
+      }
+
+      if (timerCount > current.length) {
+        const nextId = current.length > 0 ? Math.max(...current.map((t) => t.id)) + 1 : 1;
+        const newSlots: CookTimerSlot[] = Array.from(
+          { length: timerCount - current.length },
+          (_, i) => ({
+            id: nextId + i,
+            label: '',
+            durationInput: '',
+            durationMs: 0,
+            remainingMs: 0,
+            endAt: null,
+            active: false,
+            hasStarted: false,
+          })
+        );
+        return [...current, ...newSlots];
+      }
+
+      // Trim from the end, preserving active or started slots
+      let result = [...current];
+      while (result.length > timerCount) {
+        const last = result[result.length - 1];
+        if (!last.active && !last.hasStarted) {
+          result = result.slice(0, -1);
+        } else {
+          break;
+        }
+      }
+      return result;
+    });
+  }, [timerCount]);
 
   useEffect(() => {
     const hasActiveTimers = timers.some((timer) => timer.active);

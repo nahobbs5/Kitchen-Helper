@@ -6,24 +6,6 @@ import { useAppSettings } from '../contexts/settings-context';
 
 const menuItems = [
   {
-    eyebrow: 'Reference',
-    title: 'Common conversions',
-    body: 'A kitchen-friendly cheat sheet for cups, spoons, temperatures, and ingredient weights.',
-    href: '/conversions' as const,
-  },
-  {
-    eyebrow: 'Glossary',
-    title: 'Cooking dictionary',
-    body: 'Search cooking terms, ingredients, and technique definitions from your saved glossary resource.',
-    href: '/cooking-dictionary' as const,
-  },
-  {
-    eyebrow: 'Allergy help',
-    title: 'Common allergy substitutions',
-    body: 'Practical swap ideas for dairy-free, egg-free, gluten-free, nut-free, and soy-free cooking.',
-    href: '/allergy-substitutions' as const,
-  },
-  {
     eyebrow: 'Your library',
     title: 'My Recipes',
     body: 'A home for saved recipes now, with room for Obsidian-imported recipes later.',

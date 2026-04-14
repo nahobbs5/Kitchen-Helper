@@ -16,6 +16,7 @@ type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
   confirmDeleteEnabled: boolean;
+  timerCount: number;
   loaded: boolean;
   palette: AppPalette;
   isSettingsOpen: boolean;
@@ -24,6 +25,7 @@ type SettingsContextValue = {
   toggleDarkMode: (value?: boolean) => void;
   toggleKeepScreenAwake: (value?: boolean) => void;
   toggleConfirmDelete: (value?: boolean) => void;
+  setTimerCount: (value: number) => void;
 };
 
 const SETTINGS_KEY = 'kitchen-helper.app-settings';
@@ -34,12 +36,14 @@ type StoredSettings = {
   darkModeEnabled?: boolean;
   keepScreenAwake?: boolean;
   confirmDeleteEnabled?: boolean;
+  timerCount?: number;
 };
 
 export function SettingsProvider({ children }: PropsWithChildren) {
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(true);
+  const [timerCount, setTimerCount] = useState(3);
   const [loaded, setLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const wakeLockActiveRef = useRef(false);
@@ -63,6 +67,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           setDarkModeEnabled(Boolean(parsed.darkModeEnabled));
           setKeepScreenAwake(Boolean(parsed.keepScreenAwake));
           setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? true);
+          if (typeof parsed.timerCount === 'number' && parsed.timerCount >= 1) {
+            setTimerCount(parsed.timerCount);
+          }
         } finally {
           setLoaded(true);
         }
@@ -89,9 +96,10 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         darkModeEnabled,
         keepScreenAwake,
         confirmDeleteEnabled,
+        timerCount,
       } satisfies StoredSettings)
     ).catch(() => {});
-  }, [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, loaded]);
+  }, [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded]);
 
   useEffect(() => {
     if (!loaded) {
@@ -126,6 +134,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       darkModeEnabled,
       keepScreenAwake,
       confirmDeleteEnabled,
+      timerCount,
       loaded,
       palette: darkModeEnabled ? darkPalette : lightPalette,
       isSettingsOpen,
@@ -137,8 +146,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setKeepScreenAwake((current) => (typeof value === 'boolean' ? value : !current)),
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
+      setTimerCount: (value: number) => setTimerCount(Math.max(1, Math.min(6, value))),
     }),
-    [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, loaded, isSettingsOpen]
+    [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded, isSettingsOpen]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
