@@ -331,10 +331,6 @@ export default function MyRecipesScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This page now combines the recipe notes from your `Cooking` Obsidian vault with
-              recipes saved directly inside the app, so your library can grow from both places.
-            </Text>
             {lastDeletedRecipes.length > 0 ? (
               <View
                 style={[

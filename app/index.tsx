@@ -111,29 +111,6 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <View style={styles.secondaryColumn}>
-            <View
-              style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
-            >
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Why these pages matter</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Reference content needs a home</Text>
-              <Text style={[styles.panelText, { color: palette.textMuted }]}>
-                Conversions and allergy substitutions are the kind of pages people reopen often.
-                Giving them dedicated routes makes the app feel more dependable.
-              </Text>
-            </View>
-
-            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe direction</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>
-                My Recipes is now part of the structure
-              </Text>
-              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                That page is where saved recipes can live now, and later it can become the place
-                where your Obsidian recipe notes get imported or synced.
-              </Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
