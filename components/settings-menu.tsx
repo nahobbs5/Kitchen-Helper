@@ -10,11 +10,18 @@ import { buildExportRecipes, exportRecipesToPdf } from '../utils/export-recipes'
 
 export function ReferenceButton() {
   const router = useRouter();
+  const pathname = usePathname();
   const { palette } = useAppSettings();
+  const isReferenceScreen = pathname === '/reference';
 
   return (
     <Pressable
-      onPress={() => router.push('/reference')}
+      onPress={() => {
+        if (!isReferenceScreen) {
+          router.push('/reference');
+        }
+      }}
+      disabled={isReferenceScreen}
       accessibilityRole="button"
       accessibilityLabel="Open kitchen reference"
       style={[
@@ -22,6 +29,7 @@ export function ReferenceButton() {
         {
           backgroundColor: palette.elevated,
           borderColor: palette.borderAlt,
+          opacity: isReferenceScreen ? 0.45 : 1,
         },
       ]}
     >
@@ -56,6 +64,36 @@ export function HomeButton() {
       ]}
     >
       <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🏠</Text>
+    </Pressable>
+  );
+}
+
+export function MyRecipesButton() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { palette } = useAppSettings();
+  const isMyRecipesScreen = pathname === '/my-recipes';
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (!isMyRecipesScreen) {
+          router.push('/my-recipes');
+        }
+      }}
+      disabled={isMyRecipesScreen}
+      accessibilityRole="button"
+      accessibilityLabel="Open my recipes"
+      style={[
+        styles.settingsGearButton,
+        {
+          backgroundColor: palette.elevated,
+          borderColor: palette.borderAlt,
+          opacity: isMyRecipesScreen ? 0.45 : 1,
+        },
+      ]}
+    >
+      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🍳</Text>
     </Pressable>
   );
 }

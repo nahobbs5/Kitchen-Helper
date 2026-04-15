@@ -17,6 +17,12 @@ const menuItems = [
     body: 'A curated imported-only recipe library built from the sample Obsidian cooking folders.',
     href: '/recipe' as const,
   },
+  {
+    eyebrow: 'Reference tools',
+    title: 'Kitchen Guides',
+    body: 'Conversions, substitutions, and cooking dictionary tools collected in one quick-reference space.',
+    href: '/reference' as const,
+  },
 ];
 
 export default function HomeScreen() {
@@ -38,11 +44,6 @@ export default function HomeScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Kitchen utility hub</Text>
             <Text style={[styles.title, { color: palette.text }]}>Useful kitchen tools in one place</Text>
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              The home screen now acts like a menu for the app. It links out to recipe libraries,
-              imported samples, and kitchen reference tools instead of keeping everything on one screen.
-            </Text>
-
             <View style={styles.badgeRow}>
               <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
                 Conversions

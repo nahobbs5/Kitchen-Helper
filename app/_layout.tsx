@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
-import { CookTimerButton, HomeButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
@@ -26,6 +26,8 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const { palette } = useAppSettings();
+  const { width } = useWindowDimensions();
+  const isCompact = width < 768;
 
   return (
     <Stack
@@ -37,10 +39,12 @@ function RootNavigator() {
         headerTitleStyle: {
           fontWeight: '700',
         },
+        headerTitle: isCompact ? 'KH' : undefined,
         headerBackVisible: true,
         headerRight: () => (
           <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>
             <HomeButton />
+            <MyRecipesButton />
             <ReferenceButton />
             <CookTimerButton />
             <SettingsGearButton />
