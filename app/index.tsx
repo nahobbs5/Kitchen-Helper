@@ -9,13 +9,13 @@ const menuItems = [
   {
     eyebrow: 'Your library',
     title: 'My Recipes',
-    body: 'A home for saved recipes now, with room for Obsidian-imported recipes later.',
+    body: 'A personal library for your recipes.',
     href: '/my-recipes' as const,
   },
   {
     eyebrow: 'Imported library',
     title: 'Sample Recipes',
-    body: 'A curated imported-only recipe library built from the sample Obsidian cooking folders.',
+    body: 'A curated listing of tested favorites from the developer.',
     href: '/recipe' as const,
   },
   {
@@ -45,7 +45,7 @@ export default function HomeScreen() {
         >
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Kitchen utility hub</Text>
-            <Text style={[styles.title, { color: palette.text }]}>Useful kitchen tools in one place</Text>
+            <Text style={[styles.title, { color: palette.text }]}>Your Kitchen. Your Way.</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               {configured
                 ? user?.email
@@ -53,20 +53,6 @@ export default function HomeScreen() {
                   : 'Sign in from Settings to sync your recipe library across mobile and web.'
                 : 'Add Supabase sync config to enable a shared recipe library across devices.'}
             </Text>
-            <View style={styles.badgeRow}>
-              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
-                Conversions
-              </Text>
-              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
-                Dictionary
-              </Text>
-              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
-                Allergy swaps
-              </Text>
-              <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
-                My recipes
-              </Text>
-            </View>
           </View>
         </View>
 

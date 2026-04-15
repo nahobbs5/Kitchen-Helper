@@ -348,7 +348,6 @@ export default function ObsidianRecipeScreen() {
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Ingredients</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled from Markdown</Text>
               <View style={styles.listStack}>
                 {scaledIngredients.length > 0 ? (
                   scaledIngredients.map((section, index) => (
@@ -378,7 +377,6 @@ export default function ObsidianRecipeScreen() {
           <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe steps</Text>
               <View style={styles.listStack}>
                 {recipe.directions.length > 0 ? (
                   recipe.directions.map((section, sectionIndex) => (
@@ -406,7 +404,6 @@ export default function ObsidianRecipeScreen() {
 
             <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
               <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe notes</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Markdown-backed recipe</Text>
               <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
                 If you update the Markdown file, rerun `corepack pnpm sync:recipes` to regenerate
                 the app data from the vault. Edits made here are stored locally in the app as

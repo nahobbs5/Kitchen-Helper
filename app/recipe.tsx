@@ -84,7 +84,7 @@ export default function SampleRecipesScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Imported recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>Sample Recipes</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              A curated library of tested favorites from the developer.
+              A curated listing of tested favorites from the developer.
             </Text>
           </View>
 
@@ -154,9 +154,7 @@ export default function SampleRecipesScreen() {
                   >
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      {recipe.source.replace(/^Cooking\//, '')}
-                    </Text>
+
                     {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
                       <View style={styles.tagRow}>
                         <View style={styles.cuisineTag}>

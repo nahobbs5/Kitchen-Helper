@@ -171,10 +171,6 @@ export default function ReferenceScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Quick reference</Text>
             <Text style={[styles.title, { color: palette.text }]}>Kitchen guides</Text>
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              Conversions, ingredient substitutions, and a cooking dictionary all in one place.
-            </Text>
-
             <View style={styles.numberGrid}>
               {MAIN_TABS.map((tab) => {
                 const isActive = activeTab === tab.key;

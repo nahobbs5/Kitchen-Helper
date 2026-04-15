@@ -282,50 +282,17 @@ export default function AddRecipeScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe form</Text>
             <Text style={[styles.title, { color: palette.text }]}>Add a new recipe</Text>
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              You can enter a recipe manually, start with a photo, or import from a website. Each
-              mode fills the same editable recipe form before you save it.
-            </Text>
-
             <View style={styles.actionRow}>
               <Pressable
                 onPress={() => router.push('/my-recipes')}
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
                 <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                  Back to My Recipes
+                  ↩ Back to My Recipes
                 </Text>
               </Pressable>
             </View>
 
-          </View>
-
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Input modes</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Manual, photo, or website import</Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Photo import uses local OCR to pull text from a recipe image, then tries to split it
-              into title, ingredients, directions, and notes. It is designed to save typing, not
-              to replace reviewing the result.
-            </Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Required fields are still marked with `*`.
-            </Text>
-
-            <View style={styles.tagRow}>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Manual entry</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Photo OCR</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Website import</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Editable before save</Text>
-              </View>
-            </View>
           </View>
         </View>
 
@@ -378,7 +345,7 @@ export default function AddRecipeScreen() {
                     <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe photo</Text>
                     <Text style={[styles.formHint, { color: palette.textSoft }]}>
                       Pick a recipe image from your device. We will run local OCR, then prefill the
-                      form below so you can review it before saving.
+                      form below so you can review it before saving. The local OCR path is meant to reduce typing, especially for printed recipes or clean screenshots. It will not perfectly understand every recipe layout. Best results usually come from straight, high-contrast photos with clear section headings like Ingredients and Directions.
                     </Text>
                     {!supportsLocalOcr ? (
                       <Text style={[styles.formHint, { color: palette.accent }]}>
@@ -429,7 +396,7 @@ export default function AddRecipeScreen() {
                     <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe website</Text>
                     <Text style={[styles.formHint, { color: palette.textSoft }]}>
                       Paste a recipe URL. We will look for structured recipe data and use it to prefill
-                      the form, including website and author details when available.
+                      the form, including website and author details when available. Website import looks for recipe schema first. When a site does not expose clean structured data, the import can be partial and may need manual cleanup.
                     </Text>
                     <TextInput
                       value={websiteUrl}
@@ -724,8 +691,7 @@ export default function AddRecipeScreen() {
 
           <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Draft preview</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>What the form currently has</Text>
+              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe preview</Text>
 
               <View
                 style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
@@ -800,41 +766,8 @@ export default function AddRecipeScreen() {
                 </View>
               ) : null}
 
-              <View
-                style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.helperCardTitle, { color: palette.text }]}>How save works right now</Text>
-                <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                  Saving writes the recipe into local app storage and sends you back to `My Recipes`,
-                  where the new recipe appears in the shared library.
-                </Text>
-              </View>
             </View>
 
-            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>OCR notes</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Local photo import</Text>
-                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                  The local OCR path is meant to reduce typing, especially for printed recipes or clean
-                  screenshots. It will not perfectly understand every recipe layout, so the result is
-                  intentionally routed into the normal editable form.
-                </Text>
-                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                  Website import looks for recipe schema first. When a site does not expose clean
-                  structured data, the import can be partial and may need manual cleanup.
-                </Text>
-              <View style={styles.listStack}>
-                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                  {missingRequiredFields.length === 0
-                    ? 'All required fields are currently filled in for this draft.'
-                    : `Still missing: ${missingRequiredFields.join(', ')}.`}
-                </Text>
-                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                  Best results usually come from straight, high-contrast photos with clear section
-                  headings like Ingredients and Directions.
-                </Text>
-              </View>
-            </View>
           </View>
         </View>
       </ScrollView>
