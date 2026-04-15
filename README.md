@@ -21,6 +21,9 @@ It is focused on practical kitchen utilities:
 The app currently includes:
 
 - a routed home screen that acts like a kitchen tools hub
+- home menu cards for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
+- shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, and settings
+- compact mobile header titles that collapse to `KH` on smaller screens
 - a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
@@ -126,6 +129,13 @@ A simple way to think about it:
 - `components/` keeps the UI and theming consistent
 
 ## Main App Areas
+
+Navigation is now split between two top-level patterns:
+
+- the home hub at `/`, which acts as the main menu for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
+- shared header shortcuts available across screens for Home, My Recipes, Kitchen Guides, the cook timer, and settings
+
+On compact/mobile widths, the header title switches to `KH` so the top bar still has room for the shared shortcuts.
 
 Important routed files:
 
@@ -338,7 +348,7 @@ Covers:
 
 ## Settings
 
-The app has a shared settings menu available from the gear icon in the header.
+The app has a shared settings menu available from the gear icon in the shared header action row.
 
 Current saved settings:
 
@@ -352,6 +362,7 @@ Current saved settings:
 How it works:
 
 - settings are stored locally with AsyncStorage
+- restore defaults is a real immediate action in settings
 - restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timers to 3
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
@@ -360,6 +371,13 @@ How it works:
 - export builds a single cookbook-style PDF from the full merged recipe library
 - on web, export downloads a PDF file
 - on Android, export first tries to save to a folder you choose and falls back to share if needed
+
+Shared header navigation behavior:
+
+- the Home button is active on every route except `/`
+- the My Recipes skillet button is active on every route except `/my-recipes`
+- the Kitchen Guides button is active on every route except `/reference`
+- the current-page shortcut uses a grayed-out disabled state instead of re-navigating to the same screen
 
 ## Recipe Management
 

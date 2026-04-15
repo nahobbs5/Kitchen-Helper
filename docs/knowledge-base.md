@@ -98,9 +98,17 @@ Examples:
 
 - [`app/index.tsx`] -> `/`
 - [`app/my-recipes.tsx`] -> `/my-recipes`
+- [`app/reference.tsx`] -> `/reference`
 - [`app/recipes/[slug].tsx`] -> dynamic recipe pages
 
 This keeps navigation easier to follow as the app grows.
+
+The app now uses a two-layer navigation model:
+
+- the home hub at `/` is the primary menu and links to `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
+- the shared header stays visible across screens and exposes shortcut buttons for Home, My Recipes, Kitchen Guides, the cook timer, and settings
+
+On compact/mobile widths, the header title collapses to `KH` so the shortcut row still fits cleanly.
 
 ### pnpm
 
@@ -242,7 +250,8 @@ What this layer does:
 - wraps the app in providers
 - defines the shared stack navigator
 - controls the shared header
-- exposes the settings gear across screens
+- swaps the header title to `KH` on compact widths
+- exposes the Home, My Recipes, Kitchen Guides, cook timer, and settings actions across screens
 
 ### 2. Shared State
 
@@ -320,10 +329,20 @@ What this layer does:
 - centralizes shared styles
 - defines the light and dark palettes
 - provides the shared settings gear and overlay
-- provides the shared header actions for reference, cook timer, and settings
+- provides the shared header actions for Home, My Recipes, Kitchen Guides, cook timer, and settings
 - provides the shared cook timer popup
 - provides the delete notice pie-timer UI
 - keeps route files focused on screen behavior instead of duplicated UI plumbing
+
+Current shared header behavior:
+
+- `🏠` returns to the home hub and is disabled on `/`
+- `🍳` opens `My Recipes` and is disabled on `/my-recipes`
+- `📖` opens `Kitchen Guides` and is disabled on `/reference`
+- `⏳` opens the shared cook timer
+- `⚙` opens the shared settings overlay
+
+The disabled state uses a grayed-out, reduced-opacity treatment so users can still see where they are in the app without triggering redundant navigation.
 
 ## Simple Data Flow
 
@@ -344,6 +363,9 @@ The app is still a prototype, but it is already useful.
 Current capabilities:
 
 - a home screen that acts as a kitchen tools hub
+- home menu cards for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
+- shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, and settings
+- compact mobile header titles that collapse to `KH`
 - a `Sample Recipes` screen for imported-only browsing of the sample Obsidian recipe set
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
@@ -494,7 +516,7 @@ Recent cleanup details that mattered here:
 
 ## Settings System
 
-The app has a shared settings menu that can be opened from the gear icon in the header.
+The app has a shared settings menu that can be opened from the gear icon in the shared header.
 
 Important files:
 
@@ -515,6 +537,7 @@ Current saved settings:
 How it works:
 
 - settings are stored locally with AsyncStorage
+- restore defaults is an immediate in-app action, not just a placeholder label
 - restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timer count to 3
 - dark mode swaps between centralized light and dark palettes
 - keep-awake mode uses `expo-keep-awake`
@@ -525,6 +548,12 @@ How it works:
 - web export downloads the file through `html2pdf.js`
 - Android export renders the PDF with `expo-print` and tries to save it through the folder picker before falling back to share
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
+
+The restore-defaults flow is deliberately immediate:
+
+- tapping it resets the saved preferences right away
+- the settings overlay stays open so the user can keep adjusting values after the reset
+- the UI briefly shows the checked-state feedback before returning to the normal button state
 
 This was a useful architecture milestone because it introduced real app-wide persisted state.
 
