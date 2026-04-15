@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
@@ -84,6 +84,7 @@ export function SettingsMenuModal() {
     isSettingsOpen,
     keepScreenAwake,
     palette,
+    resetToDefaults,
     timerCount,
     toggleConfirmDelete,
     toggleDarkMode,
@@ -91,12 +92,17 @@ export function SettingsMenuModal() {
     setTimerCount,
   } = useAppSettings();
   const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
+  const [resetDefaultsChecked, setResetDefaultsChecked] = useState(false);
   const { customRecipes, loaded, recipeOverrideMap } = useCustomRecipes();
 
   const exportRecipes = useMemo(
     () => buildExportRecipes({ customRecipes, recipeOverrideMap }),
     [customRecipes, recipeOverrideMap]
   );
+
+  useEffect(() => {
+    setTimerCountInput(String(timerCount));
+  }, [timerCount]);
 
   if (!isSettingsOpen) {
     return null;
@@ -123,6 +129,15 @@ export function SettingsMenuModal() {
     }
   }
 
+  function handleResetDefaults() {
+    setResetDefaultsChecked(true);
+    resetToDefaults();
+    setTimerCountInput('3');
+    setTimeout(() => {
+      setResetDefaultsChecked(false);
+    }, 0);
+  }
+
   return (
     <View style={styles.settingsOverlay} pointerEvents="box-none">
       <Pressable style={styles.settingsBackdrop} onPress={closeSettings} />
@@ -146,6 +161,46 @@ export function SettingsMenuModal() {
             These options are saved on this device so the app keeps the same feel the next time
             you open it.
           </Text>
+
+          <View
+            style={[
+              styles.settingsSection,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+              },
+            ]}
+          >
+            <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Restore defaults</Text>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsCopy}>
+                <Text style={[styles.settingsLabel, { color: palette.text }]}>Restore defaults</Text>
+                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                  Immediately reset timers to 3, dark mode to Off, keep screen awake to Off, and confirm delete to On.
+                </Text>
+              </View>
+              <Pressable
+                onPress={handleResetDefaults}
+                style={[
+                  styles.numberButton,
+                  {
+                    minWidth: 72,
+                    backgroundColor: resetDefaultsChecked ? palette.accentSoft : palette.elevatedAlt,
+                    borderColor: resetDefaultsChecked ? palette.accentSoft : palette.borderAlt,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.numberButtonText,
+                    { color: resetDefaultsChecked ? palette.accentContrastText : palette.text },
+                  ]}
+                >
+                  {resetDefaultsChecked ? '☑' : '☐'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
 
           <View
             style={[

@@ -481,6 +481,7 @@ Important files:
 
 Current saved settings:
 
+- `Restore defaults`
 - `Dark mode`
 - `Keep screen awake`
 - `Number of timers`
@@ -490,6 +491,7 @@ Current saved settings:
 How it works:
 
 - settings are stored locally with AsyncStorage
+- restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timer count to 3
 - dark mode swaps between centralized light and dark palettes
 - keep-awake mode uses `expo-keep-awake`
 - timer count controls how many timer slots the shared cook timer exposes and is clamped to `1-6`

@@ -26,9 +26,17 @@ type SettingsContextValue = {
   toggleKeepScreenAwake: (value?: boolean) => void;
   toggleConfirmDelete: (value?: boolean) => void;
   setTimerCount: (value: number) => void;
+  resetToDefaults: () => void;
 };
 
 const SETTINGS_KEY = 'kitchen-helper.app-settings';
+
+const DEFAULT_SETTINGS = {
+  darkModeEnabled: false,
+  keepScreenAwake: false,
+  confirmDeleteEnabled: true,
+  timerCount: 3,
+};
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
@@ -40,10 +48,10 @@ type StoredSettings = {
 };
 
 export function SettingsProvider({ children }: PropsWithChildren) {
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-  const [keepScreenAwake, setKeepScreenAwake] = useState(false);
-  const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(true);
-  const [timerCount, setTimerCount] = useState(3);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(DEFAULT_SETTINGS.darkModeEnabled);
+  const [keepScreenAwake, setKeepScreenAwake] = useState(DEFAULT_SETTINGS.keepScreenAwake);
+  const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(DEFAULT_SETTINGS.confirmDeleteEnabled);
+  const [timerCount, setTimerCount] = useState(DEFAULT_SETTINGS.timerCount);
   const [loaded, setLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const wakeLockActiveRef = useRef(false);
@@ -64,11 +72,13 @@ export function SettingsProvider({ children }: PropsWithChildren) {
 
         try {
           const parsed = JSON.parse(value) as StoredSettings;
-          setDarkModeEnabled(Boolean(parsed.darkModeEnabled));
-          setKeepScreenAwake(Boolean(parsed.keepScreenAwake));
-          setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? true);
+          setDarkModeEnabled(parsed.darkModeEnabled ?? DEFAULT_SETTINGS.darkModeEnabled);
+          setKeepScreenAwake(parsed.keepScreenAwake ?? DEFAULT_SETTINGS.keepScreenAwake);
+          setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? DEFAULT_SETTINGS.confirmDeleteEnabled);
           if (typeof parsed.timerCount === 'number' && parsed.timerCount >= 1) {
             setTimerCount(parsed.timerCount);
+          } else {
+            setTimerCount(DEFAULT_SETTINGS.timerCount);
           }
         } finally {
           setLoaded(true);
@@ -147,6 +157,12 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       setTimerCount: (value: number) => setTimerCount(Math.max(1, Math.min(6, value))),
+      resetToDefaults: () => {
+        setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
+        setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
+        setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
+        setTimerCount(DEFAULT_SETTINGS.timerCount);
+      },
     }),
     [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded, isSettingsOpen]
   );

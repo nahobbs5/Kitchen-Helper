@@ -327,6 +327,7 @@ The app has a shared settings menu available from the gear icon in the header.
 
 Current saved settings:
 
+- `Restore defaults`
 - `Dark mode`
 - `Keep screen awake`
 - `Number of timers`
@@ -336,6 +337,7 @@ Current saved settings:
 How it works:
 
 - settings are stored locally with AsyncStorage
+- restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timers to 3
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
 - number of timers controls how many cook-timer slots are available and is clamped to `1-6`
