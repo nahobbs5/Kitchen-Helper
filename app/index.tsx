@@ -58,15 +58,6 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>What this unlocks</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>A clearer app structure</Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Each major feature can now grow on its own screen without crowding the rest of the
-              app. That matters on both Android and web.
-            </Text>
-          </View>
         </View>
 
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>

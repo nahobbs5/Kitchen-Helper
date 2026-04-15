@@ -162,44 +162,30 @@ export function SettingsMenuModal() {
             you open it.
           </Text>
 
-          <View
-            style={[
-              styles.settingsSection,
-              {
-                backgroundColor: palette.surface,
-                borderColor: palette.border,
-              },
-            ]}
-          >
-            <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Restore defaults</Text>
-            <View style={styles.settingsRow}>
-              <View style={styles.settingsCopy}>
-                <Text style={[styles.settingsLabel, { color: palette.text }]}>Restore defaults</Text>
-                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                  Immediately reset timers to 3, dark mode to Off, keep screen awake to Off, and confirm delete to On.
-                </Text>
-              </View>
-              <Pressable
-                onPress={handleResetDefaults}
+          <View style={[styles.settingsRow, { justifyContent: 'center', gap: 10 }]}>
+            <View style={[styles.settingsCopy, { flex: 1, maxWidth: 220 }]}>
+              <Text style={[styles.settingsLabel, { color: palette.text }]}>Restore defaults</Text>
+            </View>
+            <Pressable
+              onPress={handleResetDefaults}
+              style={[
+                styles.numberButton,
+                {
+                  minWidth: 72,
+                  backgroundColor: resetDefaultsChecked ? palette.accentSoft : palette.elevatedAlt,
+                  borderColor: resetDefaultsChecked ? palette.accentSoft : palette.borderAlt,
+                },
+              ]}
+            >
+              <Text
                 style={[
-                  styles.numberButton,
-                  {
-                    minWidth: 72,
-                    backgroundColor: resetDefaultsChecked ? palette.accentSoft : palette.elevatedAlt,
-                    borderColor: resetDefaultsChecked ? palette.accentSoft : palette.borderAlt,
-                  },
+                  styles.numberButtonText,
+                  { color: resetDefaultsChecked ? palette.accentContrastText : palette.text },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.numberButtonText,
-                    { color: resetDefaultsChecked ? palette.accentContrastText : palette.text },
-                  ]}
-                >
-                  {resetDefaultsChecked ? '☑' : '☐'}
-                </Text>
-              </Pressable>
-            </View>
+                {resetDefaultsChecked ? '☑' : '☐'}
+              </Text>
+            </Pressable>
           </View>
 
           <View

@@ -755,8 +755,7 @@ export default function MyRecipesScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Current library</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipes from vault and app storage</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Your Library</Text>
               <View style={styles.listStack}>
                 {filteredRecipes.map((recipe) => (
                   <Pressable
@@ -931,8 +930,7 @@ export default function MyRecipesScreen() {
 
           {isWide ? <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe folders</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Organized from your vault</Text>
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe Stats</Text>
               <View style={styles.listStack}>
                 {recipeCategories.map((category) => (
                   <Pressable
