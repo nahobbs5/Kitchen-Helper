@@ -1,6 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Alert } from 'react-native';
 
+import { useAuth } from './auth-context';
 import { obsidianRecipeMap, type RecipeSection } from '../data/obsidian-recipes';
 import {
   allergenTagOptions,
@@ -9,6 +19,14 @@ import {
   ensureFriendlyTag,
   inferRecipeTags,
 } from '../utils/allergen-tags';
+import {
+  fetchSyncSnapshot,
+  getSyncConfig,
+  type SyncedRecipeOverrideRecord,
+  type SyncedUserRecipeRecord,
+  upsertRecipeOverrides,
+  upsertUserRecipes,
+} from '../utils/supabase-sync';
 import {
   buildDirectionStepOverrides,
   replaceDirectionStepText,
@@ -22,6 +40,8 @@ export type RecipeSource = {
 } | null;
 
 export type UserRecipe = {
+  id: string;
+  userId: string;
   slug: string;
   title: string;
   category: string;
@@ -40,6 +60,8 @@ export type UserRecipe = {
   cuisineRegion: string | null;
   sourceInfo: RecipeSource;
   createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 };
 
 type NewUserRecipeInput = {
@@ -64,6 +86,8 @@ type BulkRecipeMetadataInput = {
 };
 
 export type RecipeOverride = {
+  id: string;
+  userId: string;
   slug: string;
   title: string;
   category: string;
@@ -85,36 +109,82 @@ type CustomRecipesContextValue = {
   recipeOverrides: RecipeOverride[];
   recipeOverrideMap: Record<string, RecipeOverride>;
   lastDeletedRecipes: UserRecipe[];
-  addRecipe: (input: NewUserRecipeInput) => UserRecipe;
-  updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => UserRecipe | RecipeOverride | null;
-  bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => void;
-  updateDirectionStep: (slug: string, stepId: string, text: string, source: 'custom' | 'obsidian') => void;
-  resetDirectionStep: (slug: string, stepId: string, source: 'custom' | 'obsidian') => void;
-  deleteRecipe: (slug: string, source?: 'custom' | 'obsidian') => void;
-  deleteRecipes: (slugs: string[]) => void;
-  restoreDeletedRecipes: () => void;
+  addRecipe: (input: NewUserRecipeInput) => Promise<UserRecipe | null>;
+  updateRecipe: (
+    slug: string,
+    input: NewUserRecipeInput,
+    source: 'custom' | 'obsidian'
+  ) => Promise<UserRecipe | RecipeOverride | null>;
+  bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => Promise<void>;
+  updateDirectionStep: (
+    slug: string,
+    stepId: string,
+    text: string,
+    source: 'custom' | 'obsidian'
+  ) => Promise<void>;
+  resetDirectionStep: (
+    slug: string,
+    stepId: string,
+    source: 'custom' | 'obsidian'
+  ) => Promise<void>;
+  deleteRecipe: (slug: string, source?: 'custom' | 'obsidian') => Promise<void>;
+  deleteRecipes: (slugs: string[]) => Promise<void>;
+  restoreDeletedRecipes: () => Promise<void>;
   clearDeletedRecipes: () => void;
   loaded: boolean;
+  syncConfigured: boolean;
+  syncEnabled: boolean;
+  syncBusy: boolean;
+  syncError: string | null;
+  clearSyncError: () => void;
 };
 
-const CUSTOM_RECIPES_KEY = 'kitchen-helper.custom-recipes';
-const RECIPE_OVERRIDES_KEY = 'kitchen-helper.recipe-overrides';
+const LEGACY_CUSTOM_RECIPES_KEY = 'kitchen-helper.custom-recipes';
+const LEGACY_RECIPE_OVERRIDES_KEY = 'kitchen-helper.recipe-overrides';
 
 const CustomRecipesContext = createContext<CustomRecipesContextValue | undefined>(undefined);
 
-function normalizeSource(source: unknown, legacy?: { sourceWebsite?: unknown; sourceAuthor?: unknown; sourceUrl?: unknown }): RecipeSource {
+const syncConfig = getSyncConfig();
+
+function cacheCustomRecipesKey(userId: string) {
+  return `kitchen-helper.sync-cache.custom-recipes.${userId}`;
+}
+
+function cacheRecipeOverridesKey(userId: string) {
+  return `kitchen-helper.sync-cache.recipe-overrides.${userId}`;
+}
+
+function migrationKey(userId: string) {
+  return `kitchen-helper.sync-migrated.${userId}`;
+}
+
+function normalizeSource(
+  source: unknown,
+  legacy?: { sourceWebsite?: unknown; sourceAuthor?: unknown; sourceUrl?: unknown }
+): RecipeSource {
   if (source && typeof source === 'object') {
     const record = source as Record<string, unknown>;
-    const websiteName = typeof record.websiteName === 'string' && record.websiteName.trim() ? record.websiteName.trim() : null;
-    const author = typeof record.author === 'string' && record.author.trim() ? record.author.trim() : null;
+    const websiteName =
+      typeof record.websiteName === 'string' && record.websiteName.trim()
+        ? record.websiteName.trim()
+        : null;
+    const author =
+      typeof record.author === 'string' && record.author.trim() ? record.author.trim() : null;
     const url = typeof record.url === 'string' && record.url.trim() ? record.url.trim() : null;
 
     return websiteName || author || url ? { websiteName, author, url } : null;
   }
 
-  const websiteName = typeof legacy?.sourceWebsite === 'string' && legacy.sourceWebsite.trim() ? legacy.sourceWebsite.trim() : null;
-  const author = typeof legacy?.sourceAuthor === 'string' && legacy.sourceAuthor.trim() ? legacy.sourceAuthor.trim() : null;
-  const url = typeof legacy?.sourceUrl === 'string' && legacy.sourceUrl.trim() ? legacy.sourceUrl.trim() : null;
+  const websiteName =
+    typeof legacy?.sourceWebsite === 'string' && legacy.sourceWebsite.trim()
+      ? legacy.sourceWebsite.trim()
+      : null;
+  const author =
+    typeof legacy?.sourceAuthor === 'string' && legacy.sourceAuthor.trim()
+      ? legacy.sourceAuthor.trim()
+      : null;
+  const url =
+    typeof legacy?.sourceUrl === 'string' && legacy.sourceUrl.trim() ? legacy.sourceUrl.trim() : null;
 
   return websiteName || author || url ? { websiteName, author, url } : null;
 }
@@ -127,6 +197,16 @@ function slugify(value: string) {
     .replace(/-{2,}/g, '-');
 }
 
+function createId(prefix: string) {
+  const randomUuid = globalThis.crypto?.randomUUID?.();
+
+  if (randomUuid) {
+    return `${prefix}-${randomUuid}`;
+  }
+
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function toSection(text: string): RecipeSection[] {
   const items = text
     .split('\n')
@@ -136,73 +216,399 @@ function toSection(text: string): RecipeSection[] {
   return items.length > 0 ? [{ title: null, items }] : [];
 }
 
+function normalizeCustomRecipe(recipe: unknown): UserRecipe {
+  const record = recipe as Record<string, unknown>;
+  const createdAt =
+    typeof record.createdAt === 'string' && record.createdAt ? record.createdAt : new Date().toISOString();
+  const updatedAt =
+    typeof record.updatedAt === 'string' && record.updatedAt ? record.updatedAt : createdAt;
+
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : createId('recipe'),
+    userId: typeof record.userId === 'string' ? record.userId : '',
+    slug: typeof record.slug === 'string' ? record.slug : slugify(String(record.title ?? 'recipe')),
+    title: typeof record.title === 'string' ? record.title : 'Untitled Recipe',
+    category: typeof record.category === 'string' ? record.category : 'Entree',
+    source: 'App Storage',
+    prepTime: typeof record.prepTime === 'string' ? record.prepTime : null,
+    cookTime: typeof record.cookTime === 'string' ? record.cookTime : null,
+    totalTime: typeof record.totalTime === 'string' ? record.totalTime : null,
+    servings: typeof record.servings === 'string' ? record.servings : null,
+    allergyFriendlyTags: Array.isArray(record.allergyFriendlyTags)
+      ? (record.allergyFriendlyTags as string[])
+      : [],
+    allergenTags: Array.isArray(record.allergenTags) ? (record.allergenTags as string[]) : [],
+    ingredients: Array.isArray(record.ingredients) ? (record.ingredients as RecipeSection[]) : [],
+    originalDirections: Array.isArray(record.originalDirections)
+      ? (record.originalDirections as RecipeSection[])
+      : Array.isArray(record.directions)
+        ? (record.directions as RecipeSection[])
+        : [],
+    directions: Array.isArray(record.directions) ? (record.directions as RecipeSection[]) : [],
+    directionStepOverrides:
+      record.directionStepOverrides && typeof record.directionStepOverrides === 'object'
+        ? (record.directionStepOverrides as Record<string, string>)
+        : {},
+    notes: typeof record.notes === 'string' ? record.notes : null,
+    cuisineRegion: typeof record.cuisineRegion === 'string' ? record.cuisineRegion : null,
+    sourceInfo: normalizeSource(record.sourceInfo, record),
+    createdAt,
+    updatedAt,
+    deletedAt: typeof record.deletedAt === 'string' ? record.deletedAt : null,
+  };
+}
+
+function normalizeRecipeOverride(recipe: unknown): RecipeOverride {
+  const record = recipe as Record<string, unknown>;
+
+  return {
+    id:
+      typeof record.id === 'string' && record.id
+        ? record.id
+        : `override-${typeof record.slug === 'string' ? record.slug : createId('override')}`,
+    userId: typeof record.userId === 'string' ? record.userId : '',
+    slug: typeof record.slug === 'string' ? record.slug : '',
+    title: typeof record.title === 'string' ? record.title : 'Untitled Recipe',
+    category: typeof record.category === 'string' ? record.category : 'Entree',
+    allergyFriendlyTags: Array.isArray(record.allergyFriendlyTags)
+      ? (record.allergyFriendlyTags as string[])
+      : [],
+    allergenTags: Array.isArray(record.allergenTags) ? (record.allergenTags as string[]) : [],
+    ingredients: Array.isArray(record.ingredients) ? (record.ingredients as RecipeSection[]) : [],
+    directions: Array.isArray(record.directions) ? (record.directions as RecipeSection[]) : [],
+    directionStepOverrides:
+      record.directionStepOverrides && typeof record.directionStepOverrides === 'object'
+        ? (record.directionStepOverrides as Record<string, string>)
+        : {},
+    notes: typeof record.notes === 'string' ? record.notes : null,
+    cuisineRegion: typeof record.cuisineRegion === 'string' ? record.cuisineRegion : null,
+    sourceInfo: normalizeSource(record.sourceInfo, record),
+    deleted: Boolean(record.deleted),
+    updatedAt:
+      typeof record.updatedAt === 'string' && record.updatedAt ? record.updatedAt : new Date().toISOString(),
+  };
+}
+
+function mapSyncedUserRecipe(record: SyncedUserRecipeRecord): UserRecipe {
+  return {
+    id: record.id,
+    userId: record.user_id,
+    slug: record.slug,
+    title: record.title,
+    category: record.category,
+    source: 'App Storage',
+    prepTime: record.prep_time,
+    cookTime: record.cook_time,
+    totalTime: record.total_time,
+    servings: record.servings,
+    allergyFriendlyTags: record.allergy_friendly_tags ?? [],
+    allergenTags: record.allergen_tags ?? [],
+    ingredients: record.ingredients ?? [],
+    originalDirections: record.original_directions ?? [],
+    directions: record.directions ?? [],
+    directionStepOverrides: record.direction_step_overrides ?? {},
+    notes: record.notes,
+    cuisineRegion: record.cuisine_region,
+    sourceInfo: normalizeSource(record.source_info),
+    createdAt: record.created_at,
+    updatedAt: record.updated_at,
+    deletedAt: record.deleted_at,
+  };
+}
+
+function mapSyncedRecipeOverride(record: SyncedRecipeOverrideRecord): RecipeOverride {
+  return {
+    id: record.id,
+    userId: record.user_id,
+    slug: record.slug,
+    title: record.title,
+    category: record.category,
+    allergyFriendlyTags: record.allergy_friendly_tags ?? [],
+    allergenTags: record.allergen_tags ?? [],
+    ingredients: record.ingredients ?? [],
+    directions: record.directions ?? [],
+    directionStepOverrides: record.direction_step_overrides ?? {},
+    notes: record.notes,
+    cuisineRegion: record.cuisine_region,
+    sourceInfo: normalizeSource(record.source_info),
+    deleted: record.deleted,
+    updatedAt: record.updated_at,
+  };
+}
+
+function toSyncedUserRecipeRecord(recipe: UserRecipe): SyncedUserRecipeRecord {
+  return {
+    id: recipe.id,
+    user_id: recipe.userId,
+    slug: recipe.slug,
+    title: recipe.title,
+    category: recipe.category,
+    source: recipe.source,
+    prep_time: recipe.prepTime,
+    cook_time: recipe.cookTime,
+    total_time: recipe.totalTime,
+    servings: recipe.servings,
+    allergy_friendly_tags: recipe.allergyFriendlyTags,
+    allergen_tags: recipe.allergenTags,
+    ingredients: recipe.ingredients,
+    original_directions: recipe.originalDirections,
+    directions: recipe.directions,
+    direction_step_overrides: recipe.directionStepOverrides,
+    notes: recipe.notes,
+    cuisine_region: recipe.cuisineRegion,
+    source_info: recipe.sourceInfo,
+    created_at: recipe.createdAt,
+    updated_at: recipe.updatedAt,
+    deleted_at: recipe.deletedAt,
+  };
+}
+
+function toSyncedRecipeOverrideRecord(recipe: RecipeOverride): SyncedRecipeOverrideRecord {
+  return {
+    id: recipe.id,
+    user_id: recipe.userId,
+    slug: recipe.slug,
+    title: recipe.title,
+    category: recipe.category,
+    allergy_friendly_tags: recipe.allergyFriendlyTags,
+    allergen_tags: recipe.allergenTags,
+    ingredients: recipe.ingredients,
+    directions: recipe.directions,
+    direction_step_overrides: recipe.directionStepOverrides,
+    notes: recipe.notes,
+    cuisine_region: recipe.cuisineRegion,
+    source_info: recipe.sourceInfo,
+    deleted: recipe.deleted,
+    updated_at: recipe.updatedAt,
+  };
+}
+
+function mergeById<T extends { id: string }>(current: T[], updates: T[]) {
+  const nextMap = new Map(current.map((item) => [item.id, item]));
+  updates.forEach((item) => {
+    nextMap.set(item.id, item);
+  });
+  return Array.from(nextMap.values());
+}
+
+function normalizeError(error: unknown, fallback: string) {
+  return error instanceof Error && error.message.trim() ? error.message : fallback;
+}
+
 export function CustomRecipesProvider({ children }: PropsWithChildren) {
+  const { configured: authConfigured, loaded: authLoaded, session, user } = useAuth();
   const [customRecipes, setCustomRecipes] = useState<UserRecipe[]>([]);
   const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverride[]>([]);
   const [lastDeletedRecipes, setLastDeletedRecipes] = useState<UserRecipe[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const customRecipesRef = useRef<UserRecipe[]>([]);
+  const recipeOverridesRef = useRef<RecipeOverride[]>([]);
+  const lastDeletedRecipesRef = useRef<UserRecipe[]>([]);
+
+  const syncConfigured = authConfigured && Boolean(syncConfig);
+  const syncEnabled = Boolean(syncConfigured && session?.accessToken && user?.id);
+
+  useEffect(() => {
+    customRecipesRef.current = customRecipes;
+  }, [customRecipes]);
+
+  useEffect(() => {
+    recipeOverridesRef.current = recipeOverrides;
+  }, [recipeOverrides]);
+
+  useEffect(() => {
+    lastDeletedRecipesRef.current = lastDeletedRecipes;
+  }, [lastDeletedRecipes]);
+
+  async function persistCache(nextCustomRecipes: UserRecipe[], nextRecipeOverrides: RecipeOverride[]) {
+    if (!user?.id) {
+      return;
+    }
+
+    await AsyncStorage.multiSet([
+      [cacheCustomRecipesKey(user.id), JSON.stringify(nextCustomRecipes)],
+      [cacheRecipeOverridesKey(user.id), JSON.stringify(nextRecipeOverrides)],
+    ]);
+  }
+
+  async function applyRemoteSnapshot() {
+    if (!syncConfig || !session?.accessToken || !user?.id) {
+      return;
+    }
+
+    const snapshot = await fetchSyncSnapshot(syncConfig, session.accessToken, user.id);
+    const syncedCustomRecipes = snapshot.customRecipes.map(mapSyncedUserRecipe);
+    const syncedRecipeOverrides = snapshot.recipeOverrides.map(mapSyncedRecipeOverride);
+
+    setCustomRecipes(syncedCustomRecipes);
+    setRecipeOverrides(syncedRecipeOverrides);
+    await persistCache(syncedCustomRecipes, syncedRecipeOverrides);
+    setSyncError(null);
+  }
+
+  async function migrateLegacyData() {
+    if (!syncConfig || !session?.accessToken || !user?.id) {
+      return;
+    }
+
+    const migrated = await AsyncStorage.getItem(migrationKey(user.id));
+
+    if (migrated === 'true') {
+      return;
+    }
+
+    const [legacyCustomValue, legacyOverridesValue] = await Promise.all([
+      AsyncStorage.getItem(LEGACY_CUSTOM_RECIPES_KEY),
+      AsyncStorage.getItem(LEGACY_RECIPE_OVERRIDES_KEY),
+    ]);
+
+    const legacyCustomRecipes = legacyCustomValue
+      ? (JSON.parse(legacyCustomValue) as unknown[]).map(normalizeCustomRecipe)
+      : [];
+    const legacyRecipeOverrides = legacyOverridesValue
+      ? (JSON.parse(legacyOverridesValue) as unknown[]).map(normalizeRecipeOverride)
+      : [];
+
+    if (legacyCustomRecipes.length === 0 && legacyRecipeOverrides.length === 0) {
+      await AsyncStorage.setItem(migrationKey(user.id), 'true');
+      return;
+    }
+
+    const remoteCustomBySlug = new Set(customRecipesRef.current.map((recipe) => recipe.slug));
+    const remoteOverrideBySlug = new Map(
+      recipeOverridesRef.current.map((recipe) => [recipe.slug, recipe] as const)
+    );
+
+    const customUploads = legacyCustomRecipes
+      .filter((recipe) => !remoteCustomBySlug.has(recipe.slug))
+      .map((recipe) =>
+        toSyncedUserRecipeRecord({
+          ...recipe,
+          id: recipe.id || createId('recipe'),
+          userId: user.id,
+          updatedAt: recipe.updatedAt || recipe.createdAt,
+          deletedAt: null,
+        })
+      );
+
+    const overrideUploads = legacyRecipeOverrides
+      .filter((recipe) => {
+        const existing = remoteOverrideBySlug.get(recipe.slug);
+        return !existing || new Date(recipe.updatedAt).getTime() > new Date(existing.updatedAt).getTime();
+      })
+      .map((recipe) =>
+        toSyncedRecipeOverrideRecord({
+          ...recipe,
+          id: recipe.id || `override-${recipe.slug}`,
+          userId: user.id,
+        })
+      );
+
+    if (customUploads.length > 0) {
+      await upsertUserRecipes(syncConfig, session.accessToken, customUploads);
+    }
+
+    if (overrideUploads.length > 0) {
+      await upsertRecipeOverrides(syncConfig, session.accessToken, overrideUploads);
+    }
+
+    await AsyncStorage.setItem(migrationKey(user.id), 'true');
+  }
+
+  function requireSync(message: string) {
+    if (syncEnabled) {
+      return true;
+    }
+
+    const fallback = syncConfigured
+      ? message
+      : 'Recipe sync is not configured yet. Add your Supabase URL and anon key first.';
+
+    setSyncError(fallback);
+    Alert.alert('Recipe Sync Required', fallback);
+    return false;
+  }
 
   useEffect(() => {
     let active = true;
 
-    Promise.all([AsyncStorage.getItem(CUSTOM_RECIPES_KEY), AsyncStorage.getItem(RECIPE_OVERRIDES_KEY)])
-      .then(([customValue, overridesValue]) => {
-        if (!active) {
-          return;
-        }
+    if (!authLoaded) {
+      return;
+    }
 
-        if (customValue) {
-          const parsedCustom = JSON.parse(customValue);
+    if (!syncEnabled || !user?.id) {
+      setCustomRecipes([]);
+      setRecipeOverrides([]);
+      setLastDeletedRecipes([]);
+      setSyncBusy(false);
+      setLoaded(true);
+      return;
+    }
+
+    const userId = user.id;
+
+    async function hydrate() {
+      setSyncBusy(true);
+      setLoaded(false);
+
+      try {
+        const [cachedCustomValue, cachedOverridesValue] = await Promise.all([
+          AsyncStorage.getItem(cacheCustomRecipesKey(userId)),
+          AsyncStorage.getItem(cacheRecipeOverridesKey(userId)),
+        ]);
+
+        if (active) {
           setCustomRecipes(
-            Array.isArray(parsedCustom)
-              ? parsedCustom.map((recipe) => ({
-                  ...recipe,
-                  originalDirections: Array.isArray((recipe as Record<string, unknown>).originalDirections)
-                    ? ((recipe as Record<string, unknown>).originalDirections as RecipeSection[])
-                    : (recipe as Record<string, unknown>).directions as RecipeSection[],
-                  directionStepOverrides:
-                    (recipe as Record<string, unknown>).directionStepOverrides &&
-                    typeof (recipe as Record<string, unknown>).directionStepOverrides === 'object'
-                      ? ((recipe as Record<string, unknown>).directionStepOverrides as Record<string, string>)
-                      : {},
-                  sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
-                  deleted: Boolean((recipe as Record<string, unknown>).deleted),
-                }))
+            cachedCustomValue
+              ? (JSON.parse(cachedCustomValue) as unknown[]).map(normalizeCustomRecipe)
               : []
           );
-        }
-
-        if (overridesValue) {
-          const parsedOverrides = JSON.parse(overridesValue);
           setRecipeOverrides(
-            Array.isArray(parsedOverrides)
-              ? parsedOverrides.map((recipe) => ({
-                  ...recipe,
-                  directionStepOverrides:
-                    (recipe as Record<string, unknown>).directionStepOverrides &&
-                    typeof (recipe as Record<string, unknown>).directionStepOverrides === 'object'
-                      ? ((recipe as Record<string, unknown>).directionStepOverrides as Record<string, string>)
-                      : {},
-                  sourceInfo: normalizeSource((recipe as Record<string, unknown>).sourceInfo, recipe),
-                }))
+            cachedOverridesValue
+              ? (JSON.parse(cachedOverridesValue) as unknown[]).map(normalizeRecipeOverride)
               : []
           );
+          setLoaded(true);
         }
 
+        await migrateLegacyData();
+        await applyRemoteSnapshot();
+      } catch (error) {
         if (active) {
+          setSyncError(normalizeError(error, 'Unable to load synced recipes.'));
           setLoaded(true);
         }
-      })
-      .catch(() => {
+      } finally {
         if (active) {
-          setLoaded(true);
+          setSyncBusy(false);
         }
-      });
+      }
+    }
+
+    hydrate();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [authLoaded, syncEnabled, user?.id]);
+
+  useEffect(() => {
+    if (!syncEnabled) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      applyRemoteSnapshot().catch((error) => {
+        setSyncError(normalizeError(error, 'Unable to refresh synced recipes.'));
+      });
+    }, 30000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [syncEnabled, session?.accessToken, user?.id]);
 
   const value = useMemo<CustomRecipesContextValue>(
     () => ({
@@ -212,13 +618,26 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       recipeOverrideMap: Object.fromEntries(recipeOverrides.map((recipe) => [recipe.slug, recipe])),
       lastDeletedRecipes,
       loaded,
-      addRecipe: (input: NewUserRecipeInput) => {
-        const title = input.title.trim();
-        const baseSlug = slugify(title || 'recipe');
+      syncConfigured,
+      syncEnabled,
+      syncBusy,
+      syncError,
+      clearSyncError: () => setSyncError(null),
+      addRecipe: async (input: NewUserRecipeInput) => {
+        if (!requireSync('Sign in before adding recipes so they can sync across devices.')) {
+          return null;
+        }
 
-        let createdRecipe!: UserRecipe;
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return null;
+        }
 
-        setCustomRecipes((current) => {
+        setSyncBusy(true);
+
+        try {
+          const title = input.title.trim();
+          const current = customRecipesRef.current;
+          const baseSlug = slugify(title || 'recipe');
           let slug = baseSlug;
           let counter = 2;
 
@@ -233,8 +652,10 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             directionsText: input.directionsText,
             notes: input.notes,
           });
-
-          createdRecipe = {
+          const now = new Date().toISOString();
+          const draftRecipe: UserRecipe = {
+            id: createId('recipe'),
+            userId: user.id,
             slug,
             title,
             category: input.category,
@@ -252,31 +673,63 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             notes: input.notes?.trim() ? input.notes.trim() : null,
             cuisineRegion: input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null,
             sourceInfo: normalizeSource(input.sourceInfo),
-            createdAt: new Date().toISOString(),
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: null,
           };
 
-          const next = [createdRecipe, ...current];
-          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+          const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
+            toSyncedUserRecipeRecord(draftRecipe),
+          ]);
+          const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(draftRecipe));
+          const nextCustomRecipes = [savedRecipe, ...current];
 
-        return createdRecipe;
+          setCustomRecipes(nextCustomRecipes);
+          await persistCache(nextCustomRecipes, recipeOverridesRef.current);
+          setSyncError(null);
+          return savedRecipe;
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to save the recipe.'));
+          return null;
+        } finally {
+          setSyncBusy(false);
+        }
       },
-      deleteRecipe: (slug: string, source: 'custom' | 'obsidian' = 'custom') => {
-        if (source === 'obsidian') {
-          setRecipeOverrides((current) => {
+      deleteRecipe: async (slug: string, source: 'custom' | 'obsidian' = 'custom') => {
+        if (
+          !requireSync(
+            source === 'custom'
+              ? 'Sign in before deleting recipes so the change syncs to your other devices.'
+              : 'Sign in before hiding imported recipes so the override syncs to your other devices.'
+          )
+        ) {
+          return;
+        }
+
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return;
+        }
+
+        setSyncBusy(true);
+
+        try {
+          if (source === 'obsidian') {
+            const currentOverrides = recipeOverridesRef.current;
             const baseRecipe = obsidianRecipeMap[slug];
 
             if (!baseRecipe) {
-              return current;
+              return;
             }
 
-            const existingOverride = current.find((recipe) => recipe.slug === slug);
+            const existingOverride = currentOverrides.find((recipe) => recipe.slug === slug);
             const nextOverride: RecipeOverride = {
+              id: existingOverride?.id ?? `override-${slug}`,
+              userId: user.id,
               slug,
               title: existingOverride?.title ?? baseRecipe.title,
               category: existingOverride?.category ?? baseRecipe.category,
-              allergyFriendlyTags: existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+              allergyFriendlyTags:
+                existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
               allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
               ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
               directions: existingOverride?.directions ?? baseRecipe.directions,
@@ -288,52 +741,94 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               updatedAt: new Date().toISOString(),
             };
 
-            const next = [nextOverride, ...current.filter((recipe) => recipe.slug !== slug)];
-            AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
-            return next;
-          });
-          return;
-        }
+            const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
+              toSyncedRecipeOverrideRecord(nextOverride),
+            ]);
+            const savedOverride = mapSyncedRecipeOverride(
+              savedRecord ?? toSyncedRecipeOverrideRecord(nextOverride)
+            );
+            const nextOverrides = [
+              savedOverride,
+              ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+            ];
 
-        setCustomRecipes((current) => {
-          const removedRecipes = current.filter((recipe) => recipe.slug === slug);
-          const next = current.filter((recipe) => recipe.slug !== slug);
-          setLastDeletedRecipes(removedRecipes);
-          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+            setRecipeOverrides(nextOverrides);
+            await persistCache(customRecipesRef.current, nextOverrides);
+            setSyncError(null);
+            return;
+          }
+
+          const currentCustomRecipes = customRecipesRef.current;
+          const recipe = currentCustomRecipes.find((item) => item.slug === slug);
+
+          if (!recipe) {
+            return;
+          }
+
+          const deletedRecipe = {
+            ...recipe,
+            updatedAt: new Date().toISOString(),
+            deletedAt: new Date().toISOString(),
+          };
+
+          await upsertUserRecipes(syncConfig, session.accessToken, [
+            toSyncedUserRecipeRecord(deletedRecipe),
+          ]);
+
+          const nextCustomRecipes = currentCustomRecipes.filter((item) => item.slug !== slug);
+          setCustomRecipes(nextCustomRecipes);
+          setLastDeletedRecipes([recipe]);
+          await persistCache(nextCustomRecipes, recipeOverridesRef.current);
+          setSyncError(null);
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to delete the recipe.'));
+        } finally {
+          setSyncBusy(false);
+        }
       },
-      deleteRecipes: (slugs: string[]) => {
+      deleteRecipes: async (slugs: string[]) => {
         if (slugs.length === 0) {
           return;
         }
 
-        setCustomRecipes((current) => {
-          const removedRecipes = current.filter((recipe) => slugs.includes(recipe.slug));
-          const next = current.filter((recipe) => !slugs.includes(recipe.slug));
+        if (!requireSync('Sign in before deleting recipes so the changes sync to your other devices.')) {
+          return;
+        }
 
-          setLastDeletedRecipes(removedRecipes);
-          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return;
+        }
 
-        setRecipeOverrides((current) => {
-          const deletedOverrides = slugs
-            .filter((slug) => !customRecipes.some((recipe) => recipe.slug === slug))
-            .map((slug) => {
-              const baseRecipe = obsidianRecipeMap[slug];
+        setSyncBusy(true);
+
+        try {
+          const currentCustomRecipes = customRecipesRef.current;
+          const currentOverrides = recipeOverridesRef.current;
+          const removedCustomRecipes = currentCustomRecipes.filter((recipe) => slugs.includes(recipe.slug));
+          const deletedCustomRecipes = removedCustomRecipes.map((recipe) => ({
+            ...recipe,
+            updatedAt: new Date().toISOString(),
+            deletedAt: new Date().toISOString(),
+          }));
+          const obsidianOverrides = slugs
+            .filter((slugValue) => !removedCustomRecipes.some((recipe) => recipe.slug === slugValue))
+            .map((slugValue) => {
+              const baseRecipe = obsidianRecipeMap[slugValue];
 
               if (!baseRecipe) {
                 return null;
               }
 
-              const existingOverride = current.find((recipe) => recipe.slug === slug);
+              const existingOverride = currentOverrides.find((recipe) => recipe.slug === slugValue);
 
-              const nextOverride: RecipeOverride = {
-                slug,
+              return {
+                id: existingOverride?.id ?? `override-${slugValue}`,
+                userId: user.id,
+                slug: slugValue,
                 title: existingOverride?.title ?? baseRecipe.title,
                 category: existingOverride?.category ?? baseRecipe.category,
-                allergyFriendlyTags: existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+                allergyFriendlyTags:
+                  existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
                 allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
                 ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
                 directions: existingOverride?.directions ?? baseRecipe.directions,
@@ -343,99 +838,163 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                 sourceInfo: existingOverride?.sourceInfo ?? null,
                 deleted: true,
                 updatedAt: new Date().toISOString(),
-              };
-
-              return nextOverride;
+              } satisfies RecipeOverride;
             })
             .filter(Boolean) as RecipeOverride[];
 
-          if (deletedOverrides.length === 0) {
-            return current;
-          }
+          await Promise.all([
+            deletedCustomRecipes.length > 0
+              ? upsertUserRecipes(
+                  syncConfig,
+                  session.accessToken,
+                  deletedCustomRecipes.map(toSyncedUserRecipeRecord)
+                )
+              : Promise.resolve([]),
+            obsidianOverrides.length > 0
+              ? upsertRecipeOverrides(
+                  syncConfig,
+                  session.accessToken,
+                  obsidianOverrides.map(toSyncedRecipeOverrideRecord)
+                )
+              : Promise.resolve([]),
+          ]);
 
-          const deletedSlugs = new Set(deletedOverrides.map((recipe) => recipe.slug));
-          const next = [...deletedOverrides, ...current.filter((recipe) => !deletedSlugs.has(recipe.slug))];
-          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+          const deletedOverrideSlugs = new Set(obsidianOverrides.map((recipe) => recipe.slug));
+          const nextCustomRecipes = currentCustomRecipes.filter((recipe) => !slugs.includes(recipe.slug));
+          const nextOverrides = [
+            ...obsidianOverrides,
+            ...currentOverrides.filter((recipe) => !deletedOverrideSlugs.has(recipe.slug)),
+          ];
+
+          setCustomRecipes(nextCustomRecipes);
+          setRecipeOverrides(nextOverrides);
+          setLastDeletedRecipes(removedCustomRecipes);
+          await persistCache(nextCustomRecipes, nextOverrides);
+          setSyncError(null);
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to delete the selected recipes.'));
+        } finally {
+          setSyncBusy(false);
+        }
       },
-      restoreDeletedRecipes: () => {
-        if (lastDeletedRecipes.length === 0) {
+      restoreDeletedRecipes: async () => {
+        if (lastDeletedRecipesRef.current.length === 0) {
           return;
         }
 
-        setCustomRecipes((current) => {
-          const recipesToRestore = lastDeletedRecipes.filter(
-            (deletedRecipe) => !current.some((recipe) => recipe.slug === deletedRecipe.slug)
+        if (!requireSync('Sign in before restoring deleted recipes so the changes sync correctly.')) {
+          return;
+        }
+
+        if (!syncConfig || !session?.accessToken) {
+          return;
+        }
+
+        setSyncBusy(true);
+
+        try {
+          const restoredRecipes = lastDeletedRecipesRef.current.map((recipe) => ({
+            ...recipe,
+            updatedAt: new Date().toISOString(),
+            deletedAt: null,
+          }));
+
+          const savedRecords = await upsertUserRecipes(
+            syncConfig,
+            session.accessToken,
+            restoredRecipes.map(toSyncedUserRecipeRecord)
+          );
+          const savedRecipes = savedRecords.map(mapSyncedUserRecipe);
+          const nextCustomRecipes = mergeById(customRecipesRef.current, savedRecipes).sort((left, right) =>
+            right.createdAt.localeCompare(left.createdAt)
           );
 
-          if (recipesToRestore.length === 0) {
-            return current;
-          }
-
-          const next = [...recipesToRestore, ...current];
-          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
-        setLastDeletedRecipes([]);
+          setCustomRecipes(nextCustomRecipes);
+          setLastDeletedRecipes([]);
+          await persistCache(nextCustomRecipes, recipeOverridesRef.current);
+          setSyncError(null);
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to restore deleted recipes.'));
+        } finally {
+          setSyncBusy(false);
+        }
       },
       clearDeletedRecipes: () => {
         setLastDeletedRecipes([]);
       },
-      updateRecipe: (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => {
-        const title = input.title.trim();
-        const inferredTags = inferRecipeTags({
-          title,
-          ingredientsText: input.ingredientsText,
-          directionsText: input.directionsText,
-          notes: input.notes,
-        });
-        const ingredientsSection = toSection(input.ingredientsText);
-        const directionsSection = toDirectionSections(input.directionsText);
-        const notes = input.notes?.trim() ? input.notes.trim() : null;
-        const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
-        const sourceInfo = normalizeSource(input.sourceInfo);
-        const allergyFriendlyTags = input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags;
-        const allergenTags = input.allergenTags ?? inferredTags.allergenTags;
-
-        if (source === 'custom') {
-          let updatedRecipe: UserRecipe | null = null;
-
-          setCustomRecipes((current) => {
-            const next = current.map((recipe) => {
-              if (recipe.slug !== slug) {
-                return recipe;
-              }
-
-              updatedRecipe = {
-                ...recipe,
-                title,
-                category: input.category,
-                allergyFriendlyTags,
-                allergenTags,
-                ingredients: ingredientsSection,
-                directionStepOverrides: buildDirectionStepOverrides(recipe.originalDirections, directionsSection),
-                directions: directionsSection,
-                notes,
-                cuisineRegion,
-                sourceInfo,
-              };
-
-              return updatedRecipe;
-            });
-
-            AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-            return next;
-          });
-
-          return updatedRecipe;
+      updateRecipe: async (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => {
+        if (!requireSync('Sign in before editing recipes so the changes sync to your other devices.')) {
+          return null;
         }
 
-        let updatedOverride: RecipeOverride | null = null;
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return null;
+        }
 
-        setRecipeOverrides((current) => {
+        setSyncBusy(true);
+
+        try {
+          const title = input.title.trim();
+          const inferredTags = inferRecipeTags({
+            title,
+            ingredientsText: input.ingredientsText,
+            directionsText: input.directionsText,
+            notes: input.notes,
+          });
+          const ingredientsSection = toSection(input.ingredientsText);
+          const directionsSection = toDirectionSections(input.directionsText);
+          const notes = input.notes?.trim() ? input.notes.trim() : null;
+          const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
+          const sourceInfo = normalizeSource(input.sourceInfo);
+          const allergyFriendlyTags = input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags;
+          const allergenTags = input.allergenTags ?? inferredTags.allergenTags;
+
+          if (source === 'custom') {
+            const currentCustomRecipes = customRecipesRef.current;
+            const currentRecipe = currentCustomRecipes.find((recipe) => recipe.slug === slug);
+
+            if (!currentRecipe) {
+              return null;
+            }
+
+            const updatedRecipe: UserRecipe = {
+              ...currentRecipe,
+              title,
+              category: input.category,
+              allergyFriendlyTags,
+              allergenTags,
+              ingredients: ingredientsSection,
+              directionStepOverrides: buildDirectionStepOverrides(
+                currentRecipe.originalDirections,
+                directionsSection
+              ),
+              directions: directionsSection,
+              notes,
+              cuisineRegion,
+              sourceInfo,
+              updatedAt: new Date().toISOString(),
+            };
+
+            const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
+              toSyncedUserRecipeRecord(updatedRecipe),
+            ]);
+            const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(updatedRecipe));
+            const nextCustomRecipes = currentCustomRecipes.map((recipe) =>
+              recipe.id === savedRecipe.id ? savedRecipe : recipe
+            );
+
+            setCustomRecipes(nextCustomRecipes);
+            await persistCache(nextCustomRecipes, recipeOverridesRef.current);
+            setSyncError(null);
+            return savedRecipe;
+          }
+
+          const currentOverrides = recipeOverridesRef.current;
           const baseRecipe = obsidianRecipeMap[slug];
+          const existingOverride = currentOverrides.find((recipe) => recipe.slug === slug);
           const override: RecipeOverride = {
+            id: existingOverride?.id ?? `override-${slug}`,
+            userId: user.id,
             slug,
             title,
             category: input.category,
@@ -453,30 +1012,57 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             updatedAt: new Date().toISOString(),
           };
 
-          updatedOverride = override;
-          const withoutCurrent = current.filter((recipe) => recipe.slug !== slug);
-          const next = [override, ...withoutCurrent];
-          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+          const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
+            toSyncedRecipeOverrideRecord(override),
+          ]);
+          const savedOverride = mapSyncedRecipeOverride(
+            savedRecord ?? toSyncedRecipeOverrideRecord(override)
+          );
+          const nextOverrides = [
+            savedOverride,
+            ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+          ];
 
-        return updatedOverride;
+          setRecipeOverrides(nextOverrides);
+          await persistCache(customRecipesRef.current, nextOverrides);
+          setSyncError(null);
+          return savedOverride;
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to save the recipe changes.'));
+          return null;
+        } finally {
+          setSyncBusy(false);
+        }
       },
-      bulkUpdateRecipeMetadata: (input: BulkRecipeMetadataInput) => {
+      bulkUpdateRecipeMetadata: async (input: BulkRecipeMetadataInput) => {
         if (input.slugs.length === 0) {
           return;
         }
 
-        const allergenTagsToAdd = (input.allergenTagsToAdd ?? []).filter((tag): tag is (typeof allergenTagOptions)[number] =>
-          allergenTagOptions.includes(tag as (typeof allergenTagOptions)[number])
-        );
-        const allergyFriendlyTagsToAdd = (input.allergyFriendlyTagsToAdd ?? []).filter(
-          (tag): tag is (typeof allergyFriendlyTagOptions)[number] =>
-            allergyFriendlyTagOptions.includes(tag as (typeof allergyFriendlyTagOptions)[number])
-        );
+        if (!requireSync('Sign in before bulk editing recipes so the changes sync across devices.')) {
+          return;
+        }
 
-        setCustomRecipes((current) => {
-          const next = current.map((recipe) => {
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return;
+        }
+
+        setSyncBusy(true);
+
+        try {
+          const allergenTagsToAdd = (input.allergenTagsToAdd ?? []).filter(
+            (tag): tag is (typeof allergenTagOptions)[number] =>
+              allergenTagOptions.includes(tag as (typeof allergenTagOptions)[number])
+          );
+          const allergyFriendlyTagsToAdd = (input.allergyFriendlyTagsToAdd ?? []).filter(
+            (tag): tag is (typeof allergyFriendlyTagOptions)[number] =>
+              allergyFriendlyTagOptions.includes(tag as (typeof allergyFriendlyTagOptions)[number])
+          );
+
+          const currentCustomRecipes = customRecipesRef.current;
+          const currentOverrides = recipeOverridesRef.current;
+
+          const nextCustomRecipes = currentCustomRecipes.map((recipe) => {
             if (!input.slugs.includes(recipe.slug)) {
               return recipe;
             }
@@ -499,29 +1085,31 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             return {
               ...recipe,
               category: input.category ?? recipe.category,
-              cuisineRegion: input.applyCuisineRegion ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null) : recipe.cuisineRegion,
+              cuisineRegion: input.applyCuisineRegion
+                ? input.cuisineRegion?.trim()
+                  ? input.cuisineRegion.trim()
+                  : null
+                : recipe.cuisineRegion,
               allergenTags: nextAllergenTags,
               allergyFriendlyTags: nextFriendlyTags,
+              updatedAt: new Date().toISOString(),
             };
           });
 
-          AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+          const nextOverrides = [...currentOverrides];
 
-        setRecipeOverrides((current) => {
-          const nextOverrides = [...current];
-
-          input.slugs.forEach((slug) => {
-            const baseRecipe = obsidianRecipeMap[slug];
+          input.slugs.forEach((slugValue) => {
+            const baseRecipe = obsidianRecipeMap[slugValue];
 
             if (!baseRecipe) {
               return;
             }
 
-            const existingOverride = nextOverrides.find((recipe) => recipe.slug === slug);
+            const existingOverride = nextOverrides.find((recipe) => recipe.slug === slugValue);
             let nextAllergenTags = [...(existingOverride?.allergenTags ?? baseRecipe.allergenTags)];
-            let nextFriendlyTags = [...(existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags)];
+            let nextFriendlyTags = [
+              ...(existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags),
+            ];
 
             allergyFriendlyTagsToAdd.forEach((tag) => {
               const nextTags = ensureFriendlyTag(nextAllergenTags, nextFriendlyTags, tag);
@@ -536,7 +1124,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             });
 
             const nextOverride: RecipeOverride = {
-              slug,
+              id: existingOverride?.id ?? `override-${slugValue}`,
+              userId: user.id,
+              slug: slugValue,
               title: existingOverride?.title ?? baseRecipe.title,
               category: input.category ?? existingOverride?.category ?? baseRecipe.category,
               allergyFriendlyTags: nextFriendlyTags,
@@ -546,14 +1136,16 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
               notes: existingOverride?.notes ?? null,
               cuisineRegion: input.applyCuisineRegion
-                ? (input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null)
+                ? input.cuisineRegion?.trim()
+                  ? input.cuisineRegion.trim()
+                  : null
                 : (existingOverride?.cuisineRegion ?? null),
               sourceInfo: existingOverride?.sourceInfo ?? null,
               deleted: false,
               updatedAt: new Date().toISOString(),
             };
 
-            const existingIndex = nextOverrides.findIndex((recipe) => recipe.slug === slug);
+            const existingIndex = nextOverrides.findIndex((recipe) => recipe.slug === slugValue);
 
             if (existingIndex >= 0) {
               nextOverrides[existingIndex] = nextOverride;
@@ -562,48 +1154,97 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             }
           });
 
-          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(nextOverrides)).catch(() => {});
-          return nextOverrides;
-        });
+          await Promise.all([
+            upsertUserRecipes(
+              syncConfig,
+              session.accessToken,
+              nextCustomRecipes
+                .filter((recipe) => input.slugs.includes(recipe.slug))
+                .map(toSyncedUserRecipeRecord)
+            ),
+            upsertRecipeOverrides(
+              syncConfig,
+              session.accessToken,
+              nextOverrides
+                .filter((recipe) => input.slugs.includes(recipe.slug))
+                .map(toSyncedRecipeOverrideRecord)
+            ),
+          ]);
+
+          setCustomRecipes(nextCustomRecipes);
+          setRecipeOverrides(nextOverrides);
+          await persistCache(nextCustomRecipes, nextOverrides);
+          setSyncError(null);
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to update the selected recipes.'));
+        } finally {
+          setSyncBusy(false);
+        }
       },
-      updateDirectionStep: (slug: string, stepId: string, text: string, source: 'custom' | 'obsidian') => {
+      updateDirectionStep: async (
+        slug: string,
+        stepId: string,
+        text: string,
+        source: 'custom' | 'obsidian'
+      ) => {
         const nextText = text.trim();
 
         if (!nextText) {
           return;
         }
 
-        if (source === 'custom') {
-          setCustomRecipes((current) => {
-            const next = current.map((recipe) => {
-              if (recipe.slug !== slug) {
-                return recipe;
-              }
-
-              const nextDirections = replaceDirectionStepText(recipe.directions, stepId, nextText);
-
-              return {
-                ...recipe,
-                directions: nextDirections,
-                directionStepOverrides: buildDirectionStepOverrides(recipe.originalDirections, nextDirections),
-              };
-            });
-
-            AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-            return next;
-          });
-
+        if (!requireSync('Sign in before editing directions so the changes sync to your other devices.')) {
           return;
         }
 
-        setRecipeOverrides((current) => {
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return;
+        }
+
+        setSyncBusy(true);
+
+        try {
+          if (source === 'custom') {
+            const currentCustomRecipes = customRecipesRef.current;
+            const recipe = currentCustomRecipes.find((item) => item.slug === slug);
+
+            if (!recipe) {
+              return;
+            }
+
+            const nextDirections = replaceDirectionStepText(recipe.directions, stepId, nextText);
+            const nextRecipe: UserRecipe = {
+              ...recipe,
+              directions: nextDirections,
+              directionStepOverrides: buildDirectionStepOverrides(
+                recipe.originalDirections,
+                nextDirections
+              ),
+              updatedAt: new Date().toISOString(),
+            };
+
+            const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
+              toSyncedUserRecipeRecord(nextRecipe),
+            ]);
+            const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(nextRecipe));
+            const nextCustomRecipes = currentCustomRecipes.map((item) =>
+              item.id === savedRecipe.id ? savedRecipe : item
+            );
+
+            setCustomRecipes(nextCustomRecipes);
+            await persistCache(nextCustomRecipes, recipeOverridesRef.current);
+            setSyncError(null);
+            return;
+          }
+
+          const currentOverrides = recipeOverridesRef.current;
           const baseRecipe = obsidianRecipeMap[slug];
 
           if (!baseRecipe) {
-            return current;
+            return;
           }
 
-          const existingOverride = current.find((recipe) => recipe.slug === slug);
+          const existingOverride = currentOverrides.find((recipe) => recipe.slug === slug);
           const nextDirections = replaceDirectionStepText(
             existingOverride?.directions ?? baseRecipe.directions,
             stepId,
@@ -611,10 +1252,13 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           );
 
           const nextOverride: RecipeOverride = {
+            id: existingOverride?.id ?? `override-${slug}`,
+            userId: user.id,
             slug,
             title: existingOverride?.title ?? baseRecipe.title,
             category: existingOverride?.category ?? baseRecipe.category,
-            allergyFriendlyTags: existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
+            allergyFriendlyTags:
+              existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
             allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
             ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
             directions: nextDirections,
@@ -626,55 +1270,91 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             updatedAt: new Date().toISOString(),
           };
 
-          const next = [nextOverride, ...current.filter((recipe) => recipe.slug !== slug)];
-          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+          const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
+            toSyncedRecipeOverrideRecord(nextOverride),
+          ]);
+          const savedOverride = mapSyncedRecipeOverride(
+            savedRecord ?? toSyncedRecipeOverrideRecord(nextOverride)
+          );
+          const nextOverrides = [
+            savedOverride,
+            ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+          ];
+
+          setRecipeOverrides(nextOverrides);
+          await persistCache(customRecipesRef.current, nextOverrides);
+          setSyncError(null);
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to save the direction change.'));
+        } finally {
+          setSyncBusy(false);
+        }
       },
-      resetDirectionStep: (slug: string, stepId: string, source: 'custom' | 'obsidian') => {
-        if (source === 'custom') {
-          setCustomRecipes((current) => {
-            const next = current.map((recipe) => {
-              if (recipe.slug !== slug) {
-                return recipe;
-              }
-
-              const stepNumber = Number(stepId.replace('step-', ''));
-              const originalText = recipe.originalDirections.flatMap((section) => section.items)[stepNumber - 1];
-
-              if (!originalText) {
-                return recipe;
-              }
-
-              const nextDirections = replaceDirectionStepText(recipe.directions, stepId, originalText);
-
-              return {
-                ...recipe,
-                directions: nextDirections,
-                directionStepOverrides: buildDirectionStepOverrides(recipe.originalDirections, nextDirections),
-              };
-            });
-
-            AsyncStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(next)).catch(() => {});
-            return next;
-          });
-
+      resetDirectionStep: async (slug: string, stepId: string, source: 'custom' | 'obsidian') => {
+        if (!requireSync('Sign in before resetting directions so the changes sync to your other devices.')) {
           return;
         }
 
-        setRecipeOverrides((current) => {
+        if (!syncConfig || !session?.accessToken || !user?.id) {
+          return;
+        }
+
+        setSyncBusy(true);
+
+        try {
+          if (source === 'custom') {
+            const currentCustomRecipes = customRecipesRef.current;
+            const recipe = currentCustomRecipes.find((item) => item.slug === slug);
+
+            if (!recipe) {
+              return;
+            }
+
+            const stepNumber = Number(stepId.replace('step-', ''));
+            const originalText = recipe.originalDirections.flatMap((section) => section.items)[stepNumber - 1];
+
+            if (!originalText) {
+              return;
+            }
+
+            const nextDirections = replaceDirectionStepText(recipe.directions, stepId, originalText);
+            const nextRecipe: UserRecipe = {
+              ...recipe,
+              directions: nextDirections,
+              directionStepOverrides: buildDirectionStepOverrides(
+                recipe.originalDirections,
+                nextDirections
+              ),
+              updatedAt: new Date().toISOString(),
+            };
+
+            const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
+              toSyncedUserRecipeRecord(nextRecipe),
+            ]);
+            const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(nextRecipe));
+            const nextCustomRecipes = currentCustomRecipes.map((item) =>
+              item.id === savedRecipe.id ? savedRecipe : item
+            );
+
+            setCustomRecipes(nextCustomRecipes);
+            await persistCache(nextCustomRecipes, recipeOverridesRef.current);
+            setSyncError(null);
+            return;
+          }
+
+          const currentOverrides = recipeOverridesRef.current;
           const baseRecipe = obsidianRecipeMap[slug];
 
           if (!baseRecipe) {
-            return current;
+            return;
           }
 
-          const existingOverride = current.find((recipe) => recipe.slug === slug);
+          const existingOverride = currentOverrides.find((recipe) => recipe.slug === slug);
           const stepNumber = Number(stepId.replace('step-', ''));
           const originalText = baseRecipe.directions.flatMap((section) => section.items)[stepNumber - 1];
 
           if (!existingOverride || !originalText) {
-            return current;
+            return;
           }
 
           const nextDirections = replaceDirectionStepText(existingOverride.directions, stepId, originalText);
@@ -686,13 +1366,39 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             updatedAt: new Date().toISOString(),
           };
 
-          const next = [nextOverride, ...current.filter((recipe) => recipe.slug !== slug)];
-          AsyncStorage.setItem(RECIPE_OVERRIDES_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
+          const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
+            toSyncedRecipeOverrideRecord(nextOverride),
+          ]);
+          const savedOverride = mapSyncedRecipeOverride(
+            savedRecord ?? toSyncedRecipeOverrideRecord(nextOverride)
+          );
+          const nextOverrides = [
+            savedOverride,
+            ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+          ];
+
+          setRecipeOverrides(nextOverrides);
+          await persistCache(customRecipesRef.current, nextOverrides);
+          setSyncError(null);
+        } catch (error) {
+          setSyncError(normalizeError(error, 'Unable to reset the direction step.'));
+        } finally {
+          setSyncBusy(false);
+        }
       },
     }),
-    [customRecipes, lastDeletedRecipes, loaded, recipeOverrides]
+    [
+      customRecipes,
+      lastDeletedRecipes,
+      loaded,
+      recipeOverrides,
+      session?.accessToken,
+      syncBusy,
+      syncConfigured,
+      syncEnabled,
+      syncError,
+      user?.id,
+    ]
   );
 
   return <CustomRecipesContext.Provider value={value}>{children}</CustomRecipesContext.Provider>;

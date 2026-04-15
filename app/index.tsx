@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { useAuth } from '../contexts/auth-context';
 import { useAppSettings } from '../contexts/settings-context';
 
 const menuItems = [
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const { palette } = useAppSettings();
+  const { configured, user } = useAuth();
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -44,6 +46,13 @@ export default function HomeScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Kitchen utility hub</Text>
             <Text style={[styles.title, { color: palette.text }]}>Useful kitchen tools in one place</Text>
+            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+              {configured
+                ? user?.email
+                  ? `Recipe sync is active for ${user.email}.`
+                  : 'Sign in from Settings to sync your recipe library across mobile and web.'
+                : 'Add Supabase sync config to enable a shared recipe library across devices.'}
+            </Text>
             <View style={styles.badgeRow}>
               <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
                 Conversions

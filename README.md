@@ -28,7 +28,7 @@ The app currently includes:
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
-- locally created recipes stored in app storage
+- cloud-synced user recipes and recipe overrides backed by Supabase-compatible auth and database APIs
 - clickable recipe detail pages generated from Markdown
 - editable recipe detail pages for both local recipes and Obsidian-backed recipes through local overrides
 - ingredient scaling controls on recipe pages
@@ -56,11 +56,28 @@ This project currently uses:
 - pnpm
 - Metro
 - AsyncStorage
+- Supabase-compatible REST auth/database sync
 - expo-audio
 - expo-print
 - expo-sharing
 - expo-file-system
 - react-native-svg
+
+## Recipe Sync Setup
+
+Cross-device recipe sync now expects a Supabase project.
+
+1. Copy [`.env.example`](.env.example) to `.env`.
+2. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+3. Run [`docs/supabase-sync.sql`](docs/supabase-sync.sql) in your Supabase SQL editor.
+4. Start the app and create or sign in to an account from Settings.
+
+AsyncStorage is still used locally for:
+
+- app settings
+- favorites
+- per-user recipe cache for faster startup and offline fallback
+- one-time migration of older local recipe data into the synced backend
 
 ## Why Expo
 
@@ -160,10 +177,12 @@ Important shared files:
 - [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
+- [`contexts/auth-context.tsx`]
 - [`contexts/cook-timer-context.tsx`]
 - [`contexts/custom-recipes-context.tsx`]
 - [`contexts/favorites-context.tsx`]
 - [`contexts/settings-context.tsx`]
+- [`utils/supabase-sync.ts`]
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
 - [`utils/scaled-directions.ts`]
@@ -185,19 +204,22 @@ The app parses those Markdown notes into structured recipe data including:
 - prep/cook/total time when available
 - allergen and allergy-friendly tags
 
-### Local App Recipes And Overrides
+### Synced User Recipes And Overrides
 
-The app also stores recipe data in local app storage.
+The app now stores user-created recipes and imported-recipe overrides through a shared Supabase-backed sync layer.
 
 That includes:
 
 - recipes created directly in the app
-- local edits to Obsidian-backed recipes
+- edits to Obsidian-backed recipes
 - bulk metadata changes
 - website-imported recipe source attribution
 - per-step direction overrides for scaled recipe guidance
+- imported-recipe hidden/delete state
 
-This lets the app treat all recipes as editable without changing the original Markdown files in the `Cooking` vault.
+The backend is the canonical source of truth for this data, while AsyncStorage is used only for per-user cache, offline fallback display, and one-time migration of older local recipe data.
+
+This lets the app treat all recipes as editable without changing the original Markdown files in the `Cooking` vault, while still syncing changes across signed-in devices.
 
 ### Sample Recipes
 
@@ -357,11 +379,14 @@ Current saved settings:
 - `Keep screen awake`
 - `Number of timers`
 - `Confirm delete`
+- `Account sync`
 - `Export all recipes to PDF` action
 
 How it works:
 
 - settings are stored locally with AsyncStorage
+- auth sessions are stored locally and refreshed on app launch
+- account sync uses Supabase email/password auth from the shared settings menu
 - restore defaults is a real immediate action in settings
 - restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timers to 3
 - dark mode switches between light and dark palettes
@@ -384,6 +409,7 @@ Shared header navigation behavior:
 The app now supports:
 
 - adding recipes directly in the app
+- signing in to a shared recipe account
 - browsing a separate imported-only `Sample Recipes` library
 - starting new recipes from a photo with local OCR-assisted prefill
 - starting new recipes from a website URL with schema-first import

@@ -41,8 +41,8 @@ export default function AddRecipeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
-  const { addRecipe } = useCustomRecipes();
+  const { openSettings, palette } = useAppSettings();
+  const { addRecipe, syncBusy, syncConfigured, syncEnabled } = useCustomRecipes();
 
   const [entryMode, setEntryMode] = useState<EntryMode>('manual');
   const [ocrState, setOcrState] = useState<OcrState>('idle');
@@ -99,14 +99,14 @@ export default function AddRecipeScreen() {
     }
   }, [allergenTouched, detectedTags.allergenTags, detectedTags.allergyFriendlyTags, friendlyTouched]);
 
-  function handleSave() {
+  async function handleSave() {
     setSaveAttempted(true);
 
     if (!canSave) {
       return;
     }
 
-    addRecipe({
+    const savedRecipe = await addRecipe({
       category,
       title: recipeName,
       ingredientsText: ingredients,
@@ -118,7 +118,9 @@ export default function AddRecipeScreen() {
       allergyFriendlyTags,
     });
 
-    router.replace('/my-recipes');
+    if (savedRecipe) {
+      router.replace('/my-recipes');
+    }
   }
 
   function handleAllergenToggle(tag: (typeof allergenTagOptions)[number]) {
@@ -688,17 +690,34 @@ export default function AddRecipeScreen() {
                     <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
                   </Pressable>
                   <Pressable
-                    onPress={handleSave}
+                    onPress={() => {
+                      if (!syncEnabled) {
+                        openSettings();
+                        return;
+                      }
+
+                      void handleSave();
+                    }}
                     style={[
                       styles.primaryButton,
-                      { backgroundColor: canSave ? palette.accent : palette.borderAlt },
+                      {
+                        backgroundColor:
+                          canSave && syncEnabled && !syncBusy ? palette.accent : palette.borderAlt,
+                      },
                     ]}
                   >
                     <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                      Save Recipe
+                      {syncBusy ? 'Saving…' : 'Save Recipe'}
                     </Text>
                   </Pressable>
                 </View>
+                {!syncEnabled ? (
+                  <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                    {syncConfigured
+                      ? 'Open Settings to sign in before saving recipes.'
+                      : 'Add sync configuration, then sign in before saving recipes.'}
+                  </Text>
+                ) : null}
               </View>
             </View>
           </View>

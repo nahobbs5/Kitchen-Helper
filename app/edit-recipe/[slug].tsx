@@ -115,14 +115,14 @@ export default function EditRecipeScreen() {
 
   const canSave = missingRequiredFields.length === 0;
 
-  function handleSave() {
+  async function handleSave() {
     setSaveAttempted(true);
 
     if (!canSave || !normalizedSlug) {
       return;
     }
 
-    updateRecipe(normalizedSlug, {
+    const saved = await updateRecipe(normalizedSlug, {
       category,
       title: recipeName,
       ingredientsText: ingredients,
@@ -134,24 +134,26 @@ export default function EditRecipeScreen() {
       allergyFriendlyTags,
     }, effectiveSource);
 
-    router.replace({
-      pathname: effectiveSource === 'custom' ? '/user-recipes/[slug]' : '/recipes/[slug]',
-      params: { slug: normalizedSlug },
-    });
+    if (saved) {
+      router.replace({
+        pathname: effectiveSource === 'custom' ? '/user-recipes/[slug]' : '/recipes/[slug]',
+        params: { slug: normalizedSlug },
+      });
+    }
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!normalizedSlug) {
       return;
     }
 
-    deleteRecipe(normalizedSlug, effectiveSource);
+    await deleteRecipe(normalizedSlug, effectiveSource);
     router.replace('/my-recipes');
   }
 
   function handleDeletePress() {
     if (!confirmDeleteEnabled) {
-      handleDelete();
+      void handleDelete();
       return;
     }
 

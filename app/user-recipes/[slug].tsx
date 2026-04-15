@@ -71,12 +71,12 @@ export default function UserRecipeScreen() {
     }));
   }, [multiplier, recipe]);
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!recipe) {
       return;
     }
 
-    deleteRecipe(recipe.slug);
+    await deleteRecipe(recipe.slug);
     router.replace('/my-recipes');
   }
 
@@ -86,7 +86,7 @@ export default function UserRecipeScreen() {
     }
 
     if (!confirmDeleteEnabled) {
-      handleDelete();
+      void handleDelete();
       return;
     }
 

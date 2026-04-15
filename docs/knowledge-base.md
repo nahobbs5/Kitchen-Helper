@@ -12,7 +12,7 @@ Current core areas:
 
 - recipe browsing from Obsidian notes
 - imported sample-recipe browsing from selected Obsidian folders
-- recipe creation and editing in app storage
+- account-backed recipe creation and editing with cross-device sync
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
 - ingredient scaling
@@ -42,6 +42,7 @@ The project currently uses:
 - pnpm
 - Metro
 - AsyncStorage
+- Supabase-compatible REST auth/database sync
 - expo-audio
 - expo-print
 - expo-sharing
@@ -139,16 +140,30 @@ Even though the app targets web too, Expo still uses Metro for this setup. That 
 
 ### AsyncStorage
 
-AsyncStorage is the local persistence layer currently used by the app.
+AsyncStorage is still used locally, but it is no longer the canonical recipe store.
 
 Right now it stores:
 
 - favorite recipes
 - saved settings like dark mode and keep-awake mode
-- app-created recipes
-- local overrides for imported recipes
+- auth sessions
+- per-user cached synced recipes
+- per-user cached imported-recipe overrides
 - deleted-recipe undo state
-- website-import source attribution
+- one-time migration markers for older local-only recipe data
+
+### Supabase-Compatible Sync
+
+Supabase is now the shared backend for recipe sync.
+
+It provides:
+
+- email/password authentication
+- a hosted Postgres-backed data store for user recipes and recipe overrides
+- row-level security so users only see their own synced data
+- REST endpoints the Expo app can call directly
+
+This means the app now has a real shared source of truth across mobile and web without needing a custom server in this repo.
 
 ## Why This Setup Was Chosen
 
@@ -259,6 +274,7 @@ App-wide state lives in [`contexts/`](contexts).
 
 Important files:
 
+- [`contexts/auth-context.tsx`]
 - [`contexts/cook-timer-context.tsx`]
 - [`contexts/custom-recipes-context.tsx`]
 - [`contexts/favorites-context.tsx`]
@@ -266,8 +282,9 @@ Important files:
 
 What this layer currently handles:
 
-- app-created recipes
-- local recipe overrides for imported recipes
+- signed-in user auth state and session restore
+- cloud-synced user recipes
+- synced overrides for imported recipes
 - deleted-recipe undo state
 - favorite recipe slugs
 - dark mode
@@ -277,7 +294,7 @@ What this layer currently handles:
 - the export action entry point in settings
 - the shared cook-timer popup and timer state
 - opening and closing the settings overlay
-- persistence through AsyncStorage
+- local caching and persistence through AsyncStorage
 
 This layer matters because it keeps app-wide behavior from being duplicated separately on every screen.
 
@@ -291,6 +308,7 @@ Important files:
 - [`data/cooking-dictionary.ts`]
 - [`scripts/generate-obsidian-recipes.mjs`]
 - [`scripts/generate-cooking-dictionary.mjs`]
+- [`utils/supabase-sync.ts`]
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
 - [`utils/scaled-directions.ts`]
@@ -351,7 +369,7 @@ A good mental model for the app is:
 1. source recipes and reference files live in [`Cooking/`](Cooking)
 2. generator scripts turn them into typed app data in [`data/`](data)
 3. route files in [`app/`](app) render that data
-4. shared contexts provide favorites, settings, and theme state
+4. shared contexts provide auth, synced recipe state, favorites, settings, and theme state
 5. shared components and styles keep the UI consistent across screens
 
 That is the current backbone of the project.
@@ -370,7 +388,8 @@ Current capabilities:
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - a `My Recipes` page backed by real Obsidian recipe notes
-- recipe creation in app storage
+- account-backed recipe sync across devices
+- recipe creation in a shared synced library
 - photo-based recipe import that prefills the add-recipe form
 - website import that prefills the add-recipe form
 - recipe editing for both app-created and imported recipes
@@ -401,8 +420,6 @@ Current capabilities:
 
 What it does not yet support:
 
-- user accounts
-- sync across devices
 - pantry tracking
 - grocery list generation
 - dedicated step-linked cooking mode
@@ -432,12 +449,12 @@ A practical rule we settled on:
 
 That keeps recipe timing more trustworthy.
 
-Imported recipes are still editable in the app because local overrides are stored separately from the original Markdown notes.
+Imported recipes are still editable in the app because synced overrides are stored separately from the original Markdown notes.
 
 That means:
 
 - the vault stays untouched
-- the app can still support edits, tags, and metadata cleanup
+- the app can still support edits, tags, metadata cleanup, and hidden-state overrides
 - imported recipes and app-created recipes behave much more similarly in the UI
 
 ## Sample Recipes Library
@@ -457,8 +474,8 @@ Behavior:
 
 - only imported Obsidian recipes appear there
 - app-created recipes stay exclusive to `My Recipes`
-- local overrides still apply
-- locally hidden imported recipes stay hidden there too
+- synced overrides still apply
+- hidden imported recipes stay hidden there too for the signed-in user
 - tapping a card opens the existing imported recipe detail route
 
 This keeps `Sample Recipes` useful as a clean sample library while `My Recipes` remains the broader personal working library.
@@ -532,11 +549,14 @@ Current saved settings:
 - `Keep screen awake`
 - `Number of timers`
 - `Confirm delete`
+- `Account sync`
 - `Export all recipes to PDF` action
 
 How it works:
 
 - settings are stored locally with AsyncStorage
+- auth sessions are stored locally and refreshed on launch
+- the settings menu now includes account sign-in and sign-out for recipe sync
 - restore defaults is an immediate in-app action, not just a placeholder label
 - restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timer count to 3
 - dark mode swaps between centralized light and dark palettes
@@ -585,6 +605,29 @@ Implementation notes:
 - web uses `html2pdf.js`
 - Android file saving uses `expo-file-system`
 
+## Account And Recipe Sync
+
+Recipe sync now uses a Supabase-backed auth and database layer instead of per-device local-only recipe storage.
+
+Important files:
+
+- [`contexts/auth-context.tsx`](contexts/auth-context.tsx)
+- [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
+- [`utils/supabase-sync.ts`](utils/supabase-sync.ts)
+- [`components/settings-menu.tsx`](components/settings-menu.tsx)
+- [`docs/supabase-sync.sql`](docs/supabase-sync.sql)
+
+Current behavior:
+
+- users create an account or sign in from Settings
+- sessions are restored from local storage on launch and refreshed when needed
+- user-created recipes sync through the backend
+- imported recipe overrides sync through the backend
+- older local-only recipe data is migrated once after sign-in
+- AsyncStorage keeps a per-user cache for startup speed and offline fallback
+
+This was added so mobile and web can share one recipe library without introducing a custom backend service inside this repo.
+
 ## Favorites System
 
 Favorite recipes are stored locally and can be toggled from both the recipe list and recipe detail pages.
@@ -595,7 +638,7 @@ Important files:
 - [`app/my-recipes.tsx`]
 - [`app/recipes/[slug].tsx`]
 
-This gives the app one early personalized behavior without needing accounts or a backend.
+This remains a local personalization feature separate from the synced recipe backend.
 
 ## Custom Recipes And Overrides
 
@@ -605,16 +648,17 @@ Important file:
 
 - [`contexts/custom-recipes-context.tsx`]
 
-This context stores:
+This context now manages:
 
-- recipes created in the app
-- local edits to imported recipes
+- synced recipes created in the app
+- synced edits to imported recipes
 - bulk metadata changes
 - recently deleted recipe data for undo
 - website import attribution through a dedicated `Source` structure
 - original directions plus per-step direction overrides for scaled recipe editing
+- per-user cached copies of synced recipe data for startup and offline fallback
 
-This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault.
+This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault, while still keeping one shared recipe library across signed-in devices.
 
 ## Local OCR And Website Recipe Import
 
@@ -921,6 +965,7 @@ High-level sequence of what has happened:
 32. added a scaled-directions pipeline with per-step analysis, highlights, and local step overrides
 33. added full-library PDF export from settings for web and Android
 34. replaced the old `/recipe` prototype with the imported-only `Sample Recipes` library
+35. added Supabase-backed account auth and cross-device recipe sync
 
 ## How To Grow This File
 

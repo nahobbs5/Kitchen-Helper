@@ -157,7 +157,7 @@ export function ScaledDirectionsList({
                 {step.isEdited ? (
                   <Pressable
                     onPress={() => {
-                      resetDirectionStep(slug, step.id, source);
+                      void resetDirectionStep(slug, step.id, source);
                       if (editingStepId === step.id) {
                         setEditingStepId(null);
                         setDraftText('');
@@ -214,7 +214,7 @@ export function ScaledDirectionsList({
                         return;
                       }
 
-                      updateDirectionStep(slug, step.id, nextText, source);
+                      void updateDirectionStep(slug, step.id, nextText, source);
                       setEditingStepId(null);
                       setDraftText('');
                     }}

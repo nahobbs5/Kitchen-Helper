@@ -3,6 +3,7 @@ import { View, useWindowDimensions } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
 import { CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { AuthProvider } from '../contexts/auth-context';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
@@ -11,15 +12,17 @@ import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
 export default function RootLayout() {
   return (
     <SettingsProvider>
-      <CookTimerProvider>
-        <CustomRecipesProvider>
-          <FavoritesProvider>
-            <RootNavigator />
-            <SettingsMenuModal />
-            <CookTimerModal />
-          </FavoritesProvider>
-        </CustomRecipesProvider>
-      </CookTimerProvider>
+      <AuthProvider>
+        <CookTimerProvider>
+          <CustomRecipesProvider>
+            <FavoritesProvider>
+              <RootNavigator />
+              <SettingsMenuModal />
+              <CookTimerModal />
+            </FavoritesProvider>
+          </CustomRecipesProvider>
+        </CookTimerProvider>
+      </AuthProvider>
     </SettingsProvider>
   );
 }

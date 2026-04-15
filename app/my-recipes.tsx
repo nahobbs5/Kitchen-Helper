@@ -26,7 +26,7 @@ export default function MyRecipesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
+  const { openSettings, palette } = useAppSettings();
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
   const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
@@ -42,8 +42,19 @@ export default function MyRecipesScreen() {
   const [bulkAllergenTagsToAdd, setBulkAllergenTagsToAdd] = useState<string[]>([]);
   const [bulkFriendlyTagsToAdd, setBulkFriendlyTagsToAdd] = useState<string[]>([]);
   const [dismissProgress, setDismissProgress] = useState(0);
-  const { bulkUpdateRecipeMetadata, clearDeletedRecipes, customRecipes, deleteRecipes, lastDeletedRecipes, recipeOverrideMap, restoreDeletedRecipes } =
-    useCustomRecipes();
+  const {
+    bulkUpdateRecipeMetadata,
+    clearDeletedRecipes,
+    customRecipes,
+    deleteRecipes,
+    lastDeletedRecipes,
+    recipeOverrideMap,
+    restoreDeletedRecipes,
+    syncBusy,
+    syncConfigured,
+    syncEnabled,
+    syncError,
+  } = useCustomRecipes();
   const { favoriteRecipes, favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
   const allRecipes = useMemo(
     () => [
@@ -235,12 +246,12 @@ export default function MyRecipesScreen() {
     bulkAllergenTagsToAdd.length > 0 ||
     bulkFriendlyTagsToAdd.length > 0;
 
-  function handleBulkDelete() {
+  async function handleBulkDelete() {
     if (selectedRecipeSlugs.length === 0) {
       return;
     }
 
-    deleteRecipes(selectedRecipeSlugs);
+    await deleteRecipes(selectedRecipeSlugs);
     setSelectedRecipeSlugs([]);
     setShowBulkDeleteConfirm(false);
     setSelectionMode(false);
@@ -274,12 +285,12 @@ export default function MyRecipesScreen() {
     );
   }
 
-  function handleApplyBulkMetadata() {
+  async function handleApplyBulkMetadata() {
     if (!canApplyBulkMetadata || selectedRecipeSlugs.length === 0) {
       return;
     }
 
-    bulkUpdateRecipeMetadata({
+    await bulkUpdateRecipeMetadata({
       slugs: selectedRecipeSlugs,
       category: bulkCategory === 'Keep existing' ? null : bulkCategory,
       cuisineRegion: bulkCuisineRegion,
@@ -331,6 +342,49 @@ export default function MyRecipesScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
+            {!syncEnabled ? (
+              <View
+                style={[
+                  styles.noticeCard,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                ]}
+              >
+                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
+                  {syncConfigured ? 'Sign in to sync recipes' : 'Finish sync setup'}
+                </Text>
+                <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
+                  {syncConfigured
+                    ? 'Open Settings to sign in. New recipes and imported recipe overrides will sync across devices once an account is active.'
+                    : 'Set the Supabase environment variables, then sign in from Settings to share one recipe library across devices.'}
+                </Text>
+                <Pressable
+                  onPress={openSettings}
+                  style={[
+                    styles.secondaryButton,
+                    { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                  ]}
+                >
+                  <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Open Settings</Text>
+                </Pressable>
+              </View>
+            ) : null}
+            {syncEnabled && (syncBusy || syncError) ? (
+              <View
+                style={[
+                  styles.noticeCard,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                ]}
+              >
+                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
+                  {syncBusy ? 'Syncing recipe changes' : 'Sync issue'}
+                </Text>
+                <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
+                  {syncBusy
+                    ? 'Changes are being written to your shared recipe library now.'
+                    : syncError}
+                </Text>
+              </View>
+            ) : null}
             {lastDeletedRecipes.length > 0 ? (
               <View
                 style={[
@@ -360,7 +414,9 @@ export default function MyRecipesScreen() {
                 </View>
                 <View style={styles.actionRow}>
                   <Pressable
-                    onPress={restoreDeletedRecipes}
+                    onPress={() => {
+                      void restoreDeletedRecipes();
+                    }}
                     style={[styles.primaryButton, { backgroundColor: palette.accent }]}
                   >
                     <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Undo Delete</Text>
@@ -380,7 +436,14 @@ export default function MyRecipesScreen() {
 
             <View style={styles.actionRow}>
               <Pressable
-                onPress={() => router.push('/add-recipe')}
+                onPress={() => {
+                  if (!syncEnabled) {
+                    openSettings();
+                    return;
+                  }
+
+                  router.push('/add-recipe');
+                }}
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
                 <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>

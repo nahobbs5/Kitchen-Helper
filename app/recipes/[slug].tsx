@@ -42,12 +42,12 @@ export default function ObsidianRecipeScreen() {
   const parentLabel = origin === 'my-recipes' ? 'My Recipes' : 'Sample Recipes';
   const headerTitle = isWide ? `${parentLabel} / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!recipe) {
       return;
     }
 
-    deleteRecipe(recipe.slug, 'obsidian');
+    await deleteRecipe(recipe.slug, 'obsidian');
     router.replace('/my-recipes');
   }
 
@@ -57,7 +57,7 @@ export default function ObsidianRecipeScreen() {
     }
 
     if (!confirmDeleteEnabled) {
-      handleDelete();
+      void handleDelete();
       return;
     }
 
