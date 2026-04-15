@@ -12,9 +12,9 @@ const menuItems = [
     href: '/my-recipes' as const,
   },
   {
-    eyebrow: 'Prototype',
-    title: 'Recipe preview',
-    body: 'The existing demo page for scaling a recipe and showing substitutions in context.',
+    eyebrow: 'Imported library',
+    title: 'Sample Recipes',
+    body: 'A curated imported-only recipe library built from the sample Obsidian cooking folders.',
     href: '/recipe' as const,
   },
 ];
@@ -39,8 +39,8 @@ export default function HomeScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Kitchen utility hub</Text>
             <Text style={[styles.title, { color: palette.text }]}>Useful kitchen tools in one place</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              The home screen now acts like a menu for the app. Instead of one demo page, we have
-              dedicated routes for references, substitutions, recipes, and the scaling prototype.
+              The home screen now acts like a menu for the app. It links out to recipe libraries,
+              imported samples, and kitchen reference tools instead of keeping everything on one screen.
             </Text>
 
             <View style={styles.badgeRow}>

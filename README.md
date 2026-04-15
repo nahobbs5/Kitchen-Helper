@@ -21,6 +21,7 @@ It is focused on practical kitchen utilities:
 The app currently includes:
 
 - a routed home screen that acts like a kitchen tools hub
+- a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
@@ -149,7 +150,6 @@ Important shared files:
 - [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
-- [`components/sample-data.ts`]
 - [`contexts/cook-timer-context.tsx`]
 - [`contexts/custom-recipes-context.tsx`]
 - [`contexts/favorites-context.tsx`]
@@ -188,6 +188,21 @@ That includes:
 - per-step direction overrides for scaled recipe guidance
 
 This lets the app treat all recipes as editable without changing the original Markdown files in the `Cooking` vault.
+
+### Sample Recipes
+
+The `/recipe` route is now a real imported-only library screen called `Sample Recipes`.
+
+It is built from the generated Obsidian recipe dataset and includes recipes from these sample folders:
+
+- `Appetizers`
+- `Dessert`
+- `Entree`
+- `Breakfast`
+
+It does not include app-created recipes.
+
+Local overrides still apply there, so renamed titles, updated metadata, and locally hidden imported recipes behave the same way they do elsewhere in the app.
 
 ### Cooking Dictionary
 
@@ -351,6 +366,7 @@ How it works:
 The app now supports:
 
 - adding recipes directly in the app
+- browsing a separate imported-only `Sample Recipes` library
 - starting new recipes from a photo with local OCR-assisted prefill
 - starting new recipes from a website URL with schema-first import
 - editing any recipe in the UI

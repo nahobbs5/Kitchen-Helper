@@ -1,32 +1,74 @@
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
-import {
-  baseIngredients,
-  baseServings,
-  conversions,
-  formatAmount,
-  substitutions,
-} from '../components/sample-data';
+import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
+import { obsidianRecipes } from '../data/obsidian-recipes';
 
-const previewServingOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+const sampleRecipeCategories = ['Appetizers', 'Dessert', 'Entree', 'Breakfast'] as const;
 
-export default function RecipeScreen() {
+export default function SampleRecipesScreen() {
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const { palette } = useAppSettings();
-  const [servings, setServings] = useState(baseServings);
+  const { recipeOverrideMap } = useCustomRecipes();
+  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [searchText, setSearchText] = useState('');
 
-  const scaledIngredients = useMemo(() => {
-    const multiplier = servings / baseServings;
+  const sampleRecipes = useMemo(
+    () =>
+      obsidianRecipes
+        .filter((recipe) => sampleRecipeCategories.includes(recipe.category as (typeof sampleRecipeCategories)[number]))
+        .filter((recipe) => !recipeOverrideMap[recipe.slug]?.deleted)
+        .map((recipe) => {
+          const override = recipeOverrideMap[recipe.slug];
 
-    return baseIngredients.map((ingredient) => ({
-      ...ingredient,
-      amount: ingredient.amount * multiplier,
-    }));
-  }, [servings]);
+          return override
+            ? {
+                ...recipe,
+                title: override.title,
+                category: override.category,
+                allergyFriendlyTags: override.allergyFriendlyTags,
+                allergenTags: override.allergenTags,
+                ingredients: override.ingredients,
+                directions: override.directions,
+                cuisineRegion: override.cuisineRegion,
+                notes: override.notes,
+                sourceInfo: override.sourceInfo,
+              }
+            : {
+                ...recipe,
+                cuisineRegion: null,
+                notes: null,
+                sourceInfo: null,
+              };
+        })
+        .sort((left, right) => left.title.localeCompare(right.title)),
+    [recipeOverrideMap]
+  );
+
+  const categoryCounts = sampleRecipeCategories.map((category) => ({
+    name: category,
+    count: sampleRecipes.filter((recipe) => recipe.category === category).length,
+  }));
+
+  const filteredRecipes = useMemo(() => {
+    const normalizedSearch = searchText.trim().toLowerCase();
+
+    return sampleRecipes.filter((recipe) => {
+      const matchesCategory = activeCategory === 'All' ? true : recipe.category === activeCategory;
+      const cuisine = (recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '';
+      const tagText = [...recipe.allergyFriendlyTags, ...recipe.allergenTags].join(' ');
+      const matchesSearch = normalizedSearch
+        ? `${recipe.title} ${recipe.category} ${cuisine} ${tagText}`.toLowerCase().includes(normalizedSearch)
+        : true;
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, sampleRecipes, searchText]);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -39,29 +81,37 @@ export default function RecipeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe route</Text>
-            <Text style={[styles.title, { color: palette.text }]}>Creamy Spinach Pasta</Text>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Imported recipe library</Text>
+            <Text style={[styles.title, { color: palette.text }]}>Sample Recipes</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This page is now its own route, which is exactly why Expo Router is useful. We can
-              treat recipe viewing as a real screen instead of a block inside one giant component.
+              A curated library of tested favorites from the developer.
             </Text>
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Scaling demo</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Adjust servings</Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Tap a serving size to update the ingredient list below.
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Imported sample set</Text>
+            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
+              {filteredRecipes.length} recipes shown
             </Text>
+            <TextInput
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder="Search sample recipes"
+              placeholderTextColor={palette.searchPlaceholder}
+              style={[
+                styles.searchInput,
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+              ]}
+            />
 
             <View style={styles.servingsRow}>
-              {[2, 4, 8].map((count) => {
-                const isActive = servings === count;
+              {['All', ...sampleRecipeCategories].map((category) => {
+                const isActive = activeCategory === category;
 
                 return (
                   <Pressable
-                    key={count}
-                    onPress={() => setServings(count)}
+                    key={category}
+                    onPress={() => setActiveCategory(category)}
                     style={[
                       styles.servingsButton,
                       { borderColor: palette.borderAlt },
@@ -77,30 +127,8 @@ export default function RecipeScreen() {
                         isActive && styles.servingsButtonTextActive,
                       ]}
                     >
-                      {count} servings
+                      {category}
                     </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Custom servings</Text>
-            <View style={styles.numberGrid}>
-              {previewServingOptions.map((count) => {
-                const isActive = servings === count;
-
-                return (
-                  <Pressable
-                    key={`preview-${count}`}
-                    onPress={() => setServings(count)}
-                    style={[
-                      styles.numberButton,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                      isActive && styles.numberButtonActive,
-                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                    ]}
-                  >
-                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{count}</Text>
                   </Pressable>
                 );
               })}
@@ -111,68 +139,122 @@ export default function RecipeScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Ingredients</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled in real time</Text>
-              <View style={styles.ingredientList}>
-                {scaledIngredients.map((ingredient) => (
-                  <View key={ingredient.name} style={[styles.ingredientRow, { backgroundColor: palette.surface }]}>
-                    <View>
-                      <Text style={[styles.ingredientAmount, { color: palette.text }]}>
-                        {formatAmount(ingredient.amount)} {ingredient.unit}
-                      </Text>
-                      <Text style={[styles.ingredientName, { color: palette.textMuted }]}>{ingredient.name}</Text>
-                    </View>
-                    {ingredient.note ? <Text style={[styles.ingredientNote, { color: palette.textSoft }]}>{ingredient.note}</Text> : null}
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Substitutions</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Helpful swaps with context</Text>
-              <View style={styles.cardStack}>
-                {substitutions.map((substitute) => (
-                  <View
-                    key={substitute.ingredient}
-                    style={[styles.infoCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+              <Text style={[styles.panelTitle, { color: palette.text }]}>Imported Samples</Text>
+              <View style={styles.listStack}>
+                {filteredRecipes.map((recipe) => (
+                  <Pressable
+                    key={recipe.slug}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/recipes/[slug]',
+                        params: { slug: recipe.slug, origin: 'sample-recipes' },
+                      })
+                    }
+                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
-                    <Text style={[styles.infoCardTitle, { color: palette.accentText }]}>{substitute.ingredient}</Text>
-                    <Text style={[styles.infoCardSwap, { color: palette.text }]}>{substitute.swap}</Text>
-                    <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{substitute.ratio}</Text>
-                    <Text style={[styles.infoCardBody, { color: palette.textMuted }]}>{substitute.note}</Text>
-                  </View>
+                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
+                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      {recipe.source.replace(/^Cooking\//, '')}
+                    </Text>
+                    {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
+                      <View style={styles.tagRow}>
+                        <View style={styles.cuisineTag}>
+                          <Text style={styles.cuisineTagText}>
+                            {(recipe as { cuisineRegion?: string | null }).cuisineRegion}
+                          </Text>
+                        </View>
+                      </View>
+                    ) : null}
+                    {recipe.allergyFriendlyTags.length > 0 ? (
+                      <View style={styles.tagRow}>
+                        {recipe.allergyFriendlyTags.map((tag) => (
+                          <View key={tag} style={styles.allergyFriendlyTag}>
+                            <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                    {recipe.allergenTags.length > 0 ? (
+                      <View style={styles.tagRow}>
+                        {recipe.allergenTags.map((tag) => (
+                          <View key={tag} style={styles.allergenTag}>
+                            <Text style={styles.allergenTagText}>{tag}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                    {recipe.prepTime || recipe.cookTime || recipe.servings ? (
+                      <View style={styles.tagRow}>
+                        {recipe.prepTime ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
+                          </View>
+                        ) : null}
+                        {recipe.cookTime ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
+                          </View>
+                        ) : null}
+                        {recipe.servings ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </Pressable>
                 ))}
+                {filteredRecipes.length === 0 ? (
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>No sample recipes found</Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      Try another category or search term.
+                    </Text>
+                  </View>
+                ) : null}
               </View>
             </View>
           </View>
 
-          <View style={styles.secondaryColumn}>
-            <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Conversions</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Quick kitchen references</Text>
-              <View style={styles.conversionList}>
-                {conversions.map((conversion) => (
-                  <View key={conversion.from} style={[styles.conversionRow, { backgroundColor: palette.surface }]}>
-                    <Text style={[styles.conversionFrom, { color: palette.text }]}>{conversion.from}</Text>
-                    <Text style={[styles.conversionArrow, { color: palette.accentText }]}>to {conversion.to}</Text>
-                    <Text style={[styles.conversionResult, { color: palette.accent }]}>{conversion.result}</Text>
-                  </View>
-                ))}
+          {isWide ? (
+            <View style={styles.secondaryColumn}>
+              <View
+                style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+              >
+                <Text style={[styles.panelTitle, { color: palette.text }]}>Sample Categories</Text>
+                <View style={styles.listStack}>
+                  {categoryCounts.map((category) => (
+                    <Pressable
+                      key={category.name}
+                      onPress={() => setActiveCategory(category.name)}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{category.name}</Text>
+                      <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>
+                        {category.count} recipes
+                      </Text>
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                        {activeCategory === category.name ? 'Current filter' : 'Tap to filter this sample group'}
+                      </Text>
+                    </Pressable>
+                  ))}
+                  <Pressable
+                    onPress={() => setActiveCategory('All')}
+                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>All sample recipes</Text>
+                    <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>
+                      {sampleRecipes.length} recipes
+                    </Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      {activeCategory === 'All' ? 'Current filter' : 'Tap to show the full sample set'}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
-
-            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Why this screen matters</Text>
-              <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>
-                Recipe pages can grow independently
-              </Text>
-              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                Later, this route can add timers, cooking mode, pantry checks, and recipe notes
-                without making the home screen harder to reason about.
-              </Text>
-            </View>
-          </View>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>

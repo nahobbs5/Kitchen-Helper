@@ -41,6 +41,7 @@ export default function UserRecipeScreen() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const normalizedSlug = Array.isArray(slug) ? slug[0] : slug;
   const recipe = normalizedSlug ? customRecipeMap[normalizedSlug] : undefined;
+  const headerTitle = isWide ? `My Recipes / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
 
   const servingButtons = useMemo(
     () => [
@@ -128,7 +129,7 @@ export default function UserRecipeScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      <Stack.Screen options={{ title: recipe.title }} />
+      <Stack.Screen options={{ title: headerTitle }} />
       <ScrollView contentContainerStyle={styles.page}>
         <View
           style={[

@@ -11,6 +11,7 @@ Kitchen Helper is a cross-platform cooking app prototype focused on practical ki
 Current core areas:
 
 - recipe browsing from Obsidian notes
+- imported sample-recipe browsing from selected Obsidian folders
 - recipe creation and editing in app storage
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
@@ -284,7 +285,6 @@ Important files:
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
 - [`utils/scaled-directions.ts`]
-- [`components/sample-data.ts`]
 - [`Cooking/`](Cooking)
 
 How this layer works:
@@ -300,7 +300,7 @@ How this layer works:
 - [`utils/ingredient-scaling.ts`] scales ingredient text for recipe pages
 - [`utils/scaled-directions.ts`] normalizes direction steps, detects scale-sensitive cues, and generates step annotations
 - [`utils/web-recipe-import.ts`] parses recipe pages for website import
-- [`components/sample-data.ts`] still provides curated prototype content for reference pages and the preview recipe screen
+- `app/recipe.tsx` now renders the imported-only `Sample Recipes` library from generated Obsidian recipe data
 
 ### 4. Shared Components and Theming
 
@@ -344,6 +344,7 @@ The app is still a prototype, but it is already useful.
 Current capabilities:
 
 - a home screen that acts as a kitchen tools hub
+- a `Sample Recipes` screen for imported-only browsing of the sample Obsidian recipe set
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - a `My Recipes` page backed by real Obsidian recipe notes
@@ -416,6 +417,29 @@ That means:
 - the vault stays untouched
 - the app can still support edits, tags, and metadata cleanup
 - imported recipes and app-created recipes behave much more similarly in the UI
+
+## Sample Recipes Library
+
+The `/recipe` route is no longer a hand-authored prototype screen.
+
+It now serves as `Sample Recipes`, an imported-only library screen built from the generated Obsidian recipe dataset.
+
+Inclusion rule:
+
+- `Appetizers`
+- `Dessert`
+- `Entree`
+- `Breakfast`
+
+Behavior:
+
+- only imported Obsidian recipes appear there
+- app-created recipes stay exclusive to `My Recipes`
+- local overrides still apply
+- locally hidden imported recipes stay hidden there too
+- tapping a card opens the existing imported recipe detail route
+
+This keeps `Sample Recipes` useful as a clean sample library while `My Recipes` remains the broader personal working library.
 
 ## Scaled Directions
 
@@ -867,6 +891,7 @@ High-level sequence of what has happened:
 31. replaced the old glossary source with a custom cooking dictionary and updated the parser
 32. added a scaled-directions pipeline with per-step analysis, highlights, and local step overrides
 33. added full-library PDF export from settings for web and Android
+34. replaced the old `/recipe` prototype with the imported-only `Sample Recipes` library
 
 ## How To Grow This File
 

@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -26,6 +26,36 @@ export function ReferenceButton() {
       ]}
     >
       <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>📖</Text>
+    </Pressable>
+  );
+}
+
+export function HomeButton() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { palette } = useAppSettings();
+  const isHomeScreen = pathname === '/';
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (!isHomeScreen) {
+          router.replace('/');
+        }
+      }}
+      disabled={isHomeScreen}
+      accessibilityRole="button"
+      accessibilityLabel="Go to home screen"
+      style={[
+        styles.settingsGearButton,
+        {
+          backgroundColor: palette.elevated,
+          borderColor: palette.borderAlt,
+          opacity: isHomeScreen ? 0.45 : 1,
+        },
+      ]}
+    >
+      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🏠</Text>
     </Pressable>
   );
 }

@@ -15,7 +15,7 @@ const servingTargets = [2, 4, 8] as const;
 const customServingOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 export default function ObsidianRecipeScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { origin, slug } = useLocalSearchParams<{ origin?: string; slug: string }>();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
@@ -39,6 +39,8 @@ export default function ObsidianRecipeScreen() {
   const [multiplier, setMultiplier] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
+  const parentLabel = origin === 'my-recipes' ? 'My Recipes' : 'Sample Recipes';
+  const headerTitle = isWide ? `${parentLabel} / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
 
   function handleDelete() {
     if (!recipe) {
@@ -144,7 +146,7 @@ export default function ObsidianRecipeScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      <Stack.Screen options={{ title: recipe.title }} />
+      <Stack.Screen options={{ title: headerTitle }} />
       <ScrollView contentContainerStyle={styles.page}>
         <View
           style={[

@@ -769,7 +769,10 @@ export default function MyRecipesScreen() {
                       router.push(
                         recipe.source === 'App Storage'
                           ? { pathname: '/user-recipes/[slug]', params: { slug: recipe.slug } }
-                          : { pathname: '/recipes/[slug]', params: { slug: recipe.slug } }
+                          : {
+                              pathname: '/recipes/[slug]',
+                              params: { slug: recipe.slug, origin: 'my-recipes' },
+                            }
                       );
                     }}
                     style={[
@@ -819,16 +822,30 @@ export default function MyRecipesScreen() {
                             onPress={(event) => {
                               event.stopPropagation();
                               const lines: string[] = [`🍽️ ${recipe.title}`];
+                              const ingredientLines = recipe.ingredients.flatMap((section) =>
+                                section.title ? [section.title, ...section.items] : section.items
+                              );
+                              const directionLines = recipe.directions.flatMap((section) =>
+                                section.title
+                                  ? [section.title, ...section.items]
+                                  : section.items
+                              );
+                              const notes =
+                                'notes' in recipe && typeof recipe.notes === 'string' ? recipe.notes : null;
                               if (recipe.servings) lines.push(`Serves: ${recipe.servings}`);
                               if (recipe.prepTime) lines.push(`Prep: ${recipe.prepTime}`);
                               if (recipe.cookTime) lines.push(`Cook: ${recipe.cookTime}`);
-                              if (recipe.ingredients?.length) {
-                                lines.push('', 'Ingredients:', ...recipe.ingredients.map((i: string) => `• ${i}`));
+                              if (ingredientLines.length > 0) {
+                                lines.push('', 'Ingredients:', ...ingredientLines.map((item) => `• ${item}`));
                               }
-                              if (recipe.directions?.length) {
-                                lines.push('', 'Directions:', ...recipe.directions.map((d: string, idx: number) => `${idx + 1}. ${d}`));
+                              if (directionLines.length > 0) {
+                                lines.push(
+                                  '',
+                                  'Directions:',
+                                  ...directionLines.map((item, idx) => `${idx + 1}. ${item}`)
+                                );
                               }
-                              if (recipe.notes) lines.push('', `Notes: ${recipe.notes}`);
+                              if (notes) lines.push('', `Notes: ${notes}`);
                               Share.share({ title: recipe.title, message: lines.join('\n') });
                             }}
                             style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
