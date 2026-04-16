@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { View, useWindowDimensions } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
-import { CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
 import { AuthProvider } from '../contexts/auth-context';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
@@ -51,6 +51,7 @@ function RootNavigator() {
             <ReferenceButton />
             <CookTimerButton />
             <SettingsGearButton />
+            <AccountButton />
           </View>
         ),
         contentStyle: {
@@ -72,6 +73,7 @@ function RootNavigator() {
       <Stack.Screen name="user-recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipe" options={{ title: 'Sample Recipes' }} />
+      <Stack.Screen name="account" options={{ title: 'Account' }} />
     </Stack>
   );
 }

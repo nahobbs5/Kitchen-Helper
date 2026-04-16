@@ -1021,7 +1021,7 @@ export default function MyRecipesScreen() {
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{category.name}</Text>
                     <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{category.count} recipes</Text>
                     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      {activeCategoryFilters.includes(category.name) ? 'Current filter' : 'Tap to filter recipes'}
+                      {activeCategoryFilters.includes(category.name) ? 'Current filter' : 'Tap to filter'}
                     </Text>
                   </Pressable>
                 ))}

@@ -642,6 +642,7 @@ export const kitchenStyles = StyleSheet.create({
   settingsScrollContent: {
     gap: 16,
     paddingBottom: 4,
+    paddingHorizontal: 32,
   },
   timerSheet: {
     maxWidth: 460,
