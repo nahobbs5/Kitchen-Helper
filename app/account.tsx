@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAuth } from '../contexts/auth-context';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
+import { buildExportRecipes, exportRecipesToPdf } from '../utils/export-recipes';
 
 export default function AccountScreen() {
   const { palette } = useAppSettings();
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const {
     authError,
     authMessage,
@@ -23,9 +27,17 @@ export default function AccountScreen() {
   } = useAuth();
   const {
     clearSyncError,
+    customRecipes,
+    loaded,
+    recipeOverrideMap,
     syncBusy,
     syncError,
   } = useCustomRecipes();
+
+  const exportRecipes = useMemo(
+    () => buildExportRecipes({ customRecipes, recipeOverrideMap }),
+    [customRecipes, recipeOverrideMap]
+  );
 
   useEffect(() => {
     return () => {
@@ -45,6 +57,23 @@ export default function AccountScreen() {
     clearSyncError();
     await signUp(authEmail, authPassword);
     setAuthPassword('');
+  }
+
+  async function handleExportRecipes() {
+    if (isExporting || !loaded) return;
+    setExportError(null);
+    setExportMessage(null);
+    setIsExporting(true);
+    try {
+      const result = await exportRecipesToPdf(exportRecipes);
+      setExportMessage(result.message);
+    } catch (error) {
+      setExportError(
+        error instanceof Error ? error.message : 'Recipe export failed. Please try again.'
+      );
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   async function handleSignOut() {
@@ -194,6 +223,106 @@ export default function AccountScreen() {
         {syncError ? (
           <Text style={[styles.settingsHint, { color: '#b14c2f' }]}>{syncError}</Text>
         ) : null}
+      </View>
+
+      <View
+        style={[
+          styles.settingsSection,
+          {
+            backgroundColor: palette.surface,
+            borderColor: palette.border,
+            marginTop: 16,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Export</Text>
+        <View style={styles.settingsCopy}>
+          <Text style={[styles.settingsLabel, { color: palette.text }]}>Export all recipes to PDF</Text>
+          <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+            Create one cookbook-style PDF from the full library, including app recipes and local
+            overrides.
+          </Text>
+          <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+            {exportRecipes.length} recipe{exportRecipes.length === 1 ? '' : 's'} ready to export.
+          </Text>
+        </View>
+        <Pressable
+          onPress={handleExportRecipes}
+          disabled={isExporting || !loaded}
+          style={[
+            styles.settingsCloseButton,
+            {
+              backgroundColor: isExporting || !loaded ? palette.borderAlt : palette.accent,
+              width: '30%',
+            },
+          ]}
+        >
+          <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>
+            {isExporting ? 'Exporting…' : 'Export all recipes to PDF'}
+          </Text>
+        </Pressable>
+        {exportMessage ? (
+          <Text style={[styles.settingsHint, { color: palette.accentText }]}>{exportMessage}</Text>
+        ) : null}
+        {exportError ? (
+          <Text style={[styles.settingsHint, { color: '#b14c2f' }]}>{exportError}</Text>
+        ) : null}
+      </View>
+
+      <View
+        style={[
+          styles.settingsSection,
+          {
+            backgroundColor: palette.surface,
+            borderColor: palette.border,
+            marginTop: 16,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Recipe importer</Text>
+        <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+          Known compatibility with the website importer.
+        </Text>
+
+        <View style={{ gap: 4 }}>
+          <Text style={[styles.settingsLabel, { color: palette.text }]}>Full</Text>
+          {[
+            'allrecipes.com',
+            'nutrition.gov',
+            'simplyrecipes.com',
+            'cooking.nytimes.com',
+            'tinykitchendivas.com',
+            'recipetineats.com',
+            'food.com',
+          ].map((site) => (
+            <Text key={site} style={[styles.settingsHint, { color: palette.textMuted }]}>
+              {site}
+            </Text>
+          ))}
+        </View>
+
+        <View style={{ gap: 4, marginTop: 12 }}>
+          <Text style={[styles.settingsLabel, { color: palette.text }]}>Limited</Text>
+          {[
+            'smittenkitchen.com',
+            'seriouseats.com',
+          ].map((site) => (
+            <Text key={site} style={[styles.settingsHint, { color: palette.textMuted }]}>
+              {site}
+            </Text>
+          ))}
+        </View>
+
+        <View style={{ gap: 4, marginTop: 12 }}>
+          <Text style={[styles.settingsLabel, { color: palette.text }]}>Doesn't Work</Text>
+          {[
+            'therealfooddietitians.com',
+          ].map((site) => (
+            <Text key={site} style={[styles.settingsHint, { color: palette.textMuted }]}>
+              {site}
+            </Text>
+          ))}
+        </View>
       </View>
     </ScrollView>
   );

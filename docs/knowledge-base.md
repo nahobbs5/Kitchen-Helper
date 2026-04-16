@@ -266,7 +266,7 @@ What this layer does:
 - defines the shared stack navigator
 - controls the shared header
 - swaps the header title to `KH` on compact widths
-- exposes the Home, My Recipes, Kitchen Guides, cook timer, and settings actions across screens
+- exposes the Home, My Recipes, Kitchen Guides, cook timer, settings, and account actions across screens
 
 ### 2. Shared State
 
@@ -291,7 +291,7 @@ What this layer currently handles:
 - keep-screen-awake cook mode
 - the number of cook-timer slots
 - the confirm-delete preference
-- the export action entry point in settings
+- the handoff to account-level auth and export flows
 - the shared cook-timer popup and timer state
 - opening and closing the settings overlay
 - local caching and persistence through AsyncStorage
@@ -341,13 +341,14 @@ Important files:
 - [`components/scaled-directions-list.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
+- [`app/account.tsx`]
 
 What this layer does:
 
 - centralizes shared styles
 - defines the light and dark palettes
 - provides the shared settings gear and overlay
-- provides the shared header actions for Home, My Recipes, Kitchen Guides, cook timer, and settings
+- provides the shared header actions for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - provides the shared cook timer popup
 - provides the delete notice pie-timer UI
 - keeps route files focused on screen behavior instead of duplicated UI plumbing
@@ -359,6 +360,7 @@ Current shared header behavior:
 - `📖` opens `Kitchen Guides` and is disabled on `/reference`
 - `⏳` opens the shared cook timer
 - `⚙` opens the shared settings overlay
+- `👤` opens `Account` and is disabled on `/account`
 
 The disabled state uses a grayed-out, reduced-opacity treatment so users can still see where they are in the app without triggering redundant navigation.
 
@@ -382,7 +384,7 @@ Current capabilities:
 
 - a home screen that acts as a kitchen tools hub
 - home menu cards for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
-- shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, and settings
+- shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH`
 - a `Sample Recipes` screen for imported-only browsing of the sample Obsidian recipe set
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
@@ -392,6 +394,7 @@ Current capabilities:
 - recipe creation in a shared synced library
 - photo-based recipe import that prefills the add-recipe form
 - website import that prefills the add-recipe form
+- a dedicated `Account` screen for sign-in, sync state, export, and importer guidance
 - recipe editing for both app-created and imported recipes
 - per-step direction editing with local overrides
 - filtering recipes by category, cuisine region, favorites, and allergen tags
@@ -414,7 +417,7 @@ Current capabilities:
 - a shared settings menu from the header gear
 - dark mode
 - keep-screen-awake cook mode
-- a full-library PDF export from settings
+- a full-library PDF export from the Account screen
 - a shared cook timer popup with a configurable number of timer slots
 - responsive layouts for both Android and web
 
@@ -549,14 +552,11 @@ Current saved settings:
 - `Keep screen awake`
 - `Number of timers`
 - `Confirm delete`
-- `Account sync`
-- `Export all recipes to PDF` action
 
 How it works:
 
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on launch
-- the settings menu now includes account sign-in and sign-out for recipe sync
 - restore defaults is an immediate in-app action, not just a placeholder label
 - restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timer count to 3
 - dark mode swaps between centralized light and dark palettes
@@ -564,10 +564,14 @@ How it works:
 - timer count controls how many timer slots the shared cook timer exposes and is clamped to `1-6`
 - confirm delete controls whether single app-recipe deletion asks first
 - bulk delete still always confirms, even if the single-delete setting is turned off
-- export builds a single cookbook-style PDF from the effective merged recipe library
-- web export downloads the file through `html2pdf.js`
-- Android export renders the PDF with `expo-print` and tries to save it through the folder picker before falling back to share
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
+
+The dedicated Account screen now owns account-facing actions:
+
+- sign in and sign up
+- sync status and sign out
+- full-library PDF export
+- importer guidance and compatibility notes
 
 The restore-defaults flow is deliberately immediate:
 
@@ -579,11 +583,11 @@ This was a useful architecture milestone because it introduced real app-wide per
 
 ## PDF Export
 
-The app now supports exporting the full recipe library to a single PDF from Settings.
+The app now supports exporting the full recipe library to a single PDF from the Account screen.
 
 Important files:
 
-- [`components/settings-menu.tsx`](components/settings-menu.tsx)
+- [`app/account.tsx`](app/account.tsx)
 - [`utils/export-recipes.ts`](utils/export-recipes.ts)
 - [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
 
@@ -611,15 +615,15 @@ Recipe sync now uses a Supabase-backed auth and database layer instead of per-de
 
 Important files:
 
+- [`app/account.tsx`](app/account.tsx)
 - [`contexts/auth-context.tsx`](contexts/auth-context.tsx)
 - [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
 - [`utils/supabase-sync.ts`](utils/supabase-sync.ts)
-- [`components/settings-menu.tsx`](components/settings-menu.tsx)
 - [`docs/supabase-sync.sql`](docs/supabase-sync.sql)
 
 Current behavior:
 
-- users create an account or sign in from Settings
+- users create an account or sign in from the Account screen
 - sessions are restored from local storage on launch and refreshed when needed
 - user-created recipes sync through the backend
 - imported recipe overrides sync through the backend
@@ -667,6 +671,8 @@ The add-recipe flow now has three starting modes:
 - manual entry
 - photo OCR
 - website
+
+The Account screen also includes high-level importer guidance and compatibility notes, but the docs intentionally avoid a hard-coded site list because those results change frequently.
 
 The photo path works like this:
 
@@ -963,7 +969,7 @@ High-level sequence of what has happened:
 30. added website-based recipe import with dedicated source attribution
 31. replaced the old glossary source with a custom cooking dictionary and updated the parser
 32. added a scaled-directions pipeline with per-step analysis, highlights, and local step overrides
-33. added full-library PDF export from settings for web and Android
+33. added full-library PDF export for web and Android
 34. replaced the old `/recipe` prototype with the imported-only `Sample Recipes` library
 35. added Supabase-backed account auth and cross-device recipe sync
 

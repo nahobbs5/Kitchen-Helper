@@ -22,7 +22,7 @@ The app currently includes:
 
 - a routed home screen that acts like a kitchen tools hub
 - home menu cards for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
-- shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, and settings
+- shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH` on smaller screens
 - a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
@@ -36,10 +36,10 @@ The app currently includes:
 - category, cuisine-region, allergen, and favorites filtering
 - bulk recipe selection, bulk favorites, bulk metadata editing, and bulk delete
 - undo delete notifications with auto-dismiss
-- a shared settings menu in the header
+- a shared settings menu in the header for local app preferences
 - dark mode
 - a keep-screen-awake cook mode setting
-- a PDF export action for the full recipe library
+- an account page with sync controls, importer guidance, and a PDF export action for the full recipe library
 - a shared cook timer popup with a configurable number of timer slots
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
@@ -70,7 +70,7 @@ Cross-device recipe sync now expects a Supabase project.
 1. Copy [`.env.example`](.env.example) to `.env`.
 2. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 3. Run [`docs/supabase-sync.sql`](docs/supabase-sync.sql) in your Supabase SQL editor.
-4. Start the app and create or sign in to an account from Settings.
+4. Start the app, open the Account page from the shared header, and create or sign in to an account there.
 
 AsyncStorage is still used locally for:
 
@@ -147,10 +147,11 @@ A simple way to think about it:
 
 ## Main App Areas
 
-Navigation is now split between two top-level patterns:
+Navigation is now split between three top-level patterns:
 
 - the home hub at `/`, which acts as the main menu for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
-- shared header shortcuts available across screens for Home, My Recipes, Kitchen Guides, the cook timer, and settings
+- the shared header shortcut row, which links to Home, My Recipes, Kitchen Guides, the cook timer, Settings, and Account
+- the dedicated `/account` screen, which handles sign-in, sync status, sign-out, export, and importer guidance
 
 On compact/mobile widths, the header title switches to `KH` so the top bar still has room for the shared shortcuts.
 
@@ -158,6 +159,7 @@ Important routed files:
 
 - [`app/_layout.tsx`]
 - [`app/add-recipe.tsx`]
+- [`app/account.tsx`]
 - [`app/index.tsx`]
 - [`app/reference.tsx`]
 - [`app/conversions.tsx`]
@@ -372,6 +374,8 @@ Covers:
 
 The app has a shared settings menu available from the gear icon in the shared header action row.
 
+Settings is now limited to local app preferences. Account sign-in, sync status, sign-out, PDF export, and importer guidance live on the dedicated Account page instead.
+
 Current saved settings:
 
 - `Restore defaults`
@@ -379,29 +383,31 @@ Current saved settings:
 - `Keep screen awake`
 - `Number of timers`
 - `Confirm delete`
-- `Account sync`
-- `Export all recipes to PDF` action
 
 How it works:
 
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on app launch
-- account sync uses Supabase email/password auth from the shared settings menu
 - restore defaults is a real immediate action in settings
 - restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timers to 3
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
 - number of timers controls how many cook-timer slots are available and is clamped to `1-6`
 - confirm delete asks before deleting a saved app recipe and does not apply to bulk deletes
-- export builds a single cookbook-style PDF from the full merged recipe library
-- on web, export downloads a PDF file
-- on Android, export first tries to save to a folder you choose and falls back to share if needed
+
+Account page behavior:
+
+- account sync uses Supabase email/password auth from the shared Account page
+- the Account page shows sync status for the active user
+- the Account page includes the one-shot export action for the full merged recipe library
+- the Account page also includes importer guidance and compatibility notes without changing the add-recipe flow itself
 
 Shared header navigation behavior:
 
 - the Home button is active on every route except `/`
 - the My Recipes skillet button is active on every route except `/my-recipes`
 - the Kitchen Guides button is active on every route except `/reference`
+- the Account button is active on every route except `/account`
 - the current-page shortcut uses a grayed-out disabled state instead of re-navigating to the same screen
 
 ## Recipe Management
@@ -458,6 +464,8 @@ Website imports save a dedicated `Source` block with:
 - website name
 - author when available
 - source URL
+
+The Account page includes high-level importer guidance and compatibility notes, but the docs intentionally do not duplicate a site-by-site support list because that changes frequently.
 
 On web, this importer is less reliable because many recipe sites block browser fetches with CORS. Native builds are the better target for this feature.
 
@@ -540,7 +548,7 @@ This is a good reminder that Expo package version alignment matters a lot, espec
 
 ## PDF Export
 
-The settings menu now includes a one-shot export action:
+The Account page now includes a one-shot export action:
 
 - `Export all recipes to PDF`
 

@@ -1,12 +1,10 @@
 import { usePathname, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
-import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useCookTimer } from '../contexts/cook-timer-context';
 import { useAppSettings } from '../contexts/settings-context';
-import { buildExportRecipes, exportRecipesToPdf } from '../utils/export-recipes';
 
 export function ReferenceButton() {
   const router = useRouter();
@@ -172,9 +170,6 @@ export function AccountButton() {
 }
 
 export function SettingsMenuModal() {
-  const [exportError, setExportError] = useState<string | null>(null);
-  const [exportMessage, setExportMessage] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
   const {
     closeSettings,
     confirmDeleteEnabled,
@@ -191,16 +186,6 @@ export function SettingsMenuModal() {
   } = useAppSettings();
   const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
   const [resetDefaultsChecked, setResetDefaultsChecked] = useState(false);
-  const {
-    customRecipes,
-    loaded,
-    recipeOverrideMap,
-  } = useCustomRecipes();
-
-  const exportRecipes = useMemo(
-    () => buildExportRecipes({ customRecipes, recipeOverrideMap }),
-    [customRecipes, recipeOverrideMap]
-  );
 
   useEffect(() => {
     setTimerCountInput(String(timerCount));
@@ -208,27 +193,6 @@ export function SettingsMenuModal() {
 
   if (!isSettingsOpen) {
     return null;
-  }
-
-  async function handleExportRecipes() {
-    if (isExporting || !loaded) {
-      return;
-    }
-
-    setExportError(null);
-    setExportMessage(null);
-    setIsExporting(true);
-
-    try {
-      const result = await exportRecipesToPdf(exportRecipes);
-      setExportMessage(result.message);
-    } catch (error) {
-      setExportError(
-        error instanceof Error ? error.message : 'Recipe export failed. Please try again.'
-      );
-    } finally {
-      setIsExporting(false);
-    }
   }
 
   function handleResetDefaults() {
@@ -445,48 +409,6 @@ export function SettingsMenuModal() {
                 </Text>
               </Pressable>
             </View>
-          </View>
-
-          <View
-            style={[
-              styles.settingsSection,
-              {
-                backgroundColor: palette.surface,
-                borderColor: palette.border,
-              },
-            ]}
-          >
-            <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Export</Text>
-            <View style={styles.settingsCopy}>
-              <Text style={[styles.settingsLabel, { color: palette.text }]}>Export all recipes to PDF</Text>
-              <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                Create one cookbook-style PDF from the full library, including app recipes and local
-                overrides.
-              </Text>
-              <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                {exportRecipes.length} recipe{exportRecipes.length === 1 ? '' : 's'} ready to export.
-              </Text>
-            </View>
-            <Pressable
-              onPress={handleExportRecipes}
-              disabled={isExporting || !loaded}
-              style={[
-                styles.settingsCloseButton,
-                {
-                  backgroundColor: isExporting || !loaded ? palette.borderAlt : palette.accent,
-                },
-              ]}
-            >
-              <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>
-                {isExporting ? 'Exporting…' : 'Export all recipes to PDF'}
-              </Text>
-            </Pressable>
-            {exportMessage ? (
-              <Text style={[styles.settingsHint, { color: palette.accentText }]}>{exportMessage}</Text>
-            ) : null}
-            {exportError ? (
-              <Text style={[styles.settingsHint, { color: '#b14c2f' }]}>{exportError}</Text>
-            ) : null}
           </View>
 
           <Pressable
