@@ -26,7 +26,7 @@ export default function MyRecipesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { openSettings, palette } = useAppSettings();
+  const { palette } = useAppSettings();
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
   const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
@@ -354,17 +354,17 @@ export default function MyRecipesScreen() {
                 </Text>
                 <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
                   {syncConfigured
-                    ? 'Open Settings to sign in. New recipes and imported recipe overrides will sync across devices once an account is active.'
-                    : 'Set the Supabase environment variables, then sign in from Settings to share one recipe library across devices.'}
+                    ? 'Open Account to sign in. New recipes and imported recipe overrides will sync across devices once an account is active.'
+                    : 'Set the Supabase environment variables, then sign in from Account to share one recipe library across devices.'}
                 </Text>
                 <Pressable
-                  onPress={openSettings}
+                  onPress={() => router.push('/account')}
                   style={[
                     styles.secondaryButton,
                     { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                   ]}
                 >
-                  <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Open Settings</Text>
+                  <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Open Account</Text>
                 </Pressable>
               </View>
             ) : null}
@@ -436,14 +436,7 @@ export default function MyRecipesScreen() {
 
             <View style={styles.actionRow}>
               <Pressable
-                onPress={() => {
-                  if (!syncEnabled) {
-                    openSettings();
-                    return;
-                  }
-
-                  router.push('/add-recipe');
-                }}
+                onPress={() => router.push('/add-recipe')}
                 style={[styles.primaryButton, { backgroundColor: palette.accent }]}
               >
                 <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>
@@ -687,11 +680,8 @@ export default function MyRecipesScreen() {
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Vault snapshot</Text>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>SORT & FILTER</Text>
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Search or filter your recipes.
-            </Text>
 
             <TextInput
               value={searchText}

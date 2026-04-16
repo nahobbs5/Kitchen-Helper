@@ -94,7 +94,8 @@ export default function AccountScreen() {
           {
             backgroundColor: palette.surface,
             borderColor: palette.border,
-            marginTop: 24,
+            marginTop: 16,
+            marginBottom: 16,
           },
         ]}
       >
@@ -288,12 +289,12 @@ export default function AccountScreen() {
           <Text style={[styles.settingsLabel, { color: palette.text }]}>Full</Text>
           {[
             'allrecipes.com',
-            'nutrition.gov',
-            'simplyrecipes.com',
             'cooking.nytimes.com',
-            'tinykitchendivas.com',
-            'recipetineats.com',
             'food.com',
+            'nutrition.gov',
+            'recipetineats.com',
+            'simplyrecipes.com',
+            'tinykitchendivas.com',
           ].map((site) => (
             <Text key={site} style={[styles.settingsHint, { color: palette.textMuted }]}>
               {site}
@@ -304,8 +305,8 @@ export default function AccountScreen() {
         <View style={{ gap: 4, marginTop: 12 }}>
           <Text style={[styles.settingsLabel, { color: palette.text }]}>Limited</Text>
           {[
-            'smittenkitchen.com',
             'seriouseats.com',
+            'smittenkitchen.com',
           ].map((site) => (
             <Text key={site} style={[styles.settingsHint, { color: palette.textMuted }]}>
               {site}

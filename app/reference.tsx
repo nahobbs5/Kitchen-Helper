@@ -195,9 +195,6 @@ export default function ReferenceScreen() {
             {activeTab === 'conversions' && (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Conversions</Text>
-                <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
-                  Common cooking conversions
-                </Text>
                 <TextInput
                   value={convSearch}
                   onChangeText={setConvSearch}
@@ -232,9 +229,6 @@ export default function ReferenceScreen() {
             {activeTab === 'substitutions' && (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Substitutions</Text>
-                <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
-                  Common ingredient swaps
-                </Text>
                 <View style={styles.numberGrid}>
                   {SUB_SECTION_TABS.map((tab) => {
                     const isActive = subSection === tab.key;

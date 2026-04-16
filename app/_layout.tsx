@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { View, useWindowDimensions } from 'react-native';
+import { Image, Text, View, useWindowDimensions } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
 import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
@@ -7,7 +7,11 @@ import { AuthProvider } from '../contexts/auth-context';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
+import type { AppPalette } from '../components/app-theme';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
+
+const headerLogo = require('../assets/logo-header.png');
+const headerIcon = require('../assets/favicon.png');
 
 export default function RootLayout() {
   return (
@@ -27,6 +31,47 @@ export default function RootLayout() {
   );
 }
 
+type HeaderBrandProps = {
+  compact: boolean;
+  palette: AppPalette;
+  title: string;
+};
+
+function HeaderBrand({ compact, palette, title }: HeaderBrandProps) {
+  const showRouteTitle = title && title !== 'Kitchen Helper';
+
+  if (compact) {
+    return (
+      <View style={{ alignItems: 'center', flexDirection: 'row', gap: 8 }}>
+        <Image
+          source={headerIcon}
+          style={{ borderRadius: 8, height: 28, width: 28 }}
+          resizeMode="contain"
+        />
+        {showRouteTitle ? (
+          <Text numberOfLines={1} style={{ color: palette.text, fontSize: 15, fontWeight: '700' }}>
+            {title}
+          </Text>
+        ) : null}
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ alignItems: 'center', flexDirection: 'row', gap: 12 }}>
+      <Image source={headerLogo} style={{ height: 44, width: 168 }} resizeMode="contain" />
+      {showRouteTitle ? (
+        <Text
+          numberOfLines={1}
+          style={{ color: palette.textMuted, fontSize: 15, fontWeight: '700', maxWidth: 180 }}
+        >
+          {title}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 function RootNavigator() {
   const { palette } = useAppSettings();
   const { width } = useWindowDimensions();
@@ -42,7 +87,14 @@ function RootNavigator() {
         headerTitleStyle: {
           fontWeight: '700',
         },
-        headerTitle: isCompact ? 'KH' : undefined,
+        headerTitle: ({ children }) => (
+          <HeaderBrand
+            compact={isCompact}
+            palette={palette}
+            title={typeof children === 'string' ? children : 'Kitchen Helper'}
+          />
+        ),
+        headerTitleAlign: isCompact ? 'center' : 'left',
         headerBackVisible: true,
         headerRight: () => (
           <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>

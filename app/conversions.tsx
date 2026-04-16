@@ -55,7 +55,6 @@ export default function ConversionsScreen() {
         >
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Reference page</Text>
-            <Text style={[styles.title, { color: palette.text }]}>Common cooking conversions</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page now pulls from the conversion chart you added to the Obsidian resources
               folder. It is meant to work like a quick kitchen reference people can reopen while
