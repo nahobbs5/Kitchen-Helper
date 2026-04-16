@@ -689,86 +689,78 @@ export default function AddRecipeScreen() {
             </View>
           </View>
 
-          <View style={styles.secondaryColumn}>
-            <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe preview</Text>
+          {isWide ? (
+            <View style={styles.secondaryColumn}>
+              <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+                <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe preview</Text>
 
-              <View
-                style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{category}</Text>
-                <Text style={[styles.helperCardTitle, { color: palette.text }]}>
-                  {recipeName.trim() || 'Recipe name will appear here'}
-                </Text>
-                <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                  {ingredients.trim()
-                    ? `${ingredients
-                        .trim()
-                        .split('\n')
-                        .filter(Boolean).length} ingredient line(s) added`
-                    : 'No ingredients entered yet'}
-                </Text>
-                <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                  {directions.trim()
-                    ? `${directions
-                        .trim()
-                        .split('\n')
-                        .filter(Boolean).length} direction line(s) added`
-                    : 'No directions entered yet'}
-                </Text>
-                {notes.trim() ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>Notes included</Text>
-                ) : (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No notes added</Text>
-                )}
-                {cuisineRegion.trim() ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Cuisine region: {cuisineRegion.trim()}
-                  </Text>
-                ) : (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
-                )}
-                {entryMode === 'website' && sourceInfo?.websiteName ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Website: {sourceInfo.websiteName}
-                  </Text>
-                ) : null}
-                {entryMode === 'website' && sourceInfo?.author ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Author: {sourceInfo.author}
-                  </Text>
-                ) : null}
-                {entryMode === 'website' && sourceInfo?.url ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Source: {sourceInfo.url}
-                  </Text>
-                ) : null}
-                {allergenTags.length > 0 ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Allergens: {allergenTags.join(', ')}
-                  </Text>
-                ) : null}
-                {allergyFriendlyTags.length > 0 ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Allergy-friendly: {allergyFriendlyTags.join(', ')}
-                  </Text>
-                ) : null}
-              </View>
-
-              {ocrRawText ? (
                 <View
                   style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                 >
-                  <Text style={[styles.helperCardTitle, { color: palette.text }]}>OCR text preview</Text>
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {ocrRawText}
+                  <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{category}</Text>
+                  <Text style={[styles.helperCardTitle, { color: palette.text }]}>
+                    {recipeName.trim() || 'Recipe name will appear here'}
                   </Text>
+                  <Text style={[styles.helperCardBody, { color: palette.accentText }]}>Ingredients</Text>
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    {ingredients.trim() ? ingredients.trim() : 'No ingredients entered yet'}
+                  </Text>
+                  <Text style={[styles.helperCardBody, { color: palette.accentText }]}>Directions</Text>
+                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                    {directions.trim() ? directions.trim() : 'No directions entered yet'}
+                  </Text>
+                  {notes.trim() ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>Notes included</Text>
+                  ) : (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No notes added</Text>
+                  )}
+                  {cuisineRegion.trim() ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Cuisine region: {cuisineRegion.trim()}
+                    </Text>
+                  ) : (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
+                  )}
+                  {entryMode === 'website' && sourceInfo?.websiteName ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Website: {sourceInfo.websiteName}
+                    </Text>
+                  ) : null}
+                  {entryMode === 'website' && sourceInfo?.author ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Author: {sourceInfo.author}
+                    </Text>
+                  ) : null}
+                  {entryMode === 'website' && sourceInfo?.url ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Source: {sourceInfo.url}
+                    </Text>
+                  ) : null}
+                  {allergenTags.length > 0 ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Allergens: {allergenTags.join(', ')}
+                    </Text>
+                  ) : null}
+                  {allergyFriendlyTags.length > 0 ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Allergy-friendly: {allergyFriendlyTags.join(', ')}
+                    </Text>
+                  ) : null}
                 </View>
-              ) : null}
 
+                {ocrRawText ? (
+                  <View
+                    style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.helperCardTitle, { color: palette.text }]}>OCR text preview</Text>
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      {ocrRawText}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
             </View>
-
-          </View>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
