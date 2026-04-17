@@ -11,6 +11,7 @@ import {
 import {
   fetchCurrentUser,
   getSyncConfig,
+  requestPasswordReset as requestPasswordResetEmail,
   refreshSession,
   signInWithPassword,
   signUpWithPassword,
@@ -29,6 +30,7 @@ type AuthContextValue = {
   clearAuthFeedback: () => void;
   signIn: (email: string, password: string) => Promise<boolean>;
   signUp: (email: string, password: string) => Promise<boolean>;
+  requestPasswordReset: (email: string) => Promise<boolean>;
   signOut: () => Promise<void>;
 };
 
@@ -186,11 +188,33 @@ export function AuthProvider({ children }: PropsWithChildren) {
           setLoaded(true);
         }
       },
+      requestPasswordReset: async (email: string) => {
+        if (!config) {
+          setAuthError('Sync is not configured yet.');
+          return false;
+        }
+
+        setIsAuthenticating(true);
+        setAuthError(null);
+        setAuthMessage(null);
+
+        try {
+          await requestPasswordResetEmail(config, email.trim());
+          setAuthMessage('Password reset email sent. Check your inbox for the recovery link.');
+          return true;
+        } catch (error) {
+          setAuthError(normalizeError(error, 'Unable to send a password reset email.'));
+          return false;
+        } finally {
+          setIsAuthenticating(false);
+          setLoaded(true);
+        }
+      },
       signOut: async () => {
         setSession(null);
         setUser(null);
         setAuthError(null);
-        setAuthMessage('Signed out.');
+        setAuthMessage(null);
         await AsyncStorage.removeItem(AUTH_SESSION_KEY);
       },
     }),

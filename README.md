@@ -397,7 +397,9 @@ How it works:
 
 Account page behavior:
 
-- account sync uses Supabase email/password auth from the shared Account page
+- account sync uses Supabase email/password auth from the `Account Sync` section on the shared Account page
+- the `Account Sync` section shows `Sign in to sync recipes across devices.` above the current auth state
+- signed-out users can open `Forgot password` to request a password reset email
 - the Account page shows sync status for the active user
 - the Account page includes the one-shot export action for the full merged recipe library
 - the Account page also includes importer guidance and compatibility notes without changing the add-recipe flow itself

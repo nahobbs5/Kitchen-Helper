@@ -189,6 +189,18 @@ export async function signInWithPassword(config: SyncConfig, email: string, pass
   return session;
 }
 
+export async function requestPasswordReset(config: SyncConfig, email: string) {
+  await request<Record<string, never>>(
+    `${config.url}/auth/v1/recover`,
+    {
+      method: 'POST',
+      headers: authHeaders(config),
+      body: JSON.stringify({ email }),
+    },
+    'Unable to send a password reset email.'
+  );
+}
+
 export async function refreshSession(config: SyncConfig, refreshToken: string) {
   const payload = await request<AuthResponse>(
     `${config.url}/auth/v1/token?grant_type=refresh_token`,

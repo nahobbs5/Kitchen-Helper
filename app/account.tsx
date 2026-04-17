@@ -11,6 +11,8 @@ export default function AccountScreen() {
   const { palette } = useAppSettings();
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
+  const [passwordResetEmail, setPasswordResetEmail] = useState('');
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -20,6 +22,7 @@ export default function AccountScreen() {
     clearAuthFeedback,
     configured: authConfigured,
     isAuthenticating,
+    requestPasswordReset,
     signIn,
     signOut,
     signUp,
@@ -57,6 +60,15 @@ export default function AccountScreen() {
     clearSyncError();
     await signUp(authEmail, authPassword);
     setAuthPassword('');
+  }
+
+  async function handlePasswordReset() {
+    clearAuthFeedback();
+    clearSyncError();
+    const sent = await requestPasswordReset(passwordResetEmail);
+    if (sent) {
+      setPasswordResetEmail('');
+    }
   }
 
   async function handleExportRecipes() {
@@ -99,13 +111,9 @@ export default function AccountScreen() {
           },
         ]}
       >
-        <Text style={[styles.settingsTitle, { color: palette.text }]}>Sync & sign in</Text>
-        <Text style={[styles.settingsBody, { color: palette.textMuted }]}>
-          Sign in to sync your recipes across devices.
-        </Text>
-        <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Account sync</Text>
+        <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Account Sync</Text>
         <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-          Use the same account on mobile and web to share one recipe library.
+          Sign in to sync recipes across devices.
         </Text>
         {!authConfigured ? (
           <View style={styles.settingsCopy}>
@@ -144,9 +152,6 @@ export default function AccountScreen() {
           </>
         ) : (
           <>
-            <View style={styles.settingsCopy}>
-              <Text style={[styles.settingsLabel, { color: palette.text }]}>Sign in to sync</Text>
-            </View>
             <TextInput
               value={authEmail}
               onChangeText={setAuthEmail}
@@ -213,6 +218,69 @@ export default function AccountScreen() {
                 </Text>
               </Pressable>
             </View>
+            <View style={styles.settingsCopy}>
+              <Text style={[styles.settingsLabel, { color: palette.text }]}>Forgot password</Text>
+              <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                Send a password reset email to your account address.
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                clearAuthFeedback();
+                clearSyncError();
+                setShowPasswordReset((current) => !current);
+              }}
+              disabled={isAuthenticating}
+              style={[
+                styles.secondaryButton,
+                {
+                  backgroundColor: palette.elevatedAlt,
+                  borderColor: palette.borderAlt,
+                  opacity: isAuthenticating ? 0.5 : 1,
+                },
+              ]}
+            >
+              <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                {showPasswordReset ? 'Hide recovery' : 'Forgot password'}
+              </Text>
+            </Pressable>
+            {showPasswordReset ? (
+              <>
+                <TextInput
+                  value={passwordResetEmail}
+                  onChangeText={setPasswordResetEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  placeholder="Account email"
+                  placeholderTextColor={palette.textMuted}
+                  style={[
+                    styles.formInput,
+                    {
+                      backgroundColor: palette.elevatedAlt,
+                      borderColor: palette.borderAlt,
+                      color: palette.text,
+                    },
+                  ]}
+                />
+                <Pressable
+                  onPress={handlePasswordReset}
+                  disabled={isAuthenticating || !passwordResetEmail.trim()}
+                  style={[
+                    styles.primaryButton,
+                    {
+                      backgroundColor:
+                        isAuthenticating || !passwordResetEmail.trim()
+                          ? palette.borderAlt
+                          : palette.accent,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                    {isAuthenticating ? 'Working…' : 'Send reset email'}
+                  </Text>
+                </Pressable>
+              </>
+            ) : null}
           </>
         )}
         {authMessage ? (
@@ -233,6 +301,7 @@ export default function AccountScreen() {
             backgroundColor: palette.surface,
             borderColor: palette.border,
             marginTop: 16,
+            marginBottom: 16,
           },
         ]}
       >
@@ -240,8 +309,7 @@ export default function AccountScreen() {
         <View style={styles.settingsCopy}>
           <Text style={[styles.settingsLabel, { color: palette.text }]}>Export all recipes to PDF</Text>
           <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-            Create one cookbook-style PDF from the full library, including app recipes and local
-            overrides.
+            Create one cookbook-style PDF from your full library.
           </Text>
           <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
             {exportRecipes.length} recipe{exportRecipes.length === 1 ? '' : 's'} ready to export.

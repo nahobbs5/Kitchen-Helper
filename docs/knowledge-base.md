@@ -569,6 +569,8 @@ How it works:
 The dedicated Account screen now owns account-facing actions:
 
 - sign in and sign up
+- `Account Sync` helper copy that says `Sign in to sync recipes across devices.`
+- signed-out password reset from the `Forgot password` action
 - sync status and sign out
 - full-library PDF export
 - importer guidance and compatibility notes
