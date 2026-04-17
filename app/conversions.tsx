@@ -75,7 +75,7 @@ export default function ConversionsScreen() {
             <TextInput
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="Search conversions like cup, butter, 350, or ml"
+              placeholder="Search (cup, 350, ml…)"
               placeholderTextColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
