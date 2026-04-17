@@ -198,7 +198,7 @@ export default function ReferenceScreen() {
                 <TextInput
                   value={convSearch}
                   onChangeText={setConvSearch}
-                  placeholder="Search conversions like cup, butter, 350, or ml"
+                  placeholder="Search (cup, 350, ml…)"
                   placeholderTextColor={palette.searchPlaceholder}
                   style={[
                     styles.searchInput,
