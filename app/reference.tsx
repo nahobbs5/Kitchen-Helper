@@ -315,7 +315,7 @@ export default function ReferenceScreen() {
                 <TextInput
                   value={dictSearch}
                   onChangeText={setDictSearch}
-                  placeholder="Search terms like aioli, zest, braise, or vinegar"
+                  placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
                   placeholderTextColor={palette.searchPlaceholder}
                   style={[
                     styles.searchInput,

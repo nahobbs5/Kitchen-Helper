@@ -144,7 +144,7 @@ export default function CookingDictionaryScreen() {
             <TextInput
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="Search terms like aioli, zest, braise, or vinegar"
+              placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
               placeholderTextColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
