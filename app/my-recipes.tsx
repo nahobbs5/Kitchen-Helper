@@ -686,7 +686,7 @@ export default function MyRecipesScreen() {
             <TextInput
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="Search recipes, categories, or tags"
+              placeholder={isWide ? "Search recipes, categories, or tags" : "Search recipes…"}
               placeholderTextColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
