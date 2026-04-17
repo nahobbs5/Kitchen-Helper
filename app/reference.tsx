@@ -274,7 +274,7 @@ export default function ReferenceScreen() {
                 <TextInput
                   value={subSearch}
                   onChangeText={setSubSearch}
-                  placeholder="Search swaps like dairy, butter, egg, or yogurt"
+                  placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
                   placeholderTextColor={palette.searchPlaceholder}
                   style={[
                     styles.searchInput,

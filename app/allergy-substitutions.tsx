@@ -138,7 +138,7 @@ export default function AllergySubstitutionsScreen() {
             <TextInput
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="Search swaps like dairy, butter, egg, or yogurt"
+              placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
               placeholderTextColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
