@@ -21,6 +21,13 @@ import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 
 const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
+const mobileHiddenAllergenFilters = new Set([
+  'Contains Dairy',
+  'Contains Eggs',
+  'Contains Gluten',
+  'Contains Nuts',
+  'Contains Soy',
+]);
 
 export default function MyRecipesScreen() {
   const router = useRouter();
@@ -129,6 +136,9 @@ export default function MyRecipesScreen() {
       })
       .map(([name, count]) => ({ name, count })),
   ];
+  const visibleAllergenFilters = isWide
+    ? allergenFilters
+    : allergenFilters.filter((filter) => !mobileHiddenAllergenFilters.has(filter.name));
   const normalizedSearch = searchText.trim().toLowerCase();
   const filteredRecipes = useMemo(
     () =>
@@ -765,11 +775,11 @@ export default function MyRecipesScreen() {
               </>
             ) : null}
 
-            {allergenFilters.length > 1 ? (
+            {visibleAllergenFilters.length > 1 ? (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Allergen tags</Text>
                 <View style={styles.servingsRow}>
-                  {allergenFilters.map((filter) => {
+                  {visibleAllergenFilters.map((filter) => {
                     const isActive =
                       filter.name === 'All'
                         ? activeAllergenTags.length === 0
