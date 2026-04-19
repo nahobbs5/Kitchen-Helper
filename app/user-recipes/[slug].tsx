@@ -127,6 +127,13 @@ export default function UserRecipeScreen() {
     );
   }
 
+  const syncStatusLabel =
+    recipe.syncStatus === 'synced' ? 'Synced across devices' : 'Saved locally';
+  const syncStatusDescription =
+    recipe.syncStatus === 'synced'
+      ? 'This recipe is synced across devices with your account.'
+      : 'This recipe is saved locally on this device.';
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <Stack.Screen options={{ title: headerTitle }} />
@@ -142,7 +149,7 @@ export default function UserRecipeScreen() {
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
             <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This recipe was added directly inside the app and saved into local app storage.
+              {syncStatusDescription}
             </Text>
             <View style={styles.actionRow}>
               <Pressable
@@ -209,7 +216,7 @@ export default function UserRecipeScreen() {
             ) : null}
             <View style={styles.tagRow}>
               <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                <Text style={[styles.tagText, { color: palette.tagText }]}>Saved in app</Text>
+                <Text style={[styles.tagText, { color: palette.tagText }]}>{syncStatusLabel}</Text>
               </View>
               {recipe.cuisineRegion ? (
                 <View style={styles.cuisineTag}>

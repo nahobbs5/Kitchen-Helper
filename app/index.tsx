@@ -48,8 +48,8 @@ export default function HomeScreen() {
             <Text style={[styles.title, { color: palette.text }]}>Your Kitchen. Your Way.</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               {configured
-                ? user?.email
-                  ? `Recipe sync is active for ${user.email}.`
+                ? user
+                  ? null
                   : 'Sign in from Settings to sync your recipe library across mobile and web.'
                 : 'Add Supabase sync config to enable a shared recipe library across devices.'}
             </Text>

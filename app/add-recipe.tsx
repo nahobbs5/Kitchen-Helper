@@ -42,7 +42,7 @@ export default function AddRecipeScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const { palette } = useAppSettings();
-  const { addRecipe, syncBusy, syncConfigured, syncEnabled } = useCustomRecipes();
+  const { addRecipe, syncBusy } = useCustomRecipes();
 
   const [entryMode, setEntryMode] = useState<EntryMode>('manual');
   const [ocrState, setOcrState] = useState<OcrState>('idle');
@@ -658,18 +658,12 @@ export default function AddRecipeScreen() {
                   </Pressable>
                   <Pressable
                     onPress={() => {
-                      if (!syncEnabled) {
-                        router.push('/account');
-                        return;
-                      }
-
                       void handleSave();
                     }}
                     style={[
                       styles.primaryButton,
                       {
-                        backgroundColor:
-                          canSave && syncEnabled && !syncBusy ? palette.accent : palette.borderAlt,
+                        backgroundColor: canSave && !syncBusy ? palette.accent : palette.borderAlt,
                       },
                     ]}
                   >
@@ -678,13 +672,6 @@ export default function AddRecipeScreen() {
                     </Text>
                   </Pressable>
                 </View>
-                {!syncEnabled ? (
-                  <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                    {syncConfigured
-                      ? 'Open Account to sign in before saving recipes.'
-                      : 'Add sync configuration, then sign in from Account before saving recipes.'}
-                  </Text>
-                ) : null}
               </View>
             </View>
           </View>

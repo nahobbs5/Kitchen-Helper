@@ -58,7 +58,6 @@ export default function MyRecipesScreen() {
     recipeOverrideMap,
     restoreDeletedRecipes,
     syncBusy,
-    syncConfigured,
     syncEnabled,
     syncError,
   } = useCustomRecipes();
@@ -352,32 +351,6 @@ export default function MyRecipesScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
-            {!syncEnabled ? (
-              <View
-                style={[
-                  styles.noticeCard,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                ]}
-              >
-                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
-                  {syncConfigured ? 'Sign in to sync recipes' : 'Finish sync setup'}
-                </Text>
-                <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
-                  {syncConfigured
-                    ? 'Open Account to sign in. New recipes and imported recipe overrides will sync across devices once an account is active.'
-                    : 'Set the Supabase environment variables, then sign in from Account to share one recipe library across devices.'}
-                </Text>
-                <Pressable
-                  onPress={() => router.push('/account')}
-                  style={[
-                    styles.secondaryButton,
-                    { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                  ]}
-                >
-                  <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Open Account</Text>
-                </Pressable>
-              </View>
-            ) : null}
             {syncEnabled && (syncBusy || syncError) ? (
               <View
                 style={[

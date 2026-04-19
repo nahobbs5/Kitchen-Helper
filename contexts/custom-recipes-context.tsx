@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Alert } from 'react-native';
 
 import { useAuth } from './auth-context';
 import { obsidianRecipeMap, type RecipeSection } from '../data/obsidian-recipes';
@@ -42,6 +41,7 @@ export type RecipeSource = {
 export type UserRecipe = {
   id: string;
   userId: string;
+  syncStatus: 'local' | 'synced';
   slug: string;
   title: string;
   category: string;
@@ -136,11 +136,13 @@ type CustomRecipesContextValue = {
   syncEnabled: boolean;
   syncBusy: boolean;
   syncError: string | null;
+  refreshSync: () => Promise<void>;
   clearSyncError: () => void;
 };
 
 const LEGACY_CUSTOM_RECIPES_KEY = 'kitchen-helper.custom-recipes';
 const LEGACY_RECIPE_OVERRIDES_KEY = 'kitchen-helper.recipe-overrides';
+const LOCAL_USER_ID = 'local';
 
 const CustomRecipesContext = createContext<CustomRecipesContextValue | undefined>(undefined);
 
@@ -152,10 +154,6 @@ function cacheCustomRecipesKey(userId: string) {
 
 function cacheRecipeOverridesKey(userId: string) {
   return `kitchen-helper.sync-cache.recipe-overrides.${userId}`;
-}
-
-function migrationKey(userId: string) {
-  return `kitchen-helper.sync-migrated.${userId}`;
 }
 
 function normalizeSource(
@@ -226,6 +224,12 @@ function normalizeCustomRecipe(recipe: unknown): UserRecipe {
   return {
     id: typeof record.id === 'string' && record.id ? record.id : createId('recipe'),
     userId: typeof record.userId === 'string' ? record.userId : '',
+    syncStatus:
+      record.syncStatus === 'synced' || record.syncStatus === 'local'
+        ? record.syncStatus
+        : typeof record.userId === 'string' && record.userId && record.userId !== LOCAL_USER_ID
+          ? 'synced'
+          : 'local',
     slug: typeof record.slug === 'string' ? record.slug : slugify(String(record.title ?? 'recipe')),
     title: typeof record.title === 'string' ? record.title : 'Untitled Recipe',
     category: typeof record.category === 'string' ? record.category : 'Entree',
@@ -297,6 +301,7 @@ function mapSyncedUserRecipe(record: SyncedUserRecipeRecord): UserRecipe {
     title: record.title,
     category: record.category,
     source: 'App Storage',
+    syncStatus: 'synced',
     prepTime: record.prep_time,
     cookTime: record.cook_time,
     totalTime: record.total_time,
@@ -391,6 +396,69 @@ function mergeById<T extends { id: string }>(current: T[], updates: T[]) {
   return Array.from(nextMap.values());
 }
 
+function sortUserRecipes(recipes: UserRecipe[]) {
+  return [...recipes].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+function shouldReplaceRecipe(existing: UserRecipe, incoming: UserRecipe) {
+  if (existing.syncStatus === 'local' && incoming.syncStatus === 'synced') {
+    return new Date(incoming.updatedAt).getTime() >= new Date(existing.updatedAt).getTime();
+  }
+
+  if (existing.syncStatus === 'synced' && incoming.syncStatus === 'local') {
+    return false;
+  }
+
+  return new Date(incoming.updatedAt).getTime() >= new Date(existing.updatedAt).getTime();
+}
+
+function mergeUserRecipes(...groups: UserRecipe[][]) {
+  const merged: UserRecipe[] = [];
+  const byId = new Map<string, UserRecipe>();
+  const bySlug = new Map<string, UserRecipe>();
+
+  groups.flat().forEach((incoming) => {
+    const existing = byId.get(incoming.id) ?? bySlug.get(incoming.slug);
+
+    if (!existing) {
+      merged.push(incoming);
+      byId.set(incoming.id, incoming);
+      bySlug.set(incoming.slug, incoming);
+      return;
+    }
+
+    if (!shouldReplaceRecipe(existing, incoming)) {
+      return;
+    }
+
+    const index = merged.indexOf(existing);
+    if (index >= 0) {
+      merged[index] = incoming;
+    }
+
+    byId.delete(existing.id);
+    bySlug.delete(existing.slug);
+    byId.set(incoming.id, incoming);
+    bySlug.set(incoming.slug, incoming);
+  });
+
+  return sortUserRecipes(merged);
+}
+
+function mergeRecipeOverrides(...groups: RecipeOverride[][]) {
+  const merged = new Map<string, RecipeOverride>();
+
+  groups.flat().forEach((incoming) => {
+    const existing = merged.get(incoming.slug);
+
+    if (!existing || new Date(incoming.updatedAt).getTime() >= new Date(existing.updatedAt).getTime()) {
+      merged.set(incoming.slug, incoming);
+    }
+  });
+
+  return Array.from(merged.values()).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+}
+
 function normalizeError(error: unknown, fallback: string) {
   return error instanceof Error && error.message.trim() ? error.message : fallback;
 }
@@ -409,6 +477,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
   const syncConfigured = authConfigured && Boolean(syncConfig);
   const syncEnabled = Boolean(syncConfigured && session?.accessToken && user?.id);
+  const activeUserId = user?.id ?? LOCAL_USER_ID;
 
   useEffect(() => {
     customRecipesRef.current = customRecipes;
@@ -422,7 +491,16 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
     lastDeletedRecipesRef.current = lastDeletedRecipes;
   }, [lastDeletedRecipes]);
 
+  async function persistLocalCache(nextCustomRecipes: UserRecipe[], nextRecipeOverrides: RecipeOverride[]) {
+    await AsyncStorage.multiSet([
+      [LEGACY_CUSTOM_RECIPES_KEY, JSON.stringify(nextCustomRecipes)],
+      [LEGACY_RECIPE_OVERRIDES_KEY, JSON.stringify(nextRecipeOverrides)],
+    ]);
+  }
+
   async function persistCache(nextCustomRecipes: UserRecipe[], nextRecipeOverrides: RecipeOverride[]) {
+    await persistLocalCache(nextCustomRecipes, nextRecipeOverrides);
+
     if (!user?.id) {
       return;
     }
@@ -441,48 +519,69 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
     const snapshot = await fetchSyncSnapshot(syncConfig, session.accessToken, user.id);
     const syncedCustomRecipes = snapshot.customRecipes.map(mapSyncedUserRecipe);
     const syncedRecipeOverrides = snapshot.recipeOverrides.map(mapSyncedRecipeOverride);
+    const syncedPending = await syncPendingLocalData(
+      customRecipesRef.current,
+      recipeOverridesRef.current,
+      syncedCustomRecipes,
+      syncedRecipeOverrides
+    );
+    const mergedCustomRecipes = mergeUserRecipes(
+      customRecipesRef.current,
+      syncedCustomRecipes,
+      syncedPending.customRecipes
+    );
+    const mergedRecipeOverrides = mergeRecipeOverrides(
+      recipeOverridesRef.current,
+      syncedRecipeOverrides,
+      syncedPending.recipeOverrides
+    );
 
-    setCustomRecipes(syncedCustomRecipes);
-    setRecipeOverrides(syncedRecipeOverrides);
-    await persistCache(syncedCustomRecipes, syncedRecipeOverrides);
+    setCustomRecipes(mergedCustomRecipes);
+    setRecipeOverrides(mergedRecipeOverrides);
+    await persistCache(mergedCustomRecipes, mergedRecipeOverrides);
     setSyncError(null);
   }
 
-  async function migrateLegacyData() {
+  async function refreshSync() {
+    if (!syncEnabled || syncBusy) {
+      return;
+    }
+
+    setSyncBusy(true);
+
+    try {
+      await applyRemoteSnapshot();
+    } catch (error) {
+      setSyncError(normalizeError(error, 'Unable to refresh synced recipes.'));
+    } finally {
+      setSyncBusy(false);
+    }
+  }
+
+  async function syncPendingLocalData(
+    localCustomRecipes: UserRecipe[],
+    localRecipeOverrides: RecipeOverride[],
+    syncedCustomRecipes: UserRecipe[],
+    syncedRecipeOverrides: RecipeOverride[]
+  ) {
     if (!syncConfig || !session?.accessToken || !user?.id) {
-      return;
+      return {
+        customRecipes: syncedCustomRecipes,
+        recipeOverrides: syncedRecipeOverrides,
+      };
     }
 
-    const migrated = await AsyncStorage.getItem(migrationKey(user.id));
-
-    if (migrated === 'true') {
-      return;
-    }
-
-    const [legacyCustomValue, legacyOverridesValue] = await Promise.all([
-      AsyncStorage.getItem(LEGACY_CUSTOM_RECIPES_KEY),
-      AsyncStorage.getItem(LEGACY_RECIPE_OVERRIDES_KEY),
-    ]);
-
-    const legacyCustomRecipes = legacyCustomValue
-      ? (JSON.parse(legacyCustomValue) as unknown[]).map(normalizeCustomRecipe)
-      : [];
-    const legacyRecipeOverrides = legacyOverridesValue
-      ? (JSON.parse(legacyOverridesValue) as unknown[]).map(normalizeRecipeOverride)
-      : [];
-
-    if (legacyCustomRecipes.length === 0 && legacyRecipeOverrides.length === 0) {
-      await AsyncStorage.setItem(migrationKey(user.id), 'true');
-      return;
-    }
-
-    const remoteCustomBySlug = new Set(customRecipesRef.current.map((recipe) => recipe.slug));
     const remoteOverrideBySlug = new Map(
-      recipeOverridesRef.current.map((recipe) => [recipe.slug, recipe] as const)
+      syncedRecipeOverrides.map((recipe) => [recipe.slug, recipe] as const)
     );
 
-    const customUploads = legacyCustomRecipes
-      .filter((recipe) => !remoteCustomBySlug.has(recipe.slug))
+    const customUploads = localCustomRecipes
+      .filter(
+        (recipe) =>
+          recipe.syncStatus !== 'synced' ||
+          !recipe.userId ||
+          recipe.userId === LOCAL_USER_ID
+      )
       .map((recipe) =>
         toSyncedUserRecipeRecord({
           ...recipe,
@@ -493,7 +592,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         })
       );
 
-    const overrideUploads = legacyRecipeOverrides
+    const overrideUploads = localRecipeOverrides
       .filter((recipe) => {
         const existing = remoteOverrideBySlug.get(recipe.slug);
         return !existing || new Date(recipe.updatedAt).getTime() > new Date(existing.updatedAt).getTime();
@@ -506,29 +605,77 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         })
       );
 
+    let uploadedCustomRecipes: UserRecipe[] = [];
+    let uploadedRecipeOverrides: RecipeOverride[] = [];
+
     if (customUploads.length > 0) {
-      await upsertUserRecipes(syncConfig, session.accessToken, customUploads);
+      const savedRecords = await upsertUserRecipes(syncConfig, session.accessToken, customUploads);
+      uploadedCustomRecipes = savedRecords.map(mapSyncedUserRecipe);
     }
 
     if (overrideUploads.length > 0) {
-      await upsertRecipeOverrides(syncConfig, session.accessToken, overrideUploads);
+      const savedRecords = await upsertRecipeOverrides(syncConfig, session.accessToken, overrideUploads);
+      uploadedRecipeOverrides = savedRecords.map(mapSyncedRecipeOverride);
     }
 
-    await AsyncStorage.setItem(migrationKey(user.id), 'true');
+    return {
+      customRecipes: mergeUserRecipes(syncedCustomRecipes, uploadedCustomRecipes),
+      recipeOverrides: mergeRecipeOverrides(syncedRecipeOverrides, uploadedRecipeOverrides),
+    };
   }
 
-  function requireSync(message: string) {
-    if (syncEnabled) {
-      return true;
+  async function syncUserRecipesToRemote(recipes: UserRecipe[], fallback: string) {
+    if (recipes.length === 0) {
+      return recipes;
     }
 
-    const fallback = syncConfigured
-      ? message
-      : 'Recipe sync is not configured yet. Add your Supabase URL and anon key first.';
+    if (!syncConfig || !session?.accessToken || !user?.id) {
+      return recipes;
+    }
 
-    setSyncError(fallback);
-    Alert.alert('Recipe Sync Required', fallback);
-    return false;
+    setSyncBusy(true);
+
+    try {
+      const savedRecords = await upsertUserRecipes(
+        syncConfig,
+        session.accessToken,
+        recipes.map((recipe) => toSyncedUserRecipeRecord({ ...recipe, userId: user.id }))
+      );
+      setSyncError(null);
+      return savedRecords.length > 0 ? savedRecords.map(mapSyncedUserRecipe) : recipes;
+    } catch (error) {
+      setSyncError(normalizeError(error, fallback));
+      return recipes;
+    } finally {
+      setSyncBusy(false);
+    }
+  }
+
+  async function syncRecipeOverridesToRemote(recipes: RecipeOverride[], fallback: string) {
+    if (recipes.length === 0) {
+      return recipes;
+    }
+
+    if (!syncConfig || !session?.accessToken || !user?.id) {
+      return recipes;
+    }
+
+    setSyncBusy(true);
+
+    try {
+      const savedRecords = await upsertRecipeOverrides(
+        syncConfig,
+        session.accessToken,
+        recipes.map((recipe) => toSyncedRecipeOverrideRecord({ ...recipe, userId: user.id }))
+      );
+      setSyncError(null);
+      return savedRecords.length > 0 ? savedRecords.map(mapSyncedRecipeOverride) : recipes;
+    } catch (error) {
+      setSyncError(normalizeError(error, fallback));
+      return recipes;
+    } finally {
+      setSyncBusy(false);
+    }
   }
 
   useEffect(() => {
@@ -538,43 +685,95 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    if (!syncEnabled || !user?.id) {
-      setCustomRecipes([]);
-      setRecipeOverrides([]);
-      setLastDeletedRecipes([]);
-      setSyncBusy(false);
-      setLoaded(true);
-      return;
-    }
-
-    const userId = user.id;
-
     async function hydrate() {
       setSyncBusy(true);
       setLoaded(false);
 
       try {
-        const [cachedCustomValue, cachedOverridesValue] = await Promise.all([
+        if (!syncEnabled || !user?.id) {
+          const [localCustomValue, localOverridesValue] = await Promise.all([
+            AsyncStorage.getItem(LEGACY_CUSTOM_RECIPES_KEY),
+            AsyncStorage.getItem(LEGACY_RECIPE_OVERRIDES_KEY),
+          ]);
+
+          if (active) {
+            setCustomRecipes(
+              localCustomValue ? (JSON.parse(localCustomValue) as unknown[]).map(normalizeCustomRecipe) : []
+            );
+            setRecipeOverrides(
+              localOverridesValue
+                ? (JSON.parse(localOverridesValue) as unknown[]).map(normalizeRecipeOverride)
+                : []
+            );
+            setLastDeletedRecipes([]);
+            setLoaded(true);
+          }
+          return;
+        }
+
+        const userId = user.id;
+        const accessToken = session?.accessToken;
+        const currentSyncConfig = syncConfig;
+
+        if (!currentSyncConfig || !accessToken) {
+          return;
+        }
+
+        const [localCustomValue, localOverridesValue, cachedCustomValue, cachedOverridesValue] = await Promise.all([
+          AsyncStorage.getItem(LEGACY_CUSTOM_RECIPES_KEY),
+          AsyncStorage.getItem(LEGACY_RECIPE_OVERRIDES_KEY),
           AsyncStorage.getItem(cacheCustomRecipesKey(userId)),
           AsyncStorage.getItem(cacheRecipeOverridesKey(userId)),
         ]);
 
+        const localCustomRecipes = localCustomValue
+          ? (JSON.parse(localCustomValue) as unknown[]).map(normalizeCustomRecipe)
+          : [];
+        const localRecipeOverrides = localOverridesValue
+          ? (JSON.parse(localOverridesValue) as unknown[]).map(normalizeRecipeOverride)
+          : [];
+        const cachedCustomRecipes = cachedCustomValue
+          ? (JSON.parse(cachedCustomValue) as unknown[]).map(normalizeCustomRecipe)
+          : [];
+        const cachedRecipeOverrides = cachedOverridesValue
+          ? (JSON.parse(cachedOverridesValue) as unknown[]).map(normalizeRecipeOverride)
+          : [];
+        const cachedMergedCustomRecipes = mergeUserRecipes(localCustomRecipes, cachedCustomRecipes);
+        const cachedMergedRecipeOverrides = mergeRecipeOverrides(localRecipeOverrides, cachedRecipeOverrides);
+
         if (active) {
-          setCustomRecipes(
-            cachedCustomValue
-              ? (JSON.parse(cachedCustomValue) as unknown[]).map(normalizeCustomRecipe)
-              : []
-          );
-          setRecipeOverrides(
-            cachedOverridesValue
-              ? (JSON.parse(cachedOverridesValue) as unknown[]).map(normalizeRecipeOverride)
-              : []
-          );
+          setCustomRecipes(cachedMergedCustomRecipes);
+          setRecipeOverrides(cachedMergedRecipeOverrides);
           setLoaded(true);
         }
 
-        await migrateLegacyData();
-        await applyRemoteSnapshot();
+        const snapshot = await fetchSyncSnapshot(currentSyncConfig, accessToken, userId);
+        const remoteCustomRecipes = snapshot.customRecipes.map(mapSyncedUserRecipe);
+        const remoteRecipeOverrides = snapshot.recipeOverrides.map(mapSyncedRecipeOverride);
+        const syncedPending = await syncPendingLocalData(
+          cachedMergedCustomRecipes,
+          cachedMergedRecipeOverrides,
+          remoteCustomRecipes,
+          remoteRecipeOverrides
+        );
+        const mergedCustomRecipes = mergeUserRecipes(
+          cachedMergedCustomRecipes,
+          remoteCustomRecipes,
+          syncedPending.customRecipes
+        );
+        const mergedRecipeOverrides = mergeRecipeOverrides(
+          cachedMergedRecipeOverrides,
+          remoteRecipeOverrides,
+          syncedPending.recipeOverrides
+        );
+
+        if (active) {
+          setCustomRecipes(mergedCustomRecipes);
+          setRecipeOverrides(mergedRecipeOverrides);
+        }
+
+        await persistCache(mergedCustomRecipes, mergedRecipeOverrides);
+        setSyncError(null);
       } catch (error) {
         if (active) {
           setSyncError(normalizeError(error, 'Unable to load synced recipes.'));
@@ -600,15 +799,13 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
     }
 
     const intervalId = setInterval(() => {
-      applyRemoteSnapshot().catch((error) => {
-        setSyncError(normalizeError(error, 'Unable to refresh synced recipes.'));
-      });
+      void refreshSync();
     }, 30000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [syncEnabled, session?.accessToken, user?.id]);
+  }, [syncBusy, syncEnabled, session?.accessToken, user?.id]);
 
   const value = useMemo<CustomRecipesContextValue>(
     () => ({
@@ -622,18 +819,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       syncEnabled,
       syncBusy,
       syncError,
+      refreshSync,
       clearSyncError: () => setSyncError(null),
       addRecipe: async (input: NewUserRecipeInput) => {
-        if (!requireSync('Sign in before adding recipes so they can sync across devices.')) {
-          return null;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return null;
-        }
-
-        setSyncBusy(true);
-
         try {
           const title = input.title.trim();
           const current = customRecipesRef.current;
@@ -655,7 +843,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           const now = new Date().toISOString();
           const draftRecipe: UserRecipe = {
             id: createId('recipe'),
-            userId: user.id,
+            userId: activeUserId,
+            syncStatus: 'local',
             slug,
             title,
             category: input.category,
@@ -678,40 +867,30 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             deletedAt: null,
           };
 
-          const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
-            toSyncedUserRecipeRecord(draftRecipe),
-          ]);
-          const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(draftRecipe));
-          const nextCustomRecipes = [savedRecipe, ...current];
-
+          const nextCustomRecipes = [draftRecipe, ...current];
           setCustomRecipes(nextCustomRecipes);
           await persistCache(nextCustomRecipes, recipeOverridesRef.current);
           setSyncError(null);
+
+          const [savedRecipe] = await syncUserRecipesToRemote([draftRecipe], 'Unable to sync the recipe.');
+
+          if (
+            savedRecipe.id !== draftRecipe.id ||
+            savedRecipe.userId !== draftRecipe.userId ||
+            savedRecipe.syncStatus !== draftRecipe.syncStatus
+          ) {
+            const syncedCustomRecipes = [savedRecipe, ...current];
+            setCustomRecipes(syncedCustomRecipes);
+            await persistCache(syncedCustomRecipes, recipeOverridesRef.current);
+          }
+
           return savedRecipe;
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to save the recipe.'));
           return null;
-        } finally {
-          setSyncBusy(false);
         }
       },
       deleteRecipe: async (slug: string, source: 'custom' | 'obsidian' = 'custom') => {
-        if (
-          !requireSync(
-            source === 'custom'
-              ? 'Sign in before deleting recipes so the change syncs to your other devices.'
-              : 'Sign in before hiding imported recipes so the override syncs to your other devices.'
-          )
-        ) {
-          return;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return;
-        }
-
-        setSyncBusy(true);
-
         try {
           if (source === 'obsidian') {
             const currentOverrides = recipeOverridesRef.current;
@@ -724,7 +903,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             const existingOverride = currentOverrides.find((recipe) => recipe.slug === slug);
             const nextOverride: RecipeOverride = {
               id: existingOverride?.id ?? `override-${slug}`,
-              userId: user.id,
+              userId: existingOverride?.userId ?? activeUserId,
               slug,
               title: existingOverride?.title ?? baseRecipe.title,
               category: existingOverride?.category ?? baseRecipe.category,
@@ -741,20 +920,27 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               updatedAt: new Date().toISOString(),
             };
 
-            const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
-              toSyncedRecipeOverrideRecord(nextOverride),
-            ]);
-            const savedOverride = mapSyncedRecipeOverride(
-              savedRecord ?? toSyncedRecipeOverrideRecord(nextOverride)
-            );
             const nextOverrides = [
-              savedOverride,
+              nextOverride,
               ...currentOverrides.filter((recipe) => recipe.slug !== slug),
             ];
 
             setRecipeOverrides(nextOverrides);
             await persistCache(customRecipesRef.current, nextOverrides);
             setSyncError(null);
+            const [savedOverride] = await syncRecipeOverridesToRemote(
+              [nextOverride],
+              'Unable to sync the hidden recipe.'
+            );
+
+            if (savedOverride.id !== nextOverride.id || savedOverride.userId !== nextOverride.userId) {
+              const syncedOverrides = [
+                savedOverride,
+                ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+              ];
+              setRecipeOverrides(syncedOverrides);
+              await persistCache(customRecipesRef.current, syncedOverrides);
+            }
             return;
           }
 
@@ -767,23 +953,19 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
           const deletedRecipe = {
             ...recipe,
+            syncStatus: 'local' as const,
             updatedAt: new Date().toISOString(),
             deletedAt: new Date().toISOString(),
           };
-
-          await upsertUserRecipes(syncConfig, session.accessToken, [
-            toSyncedUserRecipeRecord(deletedRecipe),
-          ]);
 
           const nextCustomRecipes = currentCustomRecipes.filter((item) => item.slug !== slug);
           setCustomRecipes(nextCustomRecipes);
           setLastDeletedRecipes([recipe]);
           await persistCache(nextCustomRecipes, recipeOverridesRef.current);
           setSyncError(null);
+          await syncUserRecipesToRemote([deletedRecipe], 'Unable to sync the deleted recipe.');
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to delete the recipe.'));
-        } finally {
-          setSyncBusy(false);
         }
       },
       deleteRecipes: async (slugs: string[]) => {
@@ -791,22 +973,13 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           return;
         }
 
-        if (!requireSync('Sign in before deleting recipes so the changes sync to your other devices.')) {
-          return;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return;
-        }
-
-        setSyncBusy(true);
-
         try {
           const currentCustomRecipes = customRecipesRef.current;
           const currentOverrides = recipeOverridesRef.current;
           const removedCustomRecipes = currentCustomRecipes.filter((recipe) => slugs.includes(recipe.slug));
           const deletedCustomRecipes = removedCustomRecipes.map((recipe) => ({
             ...recipe,
+            syncStatus: 'local' as const,
             updatedAt: new Date().toISOString(),
             deletedAt: new Date().toISOString(),
           }));
@@ -823,7 +996,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
               return {
                 id: existingOverride?.id ?? `override-${slugValue}`,
-                userId: user.id,
+                userId: existingOverride?.userId ?? activeUserId,
                 slug: slugValue,
                 title: existingOverride?.title ?? baseRecipe.title,
                 category: existingOverride?.category ?? baseRecipe.category,
@@ -842,23 +1015,6 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             })
             .filter(Boolean) as RecipeOverride[];
 
-          await Promise.all([
-            deletedCustomRecipes.length > 0
-              ? upsertUserRecipes(
-                  syncConfig,
-                  session.accessToken,
-                  deletedCustomRecipes.map(toSyncedUserRecipeRecord)
-                )
-              : Promise.resolve([]),
-            obsidianOverrides.length > 0
-              ? upsertRecipeOverrides(
-                  syncConfig,
-                  session.accessToken,
-                  obsidianOverrides.map(toSyncedRecipeOverrideRecord)
-                )
-              : Promise.resolve([]),
-          ]);
-
           const deletedOverrideSlugs = new Set(obsidianOverrides.map((recipe) => recipe.slug));
           const nextCustomRecipes = currentCustomRecipes.filter((recipe) => !slugs.includes(recipe.slug));
           const nextOverrides = [
@@ -871,10 +1027,17 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           setLastDeletedRecipes(removedCustomRecipes);
           await persistCache(nextCustomRecipes, nextOverrides);
           setSyncError(null);
+
+          await Promise.all([
+            deletedCustomRecipes.length > 0
+              ? syncUserRecipesToRemote(deletedCustomRecipes, 'Unable to sync the deleted recipes.')
+              : Promise.resolve([]),
+            obsidianOverrides.length > 0
+              ? syncRecipeOverridesToRemote(obsidianOverrides, 'Unable to sync the hidden recipes.')
+              : Promise.resolve([]),
+          ]);
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to delete the selected recipes.'));
-        } finally {
-          setSyncBusy(false);
         }
       },
       restoreDeletedRecipes: async () => {
@@ -882,30 +1045,16 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           return;
         }
 
-        if (!requireSync('Sign in before restoring deleted recipes so the changes sync correctly.')) {
-          return;
-        }
-
-        if (!syncConfig || !session?.accessToken) {
-          return;
-        }
-
-        setSyncBusy(true);
-
         try {
           const restoredRecipes = lastDeletedRecipesRef.current.map((recipe) => ({
             ...recipe,
+            userId: user?.id ?? recipe.userId ?? LOCAL_USER_ID,
+            syncStatus: 'local' as const,
             updatedAt: new Date().toISOString(),
             deletedAt: null,
           }));
 
-          const savedRecords = await upsertUserRecipes(
-            syncConfig,
-            session.accessToken,
-            restoredRecipes.map(toSyncedUserRecipeRecord)
-          );
-          const savedRecipes = savedRecords.map(mapSyncedUserRecipe);
-          const nextCustomRecipes = mergeById(customRecipesRef.current, savedRecipes).sort((left, right) =>
+          const nextCustomRecipes = mergeById(customRecipesRef.current, restoredRecipes).sort((left, right) =>
             right.createdAt.localeCompare(left.createdAt)
           );
 
@@ -913,26 +1062,33 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           setLastDeletedRecipes([]);
           await persistCache(nextCustomRecipes, recipeOverridesRef.current);
           setSyncError(null);
+
+          const syncedRecipes = await syncUserRecipesToRemote(
+            restoredRecipes,
+            'Unable to sync the restored recipes.'
+          );
+
+          if (
+            syncedRecipes.some(
+              (recipe, index) =>
+                recipe.id !== restoredRecipes[index]?.id ||
+                recipe.syncStatus !== restoredRecipes[index]?.syncStatus
+            )
+          ) {
+            const syncedCustomRecipes = mergeById(customRecipesRef.current, syncedRecipes).sort((left, right) =>
+              right.createdAt.localeCompare(left.createdAt)
+            );
+            setCustomRecipes(syncedCustomRecipes);
+            await persistCache(syncedCustomRecipes, recipeOverridesRef.current);
+          }
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to restore deleted recipes.'));
-        } finally {
-          setSyncBusy(false);
         }
       },
       clearDeletedRecipes: () => {
         setLastDeletedRecipes([]);
       },
       updateRecipe: async (slug: string, input: NewUserRecipeInput, source: 'custom' | 'obsidian') => {
-        if (!requireSync('Sign in before editing recipes so the changes sync to your other devices.')) {
-          return null;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return null;
-        }
-
-        setSyncBusy(true);
-
         try {
           const title = input.title.trim();
           const inferredTags = inferRecipeTags({
@@ -959,6 +1115,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
             const updatedRecipe: UserRecipe = {
               ...currentRecipe,
+              userId: user?.id ?? currentRecipe.userId ?? LOCAL_USER_ID,
+              syncStatus: 'local' as const,
               title,
               category: input.category,
               allergyFriendlyTags,
@@ -975,17 +1133,30 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               updatedAt: new Date().toISOString(),
             };
 
-            const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
-              toSyncedUserRecipeRecord(updatedRecipe),
-            ]);
-            const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(updatedRecipe));
             const nextCustomRecipes = currentCustomRecipes.map((recipe) =>
-              recipe.id === savedRecipe.id ? savedRecipe : recipe
+              recipe.id === updatedRecipe.id ? updatedRecipe : recipe
             );
 
             setCustomRecipes(nextCustomRecipes);
             await persistCache(nextCustomRecipes, recipeOverridesRef.current);
             setSyncError(null);
+            const [savedRecipe] = await syncUserRecipesToRemote(
+              [updatedRecipe],
+              'Unable to sync the recipe changes.'
+            );
+
+            if (
+              savedRecipe.id !== updatedRecipe.id ||
+              savedRecipe.userId !== updatedRecipe.userId ||
+              savedRecipe.syncStatus !== updatedRecipe.syncStatus
+            ) {
+              const syncedCustomRecipes = currentCustomRecipes.map((recipe) =>
+                recipe.id === updatedRecipe.id ? savedRecipe : recipe
+              );
+              setCustomRecipes(syncedCustomRecipes);
+              await persistCache(syncedCustomRecipes, recipeOverridesRef.current);
+            }
+
             return savedRecipe;
           }
 
@@ -994,7 +1165,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           const existingOverride = currentOverrides.find((recipe) => recipe.slug === slug);
           const override: RecipeOverride = {
             id: existingOverride?.id ?? `override-${slug}`,
-            userId: user.id,
+            userId: existingOverride?.userId ?? activeUserId,
             slug,
             title,
             category: input.category,
@@ -1012,42 +1183,38 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             updatedAt: new Date().toISOString(),
           };
 
-          const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
-            toSyncedRecipeOverrideRecord(override),
-          ]);
-          const savedOverride = mapSyncedRecipeOverride(
-            savedRecord ?? toSyncedRecipeOverrideRecord(override)
-          );
           const nextOverrides = [
-            savedOverride,
+            override,
             ...currentOverrides.filter((recipe) => recipe.slug !== slug),
           ];
 
           setRecipeOverrides(nextOverrides);
           await persistCache(customRecipesRef.current, nextOverrides);
           setSyncError(null);
+          const [savedOverride] = await syncRecipeOverridesToRemote(
+            [override],
+            'Unable to sync the recipe changes.'
+          );
+
+          if (savedOverride.id !== override.id || savedOverride.userId !== override.userId) {
+            const syncedOverrides = [
+              savedOverride,
+              ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+            ];
+            setRecipeOverrides(syncedOverrides);
+            await persistCache(customRecipesRef.current, syncedOverrides);
+          }
+
           return savedOverride;
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to save the recipe changes.'));
           return null;
-        } finally {
-          setSyncBusy(false);
         }
       },
       bulkUpdateRecipeMetadata: async (input: BulkRecipeMetadataInput) => {
         if (input.slugs.length === 0) {
           return;
         }
-
-        if (!requireSync('Sign in before bulk editing recipes so the changes sync across devices.')) {
-          return;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return;
-        }
-
-        setSyncBusy(true);
 
         try {
           const allergenTagsToAdd = (input.allergenTagsToAdd ?? []).filter(
@@ -1084,6 +1251,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
             return {
               ...recipe,
+              syncStatus: 'local' as const,
               category: input.category ?? recipe.category,
               cuisineRegion: input.applyCuisineRegion
                 ? input.cuisineRegion?.trim()
@@ -1125,7 +1293,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
             const nextOverride: RecipeOverride = {
               id: existingOverride?.id ?? `override-${slugValue}`,
-              userId: user.id,
+              userId: existingOverride?.userId ?? activeUserId,
               slug: slugValue,
               title: existingOverride?.title ?? baseRecipe.title,
               category: input.category ?? existingOverride?.category ?? baseRecipe.category,
@@ -1154,31 +1322,32 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             }
           });
 
-          await Promise.all([
-            upsertUserRecipes(
-              syncConfig,
-              session.accessToken,
-              nextCustomRecipes
-                .filter((recipe) => input.slugs.includes(recipe.slug))
-                .map(toSyncedUserRecipeRecord)
-            ),
-            upsertRecipeOverrides(
-              syncConfig,
-              session.accessToken,
-              nextOverrides
-                .filter((recipe) => input.slugs.includes(recipe.slug))
-                .map(toSyncedRecipeOverrideRecord)
-            ),
-          ]);
-
           setCustomRecipes(nextCustomRecipes);
           setRecipeOverrides(nextOverrides);
           await persistCache(nextCustomRecipes, nextOverrides);
           setSyncError(null);
+
+          const [syncedCustomRecipes] = await Promise.all([
+            syncUserRecipesToRemote(
+              nextCustomRecipes.filter((recipe) => input.slugs.includes(recipe.slug)),
+              'Unable to sync the selected recipe changes.'
+            ),
+            syncRecipeOverridesToRemote(
+              nextOverrides.filter((recipe) => input.slugs.includes(recipe.slug)),
+              'Unable to sync the selected imported recipe changes.'
+            ),
+          ]);
+
+          if (syncedCustomRecipes.some((recipe) => recipe.syncStatus === 'synced')) {
+            const syncedById = new Map(syncedCustomRecipes.map((recipe) => [recipe.id, recipe] as const));
+            const syncedNextCustomRecipes = nextCustomRecipes.map(
+              (recipe) => syncedById.get(recipe.id) ?? recipe
+            );
+            setCustomRecipes(syncedNextCustomRecipes);
+            await persistCache(syncedNextCustomRecipes, nextOverrides);
+          }
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to update the selected recipes.'));
-        } finally {
-          setSyncBusy(false);
         }
       },
       updateDirectionStep: async (
@@ -1193,16 +1362,6 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           return;
         }
 
-        if (!requireSync('Sign in before editing directions so the changes sync to your other devices.')) {
-          return;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return;
-        }
-
-        setSyncBusy(true);
-
         try {
           if (source === 'custom') {
             const currentCustomRecipes = customRecipesRef.current;
@@ -1215,6 +1374,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             const nextDirections = replaceDirectionStepText(recipe.directions, stepId, nextText);
             const nextRecipe: UserRecipe = {
               ...recipe,
+              userId: user?.id ?? recipe.userId ?? LOCAL_USER_ID,
+              syncStatus: 'local',
               directions: nextDirections,
               directionStepOverrides: buildDirectionStepOverrides(
                 recipe.originalDirections,
@@ -1223,17 +1384,29 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               updatedAt: new Date().toISOString(),
             };
 
-            const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
-              toSyncedUserRecipeRecord(nextRecipe),
-            ]);
-            const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(nextRecipe));
             const nextCustomRecipes = currentCustomRecipes.map((item) =>
-              item.id === savedRecipe.id ? savedRecipe : item
+              item.id === nextRecipe.id ? nextRecipe : item
             );
 
             setCustomRecipes(nextCustomRecipes);
             await persistCache(nextCustomRecipes, recipeOverridesRef.current);
             setSyncError(null);
+            const [savedRecipe] = await syncUserRecipesToRemote(
+              [nextRecipe],
+              'Unable to sync the direction change.'
+            );
+
+            if (
+              savedRecipe.id !== nextRecipe.id ||
+              savedRecipe.userId !== nextRecipe.userId ||
+              savedRecipe.syncStatus !== nextRecipe.syncStatus
+            ) {
+              const syncedCustomRecipes = currentCustomRecipes.map((item) =>
+                item.id === nextRecipe.id ? savedRecipe : item
+              );
+              setCustomRecipes(syncedCustomRecipes);
+              await persistCache(syncedCustomRecipes, recipeOverridesRef.current);
+            }
             return;
           }
 
@@ -1253,7 +1426,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
 
           const nextOverride: RecipeOverride = {
             id: existingOverride?.id ?? `override-${slug}`,
-            userId: user.id,
+            userId: existingOverride?.userId ?? activeUserId,
             slug,
             title: existingOverride?.title ?? baseRecipe.title,
             category: existingOverride?.category ?? baseRecipe.category,
@@ -1270,37 +1443,32 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             updatedAt: new Date().toISOString(),
           };
 
-          const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
-            toSyncedRecipeOverrideRecord(nextOverride),
-          ]);
-          const savedOverride = mapSyncedRecipeOverride(
-            savedRecord ?? toSyncedRecipeOverrideRecord(nextOverride)
-          );
           const nextOverrides = [
-            savedOverride,
+            nextOverride,
             ...currentOverrides.filter((recipe) => recipe.slug !== slug),
           ];
 
           setRecipeOverrides(nextOverrides);
           await persistCache(customRecipesRef.current, nextOverrides);
           setSyncError(null);
+          const [savedOverride] = await syncRecipeOverridesToRemote(
+            [nextOverride],
+            'Unable to sync the direction change.'
+          );
+
+          if (savedOverride.id !== nextOverride.id || savedOverride.userId !== nextOverride.userId) {
+            const syncedOverrides = [
+              savedOverride,
+              ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+            ];
+            setRecipeOverrides(syncedOverrides);
+            await persistCache(customRecipesRef.current, syncedOverrides);
+          }
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to save the direction change.'));
-        } finally {
-          setSyncBusy(false);
         }
       },
       resetDirectionStep: async (slug: string, stepId: string, source: 'custom' | 'obsidian') => {
-        if (!requireSync('Sign in before resetting directions so the changes sync to your other devices.')) {
-          return;
-        }
-
-        if (!syncConfig || !session?.accessToken || !user?.id) {
-          return;
-        }
-
-        setSyncBusy(true);
-
         try {
           if (source === 'custom') {
             const currentCustomRecipes = customRecipesRef.current;
@@ -1320,6 +1488,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             const nextDirections = replaceDirectionStepText(recipe.directions, stepId, originalText);
             const nextRecipe: UserRecipe = {
               ...recipe,
+              userId: user?.id ?? recipe.userId ?? LOCAL_USER_ID,
+              syncStatus: 'local',
               directions: nextDirections,
               directionStepOverrides: buildDirectionStepOverrides(
                 recipe.originalDirections,
@@ -1328,17 +1498,29 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               updatedAt: new Date().toISOString(),
             };
 
-            const [savedRecord] = await upsertUserRecipes(syncConfig, session.accessToken, [
-              toSyncedUserRecipeRecord(nextRecipe),
-            ]);
-            const savedRecipe = mapSyncedUserRecipe(savedRecord ?? toSyncedUserRecipeRecord(nextRecipe));
             const nextCustomRecipes = currentCustomRecipes.map((item) =>
-              item.id === savedRecipe.id ? savedRecipe : item
+              item.id === nextRecipe.id ? nextRecipe : item
             );
 
             setCustomRecipes(nextCustomRecipes);
             await persistCache(nextCustomRecipes, recipeOverridesRef.current);
             setSyncError(null);
+            const [savedRecipe] = await syncUserRecipesToRemote(
+              [nextRecipe],
+              'Unable to sync the direction reset.'
+            );
+
+            if (
+              savedRecipe.id !== nextRecipe.id ||
+              savedRecipe.userId !== nextRecipe.userId ||
+              savedRecipe.syncStatus !== nextRecipe.syncStatus
+            ) {
+              const syncedCustomRecipes = currentCustomRecipes.map((item) =>
+                item.id === nextRecipe.id ? savedRecipe : item
+              );
+              setCustomRecipes(syncedCustomRecipes);
+              await persistCache(syncedCustomRecipes, recipeOverridesRef.current);
+            }
             return;
           }
 
@@ -1360,30 +1542,36 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           const nextDirections = replaceDirectionStepText(existingOverride.directions, stepId, originalText);
           const nextOverride: RecipeOverride = {
             ...existingOverride,
+            userId: user?.id ?? existingOverride.userId ?? LOCAL_USER_ID,
             directions: nextDirections,
             directionStepOverrides: buildDirectionStepOverrides(baseRecipe.directions, nextDirections),
             deleted: false,
             updatedAt: new Date().toISOString(),
           };
 
-          const [savedRecord] = await upsertRecipeOverrides(syncConfig, session.accessToken, [
-            toSyncedRecipeOverrideRecord(nextOverride),
-          ]);
-          const savedOverride = mapSyncedRecipeOverride(
-            savedRecord ?? toSyncedRecipeOverrideRecord(nextOverride)
-          );
           const nextOverrides = [
-            savedOverride,
+            nextOverride,
             ...currentOverrides.filter((recipe) => recipe.slug !== slug),
           ];
 
           setRecipeOverrides(nextOverrides);
           await persistCache(customRecipesRef.current, nextOverrides);
           setSyncError(null);
+          const [savedOverride] = await syncRecipeOverridesToRemote(
+            [nextOverride],
+            'Unable to sync the direction reset.'
+          );
+
+          if (savedOverride.id !== nextOverride.id || savedOverride.userId !== nextOverride.userId) {
+            const syncedOverrides = [
+              savedOverride,
+              ...currentOverrides.filter((recipe) => recipe.slug !== slug),
+            ];
+            setRecipeOverrides(syncedOverrides);
+            await persistCache(customRecipesRef.current, syncedOverrides);
+          }
         } catch (error) {
           setSyncError(normalizeError(error, 'Unable to reset the direction step.'));
-        } finally {
-          setSyncBusy(false);
         }
       },
     }),

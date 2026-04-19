@@ -33,7 +33,9 @@ export default function AccountScreen() {
     customRecipes,
     loaded,
     recipeOverrideMap,
+    refreshSync,
     syncBusy,
+    syncEnabled,
     syncError,
   } = useCustomRecipes();
 
@@ -134,6 +136,19 @@ export default function AccountScreen() {
               <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
                 {syncBusy ? 'Syncing changes now.' : 'New recipe changes will sync across devices.'}
               </Text>
+              {syncEnabled ? (
+                <Pressable
+                  disabled={syncBusy}
+                  onPress={() => {
+                    void refreshSync();
+                  }}
+                  style={{ alignSelf: 'flex-start', opacity: syncBusy ? 0.65 : 1 }}
+                >
+                  <Text style={[styles.menuCardLink, { color: palette.accentText }]}>
+                    {syncBusy ? 'Syncing...' : 'Refresh sync'}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
             <Pressable
               onPress={handleSignOut}
