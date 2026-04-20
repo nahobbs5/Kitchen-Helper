@@ -1,7 +1,9 @@
-import { Platform, Share } from 'react-native';
+import { type RefObject } from 'react';
+import { Platform, Share, type View } from 'react-native';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 
 import { type RecipeSource, type RecipeOverride, type UserRecipe } from '../contexts/custom-recipes-context';
 import { obsidianRecipes, type ObsidianRecipe, type RecipeSection } from '../data/obsidian-recipes';
@@ -42,7 +44,7 @@ function nextFilename() {
 function nextRecipeShareFilename(recipe: ExportRecipe) {
   const timestamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+$/, '');
   const slug = recipe.slug.replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'recipe';
-  return `kitchen-helper-${slug}-${timestamp}.pdf`;
+  return `kitchen-helper-${slug}-${timestamp}.png`;
 }
 
 function compareRecipes(left: ExportRecipe, right: ExportRecipe) {
@@ -431,23 +433,6 @@ export function renderRecipesPdfHtml(recipes: ExportRecipe[]) {
   `;
 }
 
-export function renderRecipeSharePdfHtml(recipe: ExportRecipe) {
-  return `
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>${escapeHtml(recipe.title)}</title>
-        <style>${renderRecipesPdfCss()}</style>
-      </head>
-      <body>
-        ${renderRecipesPdfBody([recipe], false)}
-      </body>
-    </html>
-  `;
-}
-
 export function renderRecipeShareText(recipe: ExportRecipe) {
   const lines = [`Kitchen Helper: ${recipe.title}`];
   const metadata = [
@@ -592,18 +577,27 @@ async function exportRecipesToPdfNative(html: string, filename: string) {
   } satisfies ExportResult;
 }
 
-async function shareRecipePdfNative(recipe: ExportRecipe) {
+async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
+  if (!cardRef.current) {
+    throw new Error('Recipe share card is not ready yet.');
+  }
+
   const filename = nextRecipeShareFilename(recipe);
-  const file = await Print.printToFileAsync({
-    html: renderRecipeSharePdfHtml(recipe),
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+  const capturedUri = await captureRef(cardRef, {
+    format: 'png',
+    quality: 1,
+    result: 'tmpfile',
   });
   const shareUri = LegacyFileSystem.cacheDirectory
     ? `${LegacyFileSystem.cacheDirectory}${filename}`
-    : file.uri;
+    : capturedUri;
 
-  if (shareUri !== file.uri) {
+  if (shareUri !== capturedUri) {
     await LegacyFileSystem.copyAsync({
-      from: file.uri,
+      from: capturedUri,
       to: shareUri,
     });
   }
@@ -613,19 +607,20 @@ async function shareRecipePdfNative(recipe: ExportRecipe) {
   }
 
   await Sharing.shareAsync(shareUri, {
-    mimeType: 'application/pdf',
+    mimeType: 'image/png',
     dialogTitle: `Share ${recipe.title}`,
-    UTI: 'com.adobe.pdf',
+    UTI: 'public.png',
   });
 }
 
-export async function shareRecipe(recipe: ExportRecipe) {
-  if (Platform.OS !== 'web') {
+export async function shareRecipe(recipe: ExportRecipe, cardRef?: RefObject<View | null>) {
+  if (Platform.OS !== 'web' && cardRef) {
     try {
-      await shareRecipePdfNative(recipe);
+      await shareRecipeImageNative(recipe, cardRef);
       return;
-    } catch {
-      // Fall back to text sharing when the platform cannot share the generated PDF.
+    } catch (error) {
+      console.warn('Recipe image share failed; falling back to text.', error);
+      // Fall back to text sharing when the platform cannot capture or share the PNG.
     }
   }
 

@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { RecipeShareCard, recipeShareCardWidth } from '../../components/recipe-share-card';
 import { ShareIcon } from '../../components/share-icon';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
@@ -40,6 +41,7 @@ export default function ObsidianRecipeScreen() {
     : undefined;
   const [multiplier, setMultiplier] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const shareCardRef = useRef<View>(null);
   const { isFavorite, toggleFavorite } = useFavorites();
   const parentLabel = origin === 'my-recipes' ? 'My Recipes' : 'Sample Recipes';
   const headerTitle = isWide ? `${parentLabel} / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
@@ -67,8 +69,12 @@ export default function ObsidianRecipeScreen() {
   }
 
   function handleShare() {
-    if (!recipe) return;
-    const exportRecipe: ExportRecipe = {
+    if (!exportRecipe) return;
+    void shareRecipe(exportRecipe, shareCardRef);
+  }
+
+  const exportRecipe: ExportRecipe | null = recipe
+    ? {
       slug: recipe.slug,
       title: recipe.title,
       category: recipe.category,
@@ -84,10 +90,8 @@ export default function ObsidianRecipeScreen() {
       directions: recipe.directions,
       notes: recipe.notes,
       sourceInfo: recipe.sourceInfo,
-    };
-
-    void shareRecipe(exportRecipe);
-  }
+    }
+    : null;
 
   const baseServings = useMemo(() => extractBaseServings(recipe?.servings ?? null), [recipe?.servings]);
 
@@ -156,6 +160,21 @@ export default function ObsidianRecipeScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <Stack.Screen options={{ title: headerTitle }} />
+      {exportRecipe ? (
+        <View
+          pointerEvents="none"
+          style={{
+            left: -10000,
+            position: 'absolute',
+            top: 0,
+            width: recipeShareCardWidth,
+          }}
+        >
+          <View ref={shareCardRef} collapsable={false}>
+            <RecipeShareCard recipe={exportRecipe} />
+          </View>
+        </View>
+      ) : null}
       <ScrollView contentContainerStyle={styles.page}>
         <View
           style={[

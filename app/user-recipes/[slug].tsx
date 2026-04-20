@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { RecipeShareCard, recipeShareCardWidth } from '../../components/recipe-share-card';
 import { ShareIcon } from '../../components/share-icon';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
@@ -22,10 +23,18 @@ export default function UserRecipeScreen() {
   const { confirmDeleteEnabled, palette } = useAppSettings();
   const { customRecipeMap, deleteRecipe, loaded } = useCustomRecipes();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const shareCardRef = useRef<View>(null);
 
   function handleShare() {
-    if (!recipe) return;
-    const exportRecipe: ExportRecipe = {
+    if (!exportRecipe) return;
+    void shareRecipe(exportRecipe, shareCardRef);
+  }
+  const [multiplier, setMultiplier] = useState(1);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const normalizedSlug = Array.isArray(slug) ? slug[0] : slug;
+  const recipe = normalizedSlug ? customRecipeMap[normalizedSlug] : undefined;
+  const exportRecipe: ExportRecipe | null = recipe
+    ? {
       slug: recipe.slug,
       title: recipe.title,
       category: recipe.category,
@@ -41,14 +50,8 @@ export default function UserRecipeScreen() {
       directions: recipe.directions,
       notes: recipe.notes,
       sourceInfo: recipe.sourceInfo,
-    };
-
-    void shareRecipe(exportRecipe);
-  }
-  const [multiplier, setMultiplier] = useState(1);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const normalizedSlug = Array.isArray(slug) ? slug[0] : slug;
-  const recipe = normalizedSlug ? customRecipeMap[normalizedSlug] : undefined;
+    }
+    : null;
   const headerTitle = isWide ? `My Recipes / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
 
   const servingButtons = useMemo(
@@ -145,6 +148,21 @@ export default function UserRecipeScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <Stack.Screen options={{ title: headerTitle }} />
+      {exportRecipe ? (
+        <View
+          pointerEvents="none"
+          style={{
+            left: -10000,
+            position: 'absolute',
+            top: 0,
+            width: recipeShareCardWidth,
+          }}
+        >
+          <View ref={shareCardRef} collapsable={false}>
+            <RecipeShareCard recipe={exportRecipe} />
+          </View>
+        </View>
+      ) : null}
       <ScrollView contentContainerStyle={styles.page}>
         <View
           style={[
