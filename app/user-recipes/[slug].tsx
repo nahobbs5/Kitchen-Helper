@@ -1,12 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Share, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { ShareIcon } from '../../components/share-icon';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
+import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { scaleIngredientLine } from '../../utils/ingredient-scaling';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -24,18 +25,25 @@ export default function UserRecipeScreen() {
 
   function handleShare() {
     if (!recipe) return;
-    const lines: string[] = [`🍽️ ${recipe.title}`];
-    if (recipe.servings) lines.push(`Serves: ${recipe.servings}`);
-    if (recipe.prepTime) lines.push(`Prep: ${recipe.prepTime}`);
-    if (recipe.cookTime) lines.push(`Cook: ${recipe.cookTime}`);
-    if (recipe.ingredients?.length) {
-      lines.push('', 'Ingredients:', ...recipe.ingredients.map((i) => `• ${i}`));
-    }
-    if (recipe.directions?.length) {
-      lines.push('', 'Directions:', ...recipe.directions.map((d, idx) => `${idx + 1}. ${d}`));
-    }
-    if (recipe.notes) lines.push('', `Notes: ${recipe.notes}`);
-    Share.share({ title: recipe.title, message: lines.join('\n') });
+    const exportRecipe: ExportRecipe = {
+      slug: recipe.slug,
+      title: recipe.title,
+      category: recipe.category,
+      sourceLabel: recipe.source,
+      cuisineRegion: recipe.cuisineRegion,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      totalTime: recipe.totalTime,
+      servings: recipe.servings,
+      allergyFriendlyTags: recipe.allergyFriendlyTags,
+      allergenTags: recipe.allergenTags,
+      ingredients: recipe.ingredients,
+      directions: recipe.directions,
+      notes: recipe.notes,
+      sourceInfo: recipe.sourceInfo,
+    };
+
+    void shareRecipe(exportRecipe);
   }
   const [multiplier, setMultiplier] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

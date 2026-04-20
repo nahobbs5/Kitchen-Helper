@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, Share } from 'react-native';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -39,6 +39,12 @@ function nextFilename() {
   return `kitchen-helper-recipes-${timestamp}.pdf`;
 }
 
+function nextRecipeShareFilename(recipe: ExportRecipe) {
+  const timestamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+$/, '');
+  const slug = recipe.slug.replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'recipe';
+  return `kitchen-helper-${slug}-${timestamp}.pdf`;
+}
+
 function compareRecipes(left: ExportRecipe, right: ExportRecipe) {
   const categoryCompare = left.category.localeCompare(right.category);
 
@@ -74,6 +80,26 @@ function renderSectionList(sections: RecipeSection[], ordered = false) {
       return `${title}<${wrapperTag} class="recipe-list">${items}</${wrapperTag}>`;
     })
     .join('');
+}
+
+function renderShareSectionList(sections: RecipeSection[], ordered = false) {
+  if (sections.length === 0) {
+    return [];
+  }
+
+  return sections.flatMap((section) => {
+    const lines: string[] = [];
+
+    if (section.title) {
+      lines.push(section.title);
+    }
+
+    section.items.forEach((item, index) => {
+      lines.push(ordered ? `${index + 1}. ${item}` : `- ${item}`);
+    });
+
+    return lines;
+  });
 }
 
 function renderSourceInfo(sourceInfo: RecipeSource) {
@@ -281,14 +307,8 @@ function renderRecipesPdfCss() {
   `;
 }
 
-function renderRecipesPdfBody(recipes: ExportRecipe[]) {
-  const today = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const recipeMarkup = recipes
+function renderRecipeCards(recipes: ExportRecipe[]) {
+  return recipes
     .map(
       (recipe) => `
         <article class="recipe-card">
@@ -321,9 +341,17 @@ function renderRecipesPdfBody(recipes: ExportRecipe[]) {
       `
     )
     .join('');
+}
 
-  return `
-    <main class="book">
+function renderRecipesPdfBody(recipes: ExportRecipe[], includeCover = true) {
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const coverMarkup = includeCover
+    ? `
       <section class="cover">
         <p class="cover-eyebrow">Kitchen Helper</p>
         <h1 class="cover-title">Recipe Export</h1>
@@ -331,7 +359,13 @@ function renderRecipesPdfBody(recipes: ExportRecipe[]) {
           ${recipes.length} recipes exported on ${escapeHtml(today)}.
         </p>
       </section>
-      ${recipeMarkup}
+    `
+    : '';
+
+  return `
+    <main class="book">
+      ${coverMarkup}
+      ${renderRecipeCards(recipes)}
     </main>
   `;
 }
@@ -395,6 +429,70 @@ export function renderRecipesPdfHtml(recipes: ExportRecipe[]) {
       </body>
     </html>
   `;
+}
+
+export function renderRecipeSharePdfHtml(recipe: ExportRecipe) {
+  return `
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>${escapeHtml(recipe.title)}</title>
+        <style>${renderRecipesPdfCss()}</style>
+      </head>
+      <body>
+        ${renderRecipesPdfBody([recipe], false)}
+      </body>
+    </html>
+  `;
+}
+
+export function renderRecipeShareText(recipe: ExportRecipe) {
+  const lines = [`Kitchen Helper: ${recipe.title}`];
+  const metadata = [
+    recipe.category,
+    recipe.sourceLabel,
+    recipe.cuisineRegion ? `Cuisine: ${recipe.cuisineRegion}` : null,
+    recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
+    recipe.cookTime ? `Cook: ${recipe.cookTime}` : null,
+    recipe.totalTime ? `Total: ${recipe.totalTime}` : null,
+    recipe.servings,
+  ].filter(Boolean) as string[];
+  const tags = [...recipe.allergyFriendlyTags, ...recipe.allergenTags];
+  const sourceLines = [
+    recipe.sourceInfo?.websiteName ? `Website: ${recipe.sourceInfo.websiteName}` : null,
+    recipe.sourceInfo?.author ? `Author: ${recipe.sourceInfo.author}` : null,
+    recipe.sourceInfo?.url ? `Source: ${recipe.sourceInfo.url}` : null,
+  ].filter(Boolean) as string[];
+  const ingredientLines = renderShareSectionList(recipe.ingredients);
+  const directionLines = renderShareSectionList(recipe.directions, true);
+
+  if (metadata.length > 0) {
+    lines.push('', metadata.join(' | '));
+  }
+
+  if (tags.length > 0) {
+    lines.push('', `Tags: ${tags.join(', ')}`);
+  }
+
+  if (sourceLines.length > 0) {
+    lines.push('', ...sourceLines);
+  }
+
+  if (ingredientLines.length > 0) {
+    lines.push('', 'Ingredients', ...ingredientLines);
+  }
+
+  if (directionLines.length > 0) {
+    lines.push('', 'Directions', ...directionLines);
+  }
+
+  if (recipe.notes) {
+    lines.push('', 'Notes', recipe.notes);
+  }
+
+  return lines.join('\n');
 }
 
 async function exportRecipesToPdfWeb(recipes: ExportRecipe[], filename: string) {
@@ -492,6 +590,49 @@ async function exportRecipesToPdfNative(html: string, filename: string) {
     filename,
     message: 'PDF created successfully.',
   } satisfies ExportResult;
+}
+
+async function shareRecipePdfNative(recipe: ExportRecipe) {
+  const filename = nextRecipeShareFilename(recipe);
+  const file = await Print.printToFileAsync({
+    html: renderRecipeSharePdfHtml(recipe),
+  });
+  const shareUri = LegacyFileSystem.cacheDirectory
+    ? `${LegacyFileSystem.cacheDirectory}${filename}`
+    : file.uri;
+
+  if (shareUri !== file.uri) {
+    await LegacyFileSystem.copyAsync({
+      from: file.uri,
+      to: shareUri,
+    });
+  }
+
+  if (!(await Sharing.isAvailableAsync())) {
+    throw new Error('File sharing is unavailable on this device.');
+  }
+
+  await Sharing.shareAsync(shareUri, {
+    mimeType: 'application/pdf',
+    dialogTitle: `Share ${recipe.title}`,
+    UTI: 'com.adobe.pdf',
+  });
+}
+
+export async function shareRecipe(recipe: ExportRecipe) {
+  if (Platform.OS !== 'web') {
+    try {
+      await shareRecipePdfNative(recipe);
+      return;
+    } catch {
+      // Fall back to text sharing when the platform cannot share the generated PDF.
+    }
+  }
+
+  await Share.share({
+    title: recipe.title,
+    message: renderRecipeShareText(recipe),
+  });
 }
 
 export async function exportRecipesToPdf(recipes: ExportRecipe[]) {
