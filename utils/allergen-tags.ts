@@ -88,27 +88,43 @@ const allergenToFriendly: Partial<Record<(typeof allergenTagOptions)[number], (t
   'Contains Soy': ['Soy Free'],
 };
 
-function combinedText(input: InferenceInput) {
-  return [input.title, input.ingredientsText, input.directionsText, input.notes]
-    .filter(Boolean)
-    .join('\n');
-}
-
 export function inferRecipeTags(input: InferenceInput) {
-  const text = combinedText(input);
+  const { title, ingredientsText, directionsText, notes } = input;
 
-  const allergyFriendlyTags = allergyFriendlyTagOptions.filter((tag) =>
-    friendlyMatchers[tag].some((matcher) => matcher.test(text))
+  const nonIngredientText = [title, directionsText, notes].filter(Boolean).join('\n');
+
+  const ingredientLines = ingredientsText?.split('\n') ?? [];
+  const perLineAllergens = new Set<(typeof allergenTagOptions)[number]>();
+
+  for (const line of ingredientLines) {
+    for (const tag of allergenTagOptions) {
+      if (!allergenMatchers[tag].some((m) => m.test(line))) continue;
+
+      const suppressed = allergyFriendlyTagOptions.some(
+        (ft) => friendlyToAllergen[ft] === tag && friendlyMatchers[ft].some((m) => m.test(line))
+      );
+
+      if (!suppressed) {
+        perLineAllergens.add(tag);
+      }
+    }
+  }
+
+  const nonIngredientAllergens = allergenTagOptions.filter((tag) =>
+    allergenMatchers[tag].some((m) => m.test(nonIngredientText))
   );
 
-  const allergenTags = allergenTagOptions
-    .filter((tag) => allergenMatchers[tag].some((matcher) => matcher.test(text)))
-    .filter((tag) => !allergyFriendlyTags.some((friendlyTag) => friendlyToAllergen[friendlyTag] === tag));
+  const wholeText = [title, ingredientsText, directionsText, notes].filter(Boolean).join('\n');
+  const allergyFriendlyTags = allergyFriendlyTagOptions.filter((tag) =>
+    friendlyMatchers[tag].some((m) => m.test(wholeText))
+  );
 
-  return {
-    allergenTags,
-    allergyFriendlyTags,
-  };
+  const combinedAllergens = new Set([...perLineAllergens, ...nonIngredientAllergens]);
+  const allergenTags = [...combinedAllergens].filter(
+    (tag) => !allergyFriendlyTags.some((ft) => friendlyToAllergen[ft] === tag)
+  );
+
+  return { allergenTags, allergyFriendlyTags };
 }
 
 export function toggleAllergenSelection(

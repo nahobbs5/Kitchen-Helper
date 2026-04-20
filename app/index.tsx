@@ -50,7 +50,7 @@ export default function HomeScreen() {
               {configured
                 ? user
                   ? null
-                  : 'Sign in from Settings to sync your recipe library across mobile and web.'
+                  : 'Sign in on the account page to sync your recipe library across mobile and web.'
                 : 'Add Supabase sync config to enable a shared recipe library across devices.'}
             </Text>
           </View>
