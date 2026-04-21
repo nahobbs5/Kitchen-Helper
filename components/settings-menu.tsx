@@ -6,6 +6,49 @@ import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
 import { useAppSettings } from '../contexts/settings-context';
 
+function HeaderTooltip({ label, children }: { label: string; children: React.ReactNode }) {
+  const [hovered, setHovered] = useState(false);
+  const { palette } = useAppSettings();
+
+  return (
+    <View
+      style={{ position: 'relative', overflow: 'visible' }}
+      {...({
+        onMouseEnter: () => setHovered(true),
+        onMouseLeave: () => setHovered(false),
+      } as any)}
+    >
+      {children}
+      {hovered && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 42,
+            left: -26,
+            width: 90,
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          pointerEvents="none"
+        >
+          <View
+            style={{
+              backgroundColor: palette.elevated,
+              borderColor: palette.borderAlt,
+              borderWidth: 1,
+              borderRadius: 6,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+            }}
+          >
+            <Text style={{ color: palette.textMuted, fontSize: 11 }}>{label}</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
 export function ReferenceButton() {
   const router = useRouter();
   const pathname = usePathname();
@@ -13,26 +56,28 @@ export function ReferenceButton() {
   const isReferenceScreen = pathname === '/reference';
 
   return (
-    <Pressable
-      onPress={() => {
-        if (!isReferenceScreen) {
-          router.push('/reference');
-        }
-      }}
-      disabled={isReferenceScreen}
-      accessibilityRole="button"
-      accessibilityLabel="Open kitchen reference"
-      style={[
-        styles.settingsGearButton,
-        {
-          backgroundColor: palette.elevated,
-          borderColor: palette.borderAlt,
-          opacity: isReferenceScreen ? 0.45 : 1,
-        },
-      ]}
-    >
-      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>📖</Text>
-    </Pressable>
+    <HeaderTooltip label="Reference">
+      <Pressable
+        onPress={() => {
+          if (!isReferenceScreen) {
+            router.push('/reference');
+          }
+        }}
+        disabled={isReferenceScreen}
+        accessibilityRole="button"
+        accessibilityLabel="Open kitchen reference"
+        style={[
+          styles.settingsGearButton,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+            opacity: isReferenceScreen ? 0.45 : 1,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>📖</Text>
+      </Pressable>
+    </HeaderTooltip>
   );
 }
 
@@ -43,26 +88,28 @@ export function HomeButton() {
   const isHomeScreen = pathname === '/';
 
   return (
-    <Pressable
-      onPress={() => {
-        if (!isHomeScreen) {
-          router.replace('/');
-        }
-      }}
-      disabled={isHomeScreen}
-      accessibilityRole="button"
-      accessibilityLabel="Go to home screen"
-      style={[
-        styles.settingsGearButton,
-        {
-          backgroundColor: palette.elevated,
-          borderColor: palette.borderAlt,
-          opacity: isHomeScreen ? 0.45 : 1,
-        },
-      ]}
-    >
-      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🏠</Text>
-    </Pressable>
+    <HeaderTooltip label="Home">
+      <Pressable
+        onPress={() => {
+          if (!isHomeScreen) {
+            router.replace('/');
+          }
+        }}
+        disabled={isHomeScreen}
+        accessibilityRole="button"
+        accessibilityLabel="Go to home screen"
+        style={[
+          styles.settingsGearButton,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+            opacity: isHomeScreen ? 0.45 : 1,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🏠</Text>
+      </Pressable>
+    </HeaderTooltip>
   );
 }
 
@@ -73,26 +120,28 @@ export function MyRecipesButton() {
   const isMyRecipesScreen = pathname === '/my-recipes';
 
   return (
-    <Pressable
-      onPress={() => {
-        if (!isMyRecipesScreen) {
-          router.push('/my-recipes');
-        }
-      }}
-      disabled={isMyRecipesScreen}
-      accessibilityRole="button"
-      accessibilityLabel="Open my recipes"
-      style={[
-        styles.settingsGearButton,
-        {
-          backgroundColor: palette.elevated,
-          borderColor: palette.borderAlt,
-          opacity: isMyRecipesScreen ? 0.45 : 1,
-        },
-      ]}
-    >
-      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🍳</Text>
-    </Pressable>
+    <HeaderTooltip label="My Recipes">
+      <Pressable
+        onPress={() => {
+          if (!isMyRecipesScreen) {
+            router.push('/my-recipes');
+          }
+        }}
+        disabled={isMyRecipesScreen}
+        accessibilityRole="button"
+        accessibilityLabel="Open my recipes"
+        style={[
+          styles.settingsGearButton,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+            opacity: isMyRecipesScreen ? 0.45 : 1,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>🍳</Text>
+      </Pressable>
+    </HeaderTooltip>
   );
 }
 
@@ -101,20 +150,22 @@ export function CookTimerButton() {
   const { palette } = useAppSettings();
 
   return (
-    <Pressable
-      onPress={openCookTimer}
-      accessibilityRole="button"
-      accessibilityLabel="Open cook timer"
-      style={[
-        styles.settingsGearButton,
-        {
-          backgroundColor: palette.elevated,
-          borderColor: palette.borderAlt,
-        },
-      ]}
-    >
-      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>⏳</Text>
-    </Pressable>
+    <HeaderTooltip label="Cook Timer">
+      <Pressable
+        onPress={openCookTimer}
+        accessibilityRole="button"
+        accessibilityLabel="Open cook timer"
+        style={[
+          styles.settingsGearButton,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>⏳</Text>
+      </Pressable>
+    </HeaderTooltip>
   );
 }
 
@@ -122,20 +173,22 @@ export function SettingsGearButton() {
   const { openSettings, palette } = useAppSettings();
 
   return (
-    <Pressable
-      onPress={openSettings}
-      accessibilityRole="button"
-      accessibilityLabel="Open settings"
-      style={[
-        styles.settingsGearButton,
-        {
-          backgroundColor: palette.elevated,
-          borderColor: palette.borderAlt,
-        },
-      ]}
-    >
-      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>⚙</Text>
-    </Pressable>
+    <HeaderTooltip label="Settings">
+      <Pressable
+        onPress={openSettings}
+        accessibilityRole="button"
+        accessibilityLabel="Open settings"
+        style={[
+          styles.settingsGearButton,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>⚙</Text>
+      </Pressable>
+    </HeaderTooltip>
   );
 }
 
@@ -146,26 +199,28 @@ export function AccountButton() {
   const isAccountScreen = pathname === '/account';
 
   return (
-    <Pressable
-      onPress={() => {
-        if (!isAccountScreen) {
-          router.push('/account');
-        }
-      }}
-      disabled={isAccountScreen}
-      accessibilityRole="button"
-      accessibilityLabel="Open account"
-      style={[
-        styles.settingsGearButton,
-        {
-          backgroundColor: palette.elevated,
-          borderColor: palette.borderAlt,
-          opacity: isAccountScreen ? 0.45 : 1,
-        },
-      ]}
-    >
-      <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>👤</Text>
-    </Pressable>
+    <HeaderTooltip label="Account">
+      <Pressable
+        onPress={() => {
+          if (!isAccountScreen) {
+            router.push('/account');
+          }
+        }}
+        disabled={isAccountScreen}
+        accessibilityRole="button"
+        accessibilityLabel="Open account"
+        style={[
+          styles.settingsGearButton,
+          {
+            backgroundColor: palette.elevated,
+            borderColor: palette.borderAlt,
+            opacity: isAccountScreen ? 0.45 : 1,
+          },
+        ]}
+      >
+        <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>👤</Text>
+      </Pressable>
+    </HeaderTooltip>
   );
 }
 
