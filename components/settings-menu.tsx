@@ -4,7 +4,25 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
-import { useAppSettings } from '../contexts/settings-context';
+import { MAX_TIMER_COUNT, MIN_TIMER_COUNT, useAppSettings } from '../contexts/settings-context';
+
+const TIMER_COUNT_ERROR_MESSAGE = `Enter a number from ${MIN_TIMER_COUNT} to ${MAX_TIMER_COUNT}.`;
+
+function parseTimerCountInput(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+
+  if (!Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return parsed;
+}
 
 function HeaderTooltip({ label, children }: { label: string; children: React.ReactNode }) {
   const [hovered, setHovered] = useState(false);
@@ -240,10 +258,12 @@ export function SettingsMenuModal() {
     setTimerCount,
   } = useAppSettings();
   const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
+  const [timerCountError, setTimerCountError] = useState('');
   const [resetDefaultsChecked, setResetDefaultsChecked] = useState(false);
 
   useEffect(() => {
     setTimerCountInput(String(timerCount));
+    setTimerCountError('');
   }, [timerCount]);
 
   if (!isSettingsOpen) {
@@ -254,9 +274,28 @@ export function SettingsMenuModal() {
     setResetDefaultsChecked(true);
     resetToDefaults();
     setTimerCountInput('3');
+    setTimerCountError('');
     setTimeout(() => {
       setResetDefaultsChecked(false);
     }, 0);
+  }
+
+  function handleTimerCountChange(text: string) {
+    setTimerCountInput(text);
+
+    const nextTimerCount = parseTimerCountInput(text);
+
+    if (
+      nextTimerCount === null ||
+      nextTimerCount < MIN_TIMER_COUNT ||
+      nextTimerCount > MAX_TIMER_COUNT
+    ) {
+      setTimerCountError(TIMER_COUNT_ERROR_MESSAGE);
+      return;
+    }
+
+    setTimerCountError('');
+    setTimerCount(nextTimerCount);
   }
 
   return (
@@ -356,33 +395,31 @@ export function SettingsMenuModal() {
               </View>
               <TextInput
                 value={timerCountInput}
-                onChangeText={(text) => {
-                  setTimerCountInput(text);
-                  const n = parseInt(text, 10);
-                  if (!isNaN(n) && n >= 1 && n <= 6) {
-                    setTimerCount(n);
-                  }
-                }}
+                onChangeText={handleTimerCountChange}
                 onBlur={() => {
-                  const n = parseInt(timerCountInput, 10);
-                  if (isNaN(n) || n < 1 || n > 6) {
-                    setTimerCountInput(String(timerCount));
+                  if (timerCountError) {
+                    setTimerCountError(TIMER_COUNT_ERROR_MESSAGE);
                   }
                 }}
                 keyboardType="number-pad"
-                maxLength={1}
                 style={[
                   styles.numberButton,
+                  timerCountError ? styles.timerCountInputError : null,
                   {
                     width: 72,
                     textAlign: 'center',
                     backgroundColor: palette.elevatedAlt,
-                    borderColor: palette.borderAlt,
+                    borderColor: timerCountError ? '#b3261e' : palette.borderAlt,
                     color: palette.text,
                   },
                 ]}
               />
             </View>
+            {timerCountError ? (
+              <Text style={[styles.timerCountErrorText, { color: '#b3261e' }]}>
+                {timerCountError}
+              </Text>
+            ) : null}
           </View>
 
           <View

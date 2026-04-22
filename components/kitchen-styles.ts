@@ -715,6 +715,15 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  timerCountInputError: {
+    borderWidth: 2,
+  },
+  timerCountErrorText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+    marginTop: -6,
+  },
   settingsCloseButton: {
     alignItems: 'center',
     justifyContent: 'center',

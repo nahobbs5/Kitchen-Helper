@@ -30,6 +30,8 @@ type SettingsContextValue = {
 };
 
 const SETTINGS_KEY = 'kitchen-helper.app-settings';
+export const MIN_TIMER_COUNT = 1;
+export const MAX_TIMER_COUNT = 6;
 
 const DEFAULT_SETTINGS = {
   darkModeEnabled: false,
@@ -37,6 +39,10 @@ const DEFAULT_SETTINGS = {
   confirmDeleteEnabled: true,
   timerCount: 3,
 };
+
+function clampTimerCount(value: number) {
+  return Math.max(MIN_TIMER_COUNT, Math.min(MAX_TIMER_COUNT, value));
+}
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
@@ -75,8 +81,8 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           setDarkModeEnabled(parsed.darkModeEnabled ?? DEFAULT_SETTINGS.darkModeEnabled);
           setKeepScreenAwake(parsed.keepScreenAwake ?? DEFAULT_SETTINGS.keepScreenAwake);
           setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? DEFAULT_SETTINGS.confirmDeleteEnabled);
-          if (typeof parsed.timerCount === 'number' && parsed.timerCount >= 1) {
-            setTimerCount(parsed.timerCount);
+          if (typeof parsed.timerCount === 'number' && parsed.timerCount >= MIN_TIMER_COUNT) {
+            setTimerCount(clampTimerCount(parsed.timerCount));
           } else {
             setTimerCount(DEFAULT_SETTINGS.timerCount);
           }
@@ -156,7 +162,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setKeepScreenAwake((current) => (typeof value === 'boolean' ? value : !current)),
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
-      setTimerCount: (value: number) => setTimerCount(Math.max(1, Math.min(6, value))),
+      setTimerCount: (value: number) => setTimerCount(clampTimerCount(value)),
       resetToDefaults: () => {
         setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
         setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
