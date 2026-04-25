@@ -31,7 +31,7 @@ export default function ConversionsScreen() {
           ...section,
           entries: normalizedSearch
             ? section.entries.filter((entry) =>
-                `${entry.from} ${entry.to} ${entry.result}`.toLowerCase().includes(normalizedSearch)
+                `${entry.from} ${entry.result}`.toLowerCase().includes(normalizedSearch)
               )
             : section.entries,
         }))
@@ -41,6 +41,10 @@ export default function ConversionsScreen() {
             (!normalizedSearch && (activeSection === 'All' || section.title === activeSection))
         ),
     [activeSection, normalizedSearch]
+  );
+  const visibleConversionCount = visibleSections.reduce(
+    (total, section) => total + section.entries.length,
+    0
   );
 
   return (
@@ -55,6 +59,7 @@ export default function ConversionsScreen() {
         >
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>Reference page</Text>
+            <Text style={[styles.title, { color: palette.text }]}>Common cooking conversions</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page now pulls from the conversion chart you added to the Obsidian resources
               folder. It is meant to work like a quick kitchen reference people can reopen while
@@ -63,25 +68,14 @@ export default function ConversionsScreen() {
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Chart source</Text>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Conversion search</Text>
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
-              Shamrock conversion chart references
+              {visibleConversionCount} conversions shown
             </Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              I used the conversion chart resource as the source for these sections so the page now
-              reflects your saved kitchen reference instead of a hand-made starter list.
+              Search by measure, swap, oven temperature, or can size, or jump straight to the
+              section you need.
             </Text>
-
-            <TextInput
-              value={searchText}
-              onChangeText={setSearchText}
-              placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
-              placeholderTextColor={palette.searchPlaceholder}
-              style={[
-                styles.searchInput,
-                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
-              ]}
-            />
 
             <View style={styles.numberGrid}>
               {sectionOptions.map((option) => {
@@ -106,6 +100,17 @@ export default function ConversionsScreen() {
                 );
               })}
             </View>
+
+            <TextInput
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
+              placeholderTextColor={palette.searchPlaceholder}
+              style={[
+                styles.searchInput,
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+              ]}
+            />
           </View>
         </View>
 
@@ -116,24 +121,24 @@ export default function ConversionsScreen() {
           </Text>
           <View style={styles.listStack}>
             {visibleSections.map((section) => (
-              <View
-                key={section.title}
-                style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-              >
-                <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text>
-                <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{section.description}</Text>
-                <View style={styles.conversionList}>
-                  {section.entries.map((entry) => (
-                    <View
-                      key={`${entry.from}-${entry.result}`}
-                      style={[styles.conversionRow, { backgroundColor: palette.elevatedAlt }]}
-                    >
-                      <Text style={[styles.conversionFrom, { color: palette.text }]}>{entry.from}</Text>
-                      <Text style={[styles.conversionArrow, { color: palette.accentText }]}>to {entry.to}</Text>
-                      <Text style={[styles.conversionResult, { color: palette.accent }]}>{entry.result}</Text>
-                    </View>
-                  ))}
-                </View>
+              <View key={section.title} style={{ gap: 14 }}>
+                <Text
+                  style={[
+                    styles.panelEyebrow,
+                    { color: palette.accentText, marginTop: 8, marginBottom: 4 },
+                  ]}
+                >
+                  {section.title}
+                </Text>
+                {section.entries.map((entry) => (
+                  <View
+                    key={`${section.title}-${entry.from}-${entry.result}`}
+                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  >
+                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
+                  </View>
+                ))}
               </View>
             ))}
             {visibleSections.length === 0 ? (
@@ -150,10 +155,9 @@ export default function ConversionsScreen() {
         <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
           <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>What came from the chart</Text>
           <Text style={[styles.panelText, { color: palette.textMuted }]}>
-            The current page focuses on the most immediately useful chart sections for home cooking:
-            liquid measure, dry measure, oven temperatures, butter-to-oil swaps, and common can
-            sizes. If you want, we can later add more of the chart pages too, like dry spice
-            conversions or ingredient yields.
+            These references come from the conversion chart resource and focus on the sections most
+            useful during everyday cooking: liquid measure, dry measure, oven temperatures,
+            butter-to-oil swaps, and common can sizes.
           </Text>
         </View>
       </ScrollView>

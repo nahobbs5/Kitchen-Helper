@@ -73,7 +73,7 @@ export default function ReferenceScreen() {
           ...s,
           entries: convNormalized
             ? s.entries.filter((e) =>
-                `${e.from} ${e.to} ${e.result}`.toLowerCase().includes(convNormalized)
+                `${e.from} ${e.result}`.toLowerCase().includes(convNormalized)
               )
             : s.entries,
         }))
@@ -364,24 +364,19 @@ export default function ReferenceScreen() {
             </Text>
             <View style={styles.listStack}>
               {visibleConvSections.map((section) => (
-                <View
-                  key={section.title}
-                  style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                >
-                  <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text>
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{section.description}</Text>
-                  <View style={styles.conversionList}>
-                    {section.entries.map((entry) => (
-                      <View
-                        key={`${entry.from}-${entry.result}`}
-                        style={[styles.conversionRow, { backgroundColor: palette.elevatedAlt }]}
-                      >
-                        <Text style={[styles.conversionFrom, { color: palette.text }]}>{entry.from}</Text>
-                        <Text style={[styles.conversionArrow, { color: palette.accentText }]}>to {entry.to}</Text>
-                        <Text style={[styles.conversionResult, { color: palette.accent }]}>{entry.result}</Text>
-                      </View>
-                    ))}
-                  </View>
+                <View key={section.title} style={{ gap: 14 }}>
+                  <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8, marginBottom: 4 }]}>
+                    {section.title}
+                  </Text>
+                  {section.entries.map((entry) => (
+                    <View
+                      key={`${section.title}-${entry.from}-${entry.result}`}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
+                    </View>
+                  ))}
                 </View>
               ))}
               {visibleConvSections.length === 0 ? (

@@ -7,7 +7,6 @@ export type Ingredient = {
 
 export type Conversion = {
   from: string;
-  to: string;
   result: string;
 };
 
@@ -44,9 +43,9 @@ export const baseIngredients: Ingredient[] = [
 ];
 
 export const conversions: Conversion[] = [
-  { from: '2 tbsp olive oil', to: 'milliliters', result: '30 ml' },
-  { from: '400F oven', to: 'celsius', result: '205C' },
-  { from: '1 cup parmesan', to: 'grams', result: '100 g' },
+  { from: '2 tbsp olive oil', result: '30 ml' },
+  { from: '400F oven', result: '205C' },
+  { from: '1 cup parmesan', result: '100 g' },
 ];
 
 export const conversionSections: ConversionSection[] = [
@@ -54,50 +53,50 @@ export const conversionSections: ConversionSection[] = [
     title: 'Liquid measure',
     description: 'General kitchen liquid conversions from the Shamrock conversion chart.',
     entries: [
-      { from: '1 gal', to: 'cups / fl oz / liters', result: '16 cups / 128 fl oz / 3.8 L' },
-      { from: '1 qt', to: 'cups / fl oz / liters', result: '4 cups / 32 fl oz / .95 L' },
-      { from: '1 cup', to: 'fl oz / tbsp / tsp', result: '8 fl oz / 16 tbsp / 48 tsp' },
-      { from: '1/2 cup', to: 'fl oz / tbsp / tsp', result: '4 fl oz / 8 tbsp / 24 tsp' },
+      { from: '1 gal', result: '16 cups' },
+      { from: '1 qt', result: '4 cups' },
+      { from: '1 cup', result: '8 fl oz' },
+      { from: '1/2 cup', result: '4 fl oz' },
     ],
   },
   {
     title: 'Dry measure',
     description: 'Dry measuring references pulled from the same chart set.',
     entries: [
-      { from: '1 cup', to: 'fluid oz / tbsp / ml', result: '8 fl oz / 16 tbsp / 237 ml' },
-      { from: '3/4 cup', to: 'fluid oz / tbsp / ml', result: '6 fl oz / 12 tbsp / 177 ml' },
-      { from: '1/3 cup', to: 'fluid oz / tbsp / ml', result: '2 2/3 fl oz / 5 1/3 tbsp / 79 ml' },
-      { from: '1 tsp', to: 'cup / fl oz / ml', result: '1/48 cup / 1/8 fl oz / 5 ml' },
+      { from: '1 cup', result: '8 fl oz' },
+      { from: '3/4 cup', result: '6 fl oz' },
+      { from: '1/3 cup', result: '2 2/3 fl oz' },
+      { from: '1 tsp', result: '5 ml' },
     ],
   },
   {
     title: 'Oven temperatures',
     description: 'US, metric, and gas mark references from the chart.',
     entries: [
-      { from: '325F', to: 'celsius / gas mark', result: '170C / Mark 3' },
-      { from: '350F', to: 'celsius / gas mark', result: '180C / Mark 4' },
-      { from: '400F', to: 'celsius / gas mark', result: '200C / Mark 6' },
-      { from: '450F', to: 'celsius / gas mark', result: '230C / Mark 8' },
+      { from: '325F', result: '170C' },
+      { from: '350F', result: '180C' },
+      { from: '400F', result: '200C' },
+      { from: '450F', result: '230C' },
     ],
   },
   {
     title: 'Butter to olive oil',
     description: 'Useful when baking substitutions are needed.',
     entries: [
-      { from: '1 tsp butter', to: 'olive oil', result: '3/4 tsp' },
-      { from: '1 tbsp butter', to: 'olive oil', result: '2 1/4 tsp' },
-      { from: '1/2 cup butter', to: 'olive oil', result: '1/4 cup + 2 tbsp' },
-      { from: '1 cup butter', to: 'olive oil', result: '3/4 cup' },
+      { from: '1 tsp butter', result: '3/4 tsp olive oil' },
+      { from: '1 tbsp butter', result: '2 1/4 tsp olive oil' },
+      { from: '1/2 cup butter', result: '1/4 cup + 2 tbsp olive oil' },
+      { from: '1 cup butter', result: '3/4 cup olive oil' },
     ],
   },
   {
     title: 'Can and bottle sizes',
     description: 'Handy metric equivalents for common can sizes.',
     entries: [
-      { from: '8 ounces', to: 'metric', result: '227 ml' },
-      { from: '14 ounces', to: 'metric', result: '398 ml' },
-      { from: '28 ounces', to: 'metric', result: '796 ml' },
-      { from: '1 liter', to: 'cups', result: '4 1/4 cups' },
+      { from: '8 ounces', result: '227 ml' },
+      { from: '14 ounces', result: '398 ml' },
+      { from: '28 ounces', result: '796 ml' },
+      { from: '1 liter', result: '4 1/4 cups' },
     ],
   },
 ];
