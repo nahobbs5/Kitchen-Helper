@@ -44,7 +44,6 @@ export default function HomeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Kitchen utility hub</Text>
             <Text style={[styles.title, { color: palette.text }]}>Your Kitchen. Your Way.</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               {configured
@@ -59,7 +58,6 @@ export default function HomeScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Main menu</Text>
               <Text style={[styles.panelTitle, { color: palette.text }]}>Pick a kitchen helper</Text>
               <View style={styles.menuGrid}>
                 {menuItems.map((item) => (
