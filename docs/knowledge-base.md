@@ -678,8 +678,8 @@ The Account screen also includes high-level importer guidance and compatibility 
 
 The photo path works like this:
 
-- pick a recipe image from the device
-- run local OCR on the image
+- pick up to two recipe images from the device
+- run local OCR on the selected images in order
 - parse the recognized text into title, ingredients, directions, and notes
 - prefill the normal add-recipe form for review
 

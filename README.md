@@ -446,8 +446,8 @@ Scaled directions now use a step-based annotation pipeline:
 
 The OCR import path is intentionally review-first:
 
-- pick a recipe image
-- extract text locally on device
+- pick up to two recipe images
+- extract text locally on device in selection order
 - prefill the normal recipe form
 - review and save manually
 

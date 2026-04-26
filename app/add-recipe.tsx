@@ -48,7 +48,7 @@ export default function AddRecipeScreen() {
   const [ocrState, setOcrState] = useState<OcrState>('idle');
   const [ocrError, setOcrError] = useState('');
   const [ocrRawText, setOcrRawText] = useState('');
-  const [selectedImageUri, setSelectedImageUri] = useState('');
+  const [selectedImageUris, setSelectedImageUris] = useState<string[]>([]);
   const [websiteImportState, setWebsiteImportState] = useState<WebsiteImportState>('idle');
   const [websiteImportError, setWebsiteImportError] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
@@ -234,7 +234,9 @@ export default function AddRecipeScreen() {
 
     const selection = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsMultipleSelection: true,
+      selectionLimit: 2,
+      orderedSelection: true,
       quality: 1,
     });
 
@@ -242,19 +244,31 @@ export default function AddRecipeScreen() {
       return;
     }
 
-    const imageUri = selection.assets[0].uri;
-    setSelectedImageUri(imageUri);
+    const imageUris = selection.assets.map((asset) => asset.uri).filter(Boolean).slice(0, 2);
+    setSelectedImageUris(imageUris);
     setOcrState('recognizing');
     setOcrRawText('');
 
     try {
       const { recognizeText } = await import('@infinitered/react-native-mlkit-text-recognition');
-      const result = await recognizeText(imageUri);
-      const recognizedText = result.text?.trim() ?? '';
+      const recognizedTexts: string[] = [];
+
+      for (const imageUri of imageUris) {
+        const result = await recognizeText(imageUri);
+        const recognizedText = result.text?.trim() ?? '';
+
+        if (recognizedText) {
+          recognizedTexts.push(recognizedText);
+        }
+      }
+
+      const recognizedText = recognizedTexts
+        .map((text, index) => (index === 0 ? text : `--- Photo ${index + 1} ---\n${text}`))
+        .join('\n\n');
 
       if (!recognizedText) {
         setOcrState('error');
-        setOcrError('No readable recipe text was found in that image. Try a clearer photo or use manual entry.');
+        setOcrError('No readable recipe text was found in the selected image(s). Try clearer photos or use manual entry.');
         return;
       }
 
@@ -342,9 +356,9 @@ export default function AddRecipeScreen() {
 
                 {entryMode === 'photo' ? (
                   <View style={styles.formField}>
-                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe photo</Text>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe photo(s)</Text>
                     <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                      Pick a recipe image from your device. We will run local OCR, then prefill the
+                      Pick up to two recipe images from your device. We will run local OCR in selection order, then prefill the
                       form below so you can review it before saving. The local OCR path is meant to reduce typing, especially for printed recipes or clean screenshots. It will not perfectly understand every recipe layout. Best results usually come from straight, high-contrast photos with clear section headings like Ingredients and Directions.
                     </Text>
                     {!supportsLocalOcr ? (
@@ -364,29 +378,36 @@ export default function AddRecipeScreen() {
                         style={[styles.primaryButton, { backgroundColor: palette.accent }]}
                       >
                         <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                          + Pick Recipe Photo
+                          Select Recipe Photos
                         </Text>
                       </Pressable>
                     </View>
                     {ocrState === 'recognizing' ? (
                       <Text style={[styles.formHint, { color: palette.accentText }]}>
-                        Reading the recipe image and filling the form...
+                        Reading the selected recipe image(s) and filling the form...
                       </Text>
                     ) : null}
                     {ocrError ? (
                       <Text style={[styles.formHint, { color: palette.accent }]}>{ocrError}</Text>
                     ) : null}
-                    {selectedImageUri ? (
-                      <Image
-                        source={{ uri: selectedImageUri }}
-                        style={{
-                          width: '100%',
-                          height: 220,
-                          borderRadius: 18,
-                          marginTop: 8,
-                        }}
-                        resizeMode="cover"
-                      />
+                    {selectedImageUris.length > 0 ? (
+                      <View style={styles.formStack}>
+                        {selectedImageUris.map((imageUri, index) => (
+                          <View key={`${imageUri}-${index}`} style={styles.formField}>
+                            <Text style={[styles.formHint, { color: palette.accentText }]}>Photo {index + 1}</Text>
+                            <Image
+                              source={{ uri: imageUri }}
+                              style={{
+                                width: '100%',
+                                height: 220,
+                                borderRadius: 18,
+                                marginTop: 8,
+                              }}
+                              resizeMode="cover"
+                            />
+                          </View>
+                        ))}
+                      </View>
                     ) : null}
                   </View>
                 ) : null}

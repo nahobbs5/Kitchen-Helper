@@ -8,6 +8,7 @@ export type ParsedOcrRecipe = {
 const ingredientHeadingPattern = /^(ingredients?|ingredient list)$/i;
 const directionsHeadingPattern = /^(directions?|instructions?|method|steps?|preparation)$/i;
 const notesHeadingPattern = /^(notes?|tips?|serving notes?)$/i;
+const photoSeparatorPattern = /^---\s*photo\s+\d+\s*---$/i;
 
 function cleanLine(line: string) {
   return line
@@ -52,6 +53,10 @@ export function parseOcrRecipeText(rawText: string): ParsedOcrRecipe {
 
   for (const line of normalizedLines) {
     if (line === title) {
+      continue;
+    }
+
+    if (photoSeparatorPattern.test(line)) {
       continue;
     }
 
