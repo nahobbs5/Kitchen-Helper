@@ -160,9 +160,10 @@ export default function AllergySubstitutionsScreen() {
                   style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                 >
                   <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{item.allergy}</Text>
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>{item.avoid}</Text>
-                  <Text style={[styles.infoCardSwap, { color: palette.text }]}>{item.swap}</Text>
-                  <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{item.ratio}</Text>
+                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>{`${item.avoid} → ${item.swap}`}</Text>
+                  {item.ratio !== '1 egg replacement' ? (
+                    <Text style={[styles.infoCardMeta, { color: palette.text, fontSize: 22 }]}>{item.ratio}</Text>
+                  ) : null}
                   <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{item.notes}</Text>
                 </View>
               ))}
@@ -187,7 +188,7 @@ export default function AllergySubstitutionsScreen() {
                 >
                   <Text style={[styles.infoCardTitle, { color: palette.accentText }]}>{substitute.ingredient}</Text>
                   <Text style={[styles.infoCardSwap, { color: palette.text }]}>{substitute.swap}</Text>
-                  <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{substitute.ratio}</Text>
+                  <Text style={[styles.infoCardMeta, { color: palette.text, fontSize: 22 }]}>{substitute.ratio}</Text>
                   <Text style={[styles.infoCardBody, { color: palette.textMuted }]}>{substitute.note}</Text>
                 </View>
               ))}
