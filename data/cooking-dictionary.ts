@@ -1850,6 +1850,169 @@ export const spicesDictionaryEntries: DictionaryEntry[] = [
   }
 ];
 
+export const oilsDictionaryEntries: DictionaryEntry[] = [
+  {
+    "term": "Almond oil",
+    "letter": "A",
+    "definition": "Nut: Pressed from sweet almonds. Mild, slightly nutty flavour. Good for baking, sautéing, and as a finishing oil on salads or desserts. High heat."
+  },
+  {
+    "term": "Avocado oil",
+    "letter": "A",
+    "definition": "Fruit: Cold-pressed from avocado flesh. One of the highest smoke points of any oil, ideal for high-heat cooking, grilling, and frying. Buttery, mild flavour. High heat."
+  },
+  {
+    "term": "Black seed oil",
+    "letter": "B",
+    "definition": "Seed: Extracted from Nigella sativa seeds. Strong, pungent, peppery taste. Primarily used as a nutritional supplement; not ideal for cooking. Low/no heat."
+  },
+  {
+    "term": "Canola oil",
+    "letter": "C",
+    "definition": "Seed: Derived from rapeseed. Neutral flavour, low in saturated fat, versatile for frying, baking, and everyday cooking. One of the most widely used oils. High heat."
+  },
+  {
+    "term": "Coconut oil",
+    "letter": "C",
+    "definition": "Fruit: Pressed from coconut flesh. Solid at room temperature. Adds a distinct coconut flavour to curries, baking, and stir-fries. Medium heat."
+  },
+  {
+    "term": "Corn oil",
+    "letter": "C",
+    "definition": "Grain: Extracted from maize kernels. Neutral flavour with a high smoke point, popular for deep-frying and commercial food production. High heat."
+  },
+  {
+    "term": "Cottonseed oil",
+    "letter": "C",
+    "definition": "Seed: A by-product of cotton farming. Mild flavour, widely used in processed foods, margarines, and commercial frying. High heat."
+  },
+  {
+    "term": "Flaxseed oil",
+    "letter": "F",
+    "definition": "Seed: Rich in omega-3 fatty acids. Nutty, slightly bitter taste. Best used cold as a dressing or supplement — breaks down quickly when heated. Low/no heat."
+  },
+  {
+    "term": "Ghee (clarified butter)",
+    "letter": "G",
+    "definition": "Dairy: Butter with milk solids removed. Rich, nutty, deeply savoury flavour. High smoke point, widely used in Indian and South Asian cooking. High heat."
+  },
+  {
+    "term": "Grapeseed oil",
+    "letter": "G",
+    "definition": "Seed: A by-product of winemaking. Light, neutral flavour with a high smoke point. Good for sautéing and as a base for dressings. High heat."
+  },
+  {
+    "term": "Hazelnut oil",
+    "letter": "H",
+    "definition": "Nut: Cold-pressed from hazelnuts. Rich, roasted, nutty flavour. Best used as a finishing oil or in desserts and vinaigrettes. Medium heat."
+  },
+  {
+    "term": "Hemp seed oil",
+    "letter": "H",
+    "definition": "Seed: Pressed from hemp seeds. Earthy, nutty taste with a green hue. Rich in omega-3 and omega-6. Use in dressings or smoothies — do not heat. Low/no heat."
+  },
+  {
+    "term": "Jojoba oil",
+    "letter": "J",
+    "definition": "Seed: Technically a liquid wax. Rarely used in cooking; primarily valued in cosmetics and skincare for its moisturising properties. High heat."
+  },
+  {
+    "term": "Lard",
+    "letter": "L",
+    "definition": "Animal: Rendered pig fat. Rich, savoury flavour. Excellent for pastry, frying, and roasting potatoes. Medium heat."
+  },
+  {
+    "term": "Macadamia oil",
+    "letter": "M",
+    "definition": "Nut: Pressed from macadamia nuts. Rich, buttery, mild flavour. High in monounsaturated fats; good for cooking and finishing. High heat."
+  },
+  {
+    "term": "MCT oil",
+    "letter": "M",
+    "definition": "Derived: Medium-chain triglycerides from coconut or palm oil. Flavourless and odourless. Popular in keto diets; best used cold or added to drinks. Low/no heat."
+  },
+  {
+    "term": "Mustard oil",
+    "letter": "M",
+    "definition": "Seed: Pressed from mustard seeds. Pungent, sharp, and distinctive. Widely used in Indian, Bangladeshi, and Pakistani cooking. High heat."
+  },
+  {
+    "term": "Olive oil",
+    "letter": "O",
+    "definition": "Fruit: Pressed from olives. Extra virgin is unrefined with a fruity, grassy flavour — best for dressings and low-heat cooking. Refined versions tolerate higher heat. Medium heat."
+  },
+  {
+    "term": "Palm oil",
+    "letter": "P",
+    "definition": "Fruit: Extracted from palm fruit. Semi-solid at room temperature, mild flavour. Widely used in processed foods and commercial frying. Controversial due to environmental concerns. High heat."
+  },
+  {
+    "term": "Peanut oil",
+    "letter": "P",
+    "definition": "Legume: Pressed from peanuts. Mild, slightly nutty flavour. High smoke point; a favourite for deep-frying, especially in Asian and Southern US cooking. High heat."
+  },
+  {
+    "term": "Pistachio oil",
+    "letter": "P",
+    "definition": "Nut: Cold-pressed from pistachios. Vivid green hue with a rich, distinctive flavour. A luxury finishing oil for salads, pasta, and desserts. Low/no heat."
+  },
+  {
+    "term": "Pumpkin seed oil",
+    "letter": "P",
+    "definition": "Seed: Dark, intensely flavoured oil from roasted pumpkin seeds. Common in Central European cuisine as a finishing oil over salads and soups. Low/no heat."
+  },
+  {
+    "term": "Rice bran oil",
+    "letter": "R",
+    "definition": "Grain: Extracted from the outer bran of rice. Light, neutral flavour with a very high smoke point. Popular in Asian cooking and considered heart-healthy. High heat."
+  },
+  {
+    "term": "Safflower oil",
+    "letter": "S",
+    "definition": "Seed: Pressed from safflower seeds. Very neutral flavour and one of the highest smoke points available. Used in high-heat cooking, dressings, and margarines. High heat."
+  },
+  {
+    "term": "Sesame oil",
+    "letter": "S",
+    "definition": "Seed: Pressed from sesame seeds. Toasted sesame oil is dark and intensely nutty — used as a finishing flavour in Asian dishes. Light sesame oil handles moderate heat. Medium heat."
+  },
+  {
+    "term": "Soybean oil",
+    "letter": "S",
+    "definition": "Legume: Pressed from soybeans. Very neutral flavour, inexpensive, and versatile. One of the most widely produced oils globally. High heat."
+  },
+  {
+    "term": "Sunflower oil",
+    "letter": "S",
+    "definition": "Seed: Extracted from sunflower seeds. Mild, neutral flavour. One of the most common all-purpose oils for frying, roasting, and baking. High heat."
+  },
+  {
+    "term": "Tallow",
+    "letter": "T",
+    "definition": "Animal: Rendered beef or mutton fat. Rich, beefy flavour. High smoke point; historically used for deep-frying and experiencing a culinary revival. High heat."
+  },
+  {
+    "term": "Truffle oil",
+    "letter": "T",
+    "definition": "Derived: Olive or neutral oil infused with truffle flavour. Intense, earthy, luxurious. Used as a finishing drizzle only — never for cooking. Low/no heat."
+  },
+  {
+    "term": "Vegetable oil",
+    "letter": "V",
+    "definition": "Blend: A generic blend, usually of soybean, canola, or sunflower oils. Neutral taste, high smoke point, affordable, and suitable for almost any cooking method. High heat."
+  },
+  {
+    "term": "Walnut oil",
+    "letter": "W",
+    "definition": "Nut: Cold-pressed from walnuts. Rich, complex nutty flavour with a slightly bitter finish. Excellent in dressings and pasta. Best used cold. Low/no heat."
+  },
+  {
+    "term": "Wheat germ oil",
+    "letter": "W",
+    "definition": "Grain: Extracted from wheat kernels. Nutty, rich flavour, extremely high in vitamin E. Primarily used as a nutritional supplement or cold in dressings. Low/no heat."
+  }
+];
+
 export const alcoholDictionaryEntries: DictionaryEntry[] = [
   {
     "term": "Absinthe",
@@ -3808,6 +3971,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Vegetables or potatoes cut into thin matchstick strips."
   },
   {
+    "term": "Almond oil",
+    "letter": "A",
+    "definition": "Nut: Pressed from sweet almonds. Mild, slightly nutty flavour. Good for baking, sautéing, and as a finishing oil on salads or desserts. High heat."
+  },
+  {
     "term": "Amandine",
     "letter": "A",
     "definition": "Garnished or prepared with almonds."
@@ -3976,6 +4144,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Avgolemono",
     "letter": "A",
     "definition": "Greek soup or sauce made with eggs and lemon juice."
+  },
+  {
+    "term": "Avocado oil",
+    "letter": "A",
+    "definition": "Fruit: Cold-pressed from avocado flesh. One of the highest smoke points of any oil, ideal for high-heat cooking, grilling, and frying. Buttery, mild flavour. High heat."
   },
   {
     "term": "B&B",
@@ -4183,6 +4356,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Also called kala namak; sulfurous volcanic salt used in Indian cuisine."
   },
   {
+    "term": "Black seed oil",
+    "letter": "B",
+    "definition": "Seed: Extracted from Nigella sativa seeds. Strong, pungent, peppery taste. Primarily used as a nutritional supplement; not ideal for cooking. Low/no heat."
+  },
+  {
     "term": "Blanch",
     "letter": "B",
     "definition": "To plunge food briefly in boiling water then into ice water."
@@ -4386,6 +4564,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Candy thermometer",
     "letter": "C",
     "definition": "A long thermometer for measuring high temperatures in sugar work."
+  },
+  {
+    "term": "Canola oil",
+    "letter": "C",
+    "definition": "Seed: Derived from rapeseed. Neutral flavour, low in saturated fat, versatile for frying, baking, and everyday cooking. One of the most widely used oils. High heat."
   },
   {
     "term": "Caramelize",
@@ -4603,6 +4786,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A mixed drink containing spirits combined with other ingredients."
   },
   {
+    "term": "Coconut oil",
+    "letter": "C",
+    "definition": "Fruit: Pressed from coconut flesh. Solid at room temperature. Adds a distinct coconut flavour to curries, baking, and stir-fries. Medium heat."
+  },
+  {
     "term": "Coddle",
     "letter": "C",
     "definition": "To cook eggs gently in water just below the boiling point."
@@ -4693,9 +4881,19 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A spiral tool for removing corks from wine bottles."
   },
   {
+    "term": "Corn oil",
+    "letter": "C",
+    "definition": "Grain: Extracted from maize kernels. Neutral flavour with a high smoke point, popular for deep-frying and commercial food production. High heat."
+  },
+  {
     "term": "Cosmopolitan",
     "letter": "C",
     "definition": "Vodka, triple sec, cranberry juice, and lime juice; popularized in the 1990s."
+  },
+  {
+    "term": "Cottonseed oil",
+    "letter": "C",
+    "definition": "Seed: A by-product of cotton farming. Mild flavour, widely used in processed foods, margarines, and commercial frying. High heat."
   },
   {
     "term": "Coulis",
@@ -5183,6 +5381,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A wide, flat whisk ideal for deglazing pans and making roux."
   },
   {
+    "term": "Flaxseed oil",
+    "letter": "F",
+    "definition": "Seed: Rich in omega-3 fatty acids. Nutty, slightly bitter taste. Best used cold as a dressing or supplement — breaks down quickly when heated. Low/no heat."
+  },
+  {
     "term": "Fluted pan",
     "letter": "F",
     "definition": "A tart or cake pan with a fluted rim for decorative edges."
@@ -5333,6 +5536,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A protein derived from animal collagen that sets liquids when cooled."
   },
   {
+    "term": "Ghee (clarified butter)",
+    "letter": "G",
+    "definition": "Dairy: Butter with milk solids removed. Rich, nutty, deeply savoury flavour. High smoke point, widely used in Indian and South Asian cooking. High heat."
+  },
+  {
     "term": "Ghost pepper",
     "letter": "G",
     "definition": "One of the world's hottest chilies; used sparingly for extreme heat."
@@ -5381,6 +5589,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Grand Marnier",
     "letter": "G",
     "definition": "Premium French liqueur of Cognac and bitter orange."
+  },
+  {
+    "term": "Grapeseed oil",
+    "letter": "G",
+    "definition": "Seed: A by-product of winemaking. Light, neutral flavour with a high smoke point. Good for sautéing and as a base for dressings. High heat."
   },
   {
     "term": "Grappa",
@@ -5493,9 +5706,19 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "The style of elaborate, refined French restaurant cooking."
   },
   {
+    "term": "Hazelnut oil",
+    "letter": "H",
+    "definition": "Nut: Cold-pressed from hazelnuts. Rich, roasted, nutty flavour. Best used as a finishing oil or in desserts and vinaigrettes. Medium heat."
+  },
+  {
     "term": "Hefeweizen",
     "letter": "H",
     "definition": "A cloudy, unfiltered German wheat beer with banana and clove notes."
+  },
+  {
+    "term": "Hemp seed oil",
+    "letter": "H",
+    "definition": "Seed: Pressed from hemp seeds. Earthy, nutty taste with a green hue. Rich in omega-3 and omega-6. Use in dressings or smoothies — do not heat. Low/no heat."
   },
   {
     "term": "Herb stripper",
@@ -5633,6 +5856,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A bartender's measuring tool; typically 1 oz and 1.5 oz measures."
   },
   {
+    "term": "Jojoba oil",
+    "letter": "J",
+    "definition": "Seed: Technically a liquid wax. Rarely used in cooking; primarily valued in cosmetics and skincare for its moisturising properties. High heat."
+  },
+  {
     "term": "Julep",
     "letter": "J",
     "definition": "A style of cocktail made with mint, sugar, and crushed ice; most famously the Mint Julep."
@@ -5768,6 +5996,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Rendered pig fat used as cooking fat; also to insert fat into meat."
   },
   {
+    "term": "Lard",
+    "letter": "L",
+    "definition": "Animal: Rendered pig fat. Rich, savoury flavour. Excellent for pastry, frying, and roasting potatoes. Medium heat."
+  },
+  {
     "term": "Larding needle",
     "letter": "L",
     "definition": "A long needle used to thread strips of fat through lean meat."
@@ -5863,6 +6096,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Slightly warm; approximately 95–105°F (35–40°C)."
   },
   {
+    "term": "Macadamia oil",
+    "letter": "M",
+    "definition": "Nut: Pressed from macadamia nuts. Rich, buttery, mild flavour. High in monounsaturated fats; good for cooking and finishing. High heat."
+  },
+  {
     "term": "Mace",
     "letter": "M",
     "definition": "The lacy outer covering of nutmeg; more delicate but similar in flavor."
@@ -5936,6 +6174,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Mask",
     "letter": "M",
     "definition": "To coat food completely with sauce or aspic."
+  },
+  {
+    "term": "MCT oil",
+    "letter": "M",
+    "definition": "Derived: Medium-chain triglycerides from coconut or palm oil. Flavourless and odourless. Popular in keto diets; best used cold or added to drinks. Low/no heat."
   },
   {
     "term": "Mead",
@@ -6068,6 +6311,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Red wine heated with spices such as cinnamon, cloves, and orange peel."
   },
   {
+    "term": "Mustard oil",
+    "letter": "M",
+    "definition": "Seed: Pressed from mustard seeds. Pungent, sharp, and distinctive. Widely used in Indian, Bangladeshi, and Pakistani cooking. High heat."
+  },
+  {
     "term": "Mustard seed",
     "letter": "M",
     "definition": "Sharp, pungent seeds used in pickling, curries, and condiments."
@@ -6158,6 +6406,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Bourbon or rye, sugar, bitters, and a citrus twist; one of the oldest cocktails."
   },
   {
+    "term": "Olive oil",
+    "letter": "O",
+    "definition": "Fruit: Pressed from olives. Extra virgin is unrefined with a fruity, grassy flavour — best for dressings and low-heat cooking. Refined versions tolerate higher heat. Medium heat."
+  },
+  {
     "term": "Omelette pan",
     "letter": "O",
     "definition": "A small, shallow frying pan with curved sides for making omelettes."
@@ -6211,6 +6464,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Oyster knife",
     "letter": "O",
     "definition": "A short, thick-bladed knife for prying open oyster shells."
+  },
+  {
+    "term": "Palm oil",
+    "letter": "P",
+    "definition": "Fruit: Extracted from palm fruit. Semi-solid at room temperature, mild flavour. Widely used in processed foods and commercial frying. Controversial due to environmental concerns. High heat."
   },
   {
     "term": "Paloma",
@@ -6303,6 +6561,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Sweet peach-flavored liqueur; used in Fuzzy Navels and Sex on the Beach."
   },
   {
+    "term": "Peanut oil",
+    "letter": "P",
+    "definition": "Legume: Pressed from peanuts. Mild, slightly nutty flavour. High smoke point; a favourite for deep-frying, especially in Asian and Southern US cooking. High heat."
+  },
+  {
     "term": "Pearling",
     "letter": "P",
     "definition": "Removing the outer bran layer of grains through abrasion."
@@ -6388,6 +6651,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Pisco, lime juice, sugar, egg white, and bitters; Peru's national cocktail."
   },
   {
+    "term": "Pistachio oil",
+    "letter": "P",
+    "definition": "Nut: Cold-pressed from pistachios. Vivid green hue with a rich, distinctive flavour. A luxury finishing oil for salads, pasta, and desserts. Low/no heat."
+  },
+  {
     "term": "Pit",
     "letter": "P",
     "definition": "To remove the stone or pit from fruit."
@@ -6451,6 +6719,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Prosecco",
     "letter": "P",
     "definition": "Italian sparkling wine made in the Veneto region; used in Aperol Spritzes."
+  },
+  {
+    "term": "Pumpkin seed oil",
+    "letter": "P",
+    "definition": "Seed: Dark, intensely flavoured oil from roasted pumpkin seeds. Common in Central European cuisine as a finishing oil over salads and soups. Low/no heat."
   },
   {
     "term": "Purée",
@@ -6558,6 +6831,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To let cooked meat sit before cutting, allowing juices to redistribute."
   },
   {
+    "term": "Rice bran oil",
+    "letter": "R",
+    "definition": "Grain: Extracted from the outer bran of rice. Light, neutral flavour with a very high smoke point. Popular in Asian cooking and considered heart-healthy. High heat."
+  },
+  {
     "term": "Roast",
     "letter": "R",
     "definition": "To cook uncovered in an oven using dry heat."
@@ -6626,6 +6904,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Sabayon",
     "letter": "S",
     "definition": "A light sauce made by whisking egg yolks with liquid over heat."
+  },
+  {
+    "term": "Safflower oil",
+    "letter": "S",
+    "definition": "Seed: Pressed from safflower seeds. Very neutral flavour and one of the highest smoke points available. Used in high-heat cooking, dressings, and margarines. High heat."
   },
   {
     "term": "Saffron",
@@ -6731,6 +7014,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Serrated knife",
     "letter": "S",
     "definition": "A knife with a saw-toothed edge for cutting bread, tomatoes, and cakes."
+  },
+  {
+    "term": "Sesame oil",
+    "letter": "S",
+    "definition": "Seed: Pressed from sesame seeds. Toasted sesame oil is dark and intensely nutty — used as a finishing flavour in Asian dishes. Light sesame oil handles moderate heat. Medium heat."
   },
   {
     "term": "Sesame seed",
@@ -6868,6 +7156,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Cooking vacuum-sealed food in a temperature-controlled water bath."
   },
   {
+    "term": "Soybean oil",
+    "letter": "S",
+    "definition": "Legume: Pressed from soybeans. Very neutral flavour, inexpensive, and versatile. One of the most widely produced oils globally. High heat."
+  },
+  {
     "term": "Sparkling wine",
     "letter": "S",
     "definition": "Carbonated wine produced through secondary fermentation."
@@ -6978,6 +7271,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Tart, ruby-red berry ground into powder; used in Middle Eastern cooking."
   },
   {
+    "term": "Sunflower oil",
+    "letter": "S",
+    "definition": "Seed: Extracted from sunflower seeds. Mild, neutral flavour. One of the most common all-purpose oils for frying, roasting, and baking. High heat."
+  },
+  {
     "term": "Supreme",
     "letter": "S",
     "definition": "The boneless breast of poultry; also a segment of citrus."
@@ -7001,6 +7299,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Syrup",
     "letter": "S",
     "definition": "A sweet liquid base used to sweeten cocktails."
+  },
+  {
+    "term": "Tallow",
+    "letter": "T",
+    "definition": "Animal: Rendered beef or mutton fat. Rich, beefy flavour. High smoke point; historically used for deep-frying and experiencing a culinary revival. High heat."
   },
   {
     "term": "Tamarind",
@@ -7093,6 +7396,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A clear orange-flavored liqueur; used in Margaritas and Cosmopolitans."
   },
   {
+    "term": "Truffle oil",
+    "letter": "T",
+    "definition": "Derived: Olive or neutral oil infused with truffle flavour. Intense, earthy, luxurious. Used as a finishing drizzle only — never for cooking. Low/no heat."
+  },
+  {
     "term": "Truss",
     "letter": "T",
     "definition": "To tie poultry or meat with string to maintain shape during cooking."
@@ -7163,6 +7471,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Sweet, floral extract from vanilla bean orchid; used in baking and desserts."
   },
   {
+    "term": "Vegetable oil",
+    "letter": "V",
+    "definition": "Blend: A generic blend, usually of soybean, canola, or sunflower oils. Neutral taste, high smoke point, affordable, and suitable for almost any cooking method. High heat."
+  },
+  {
     "term": "Vegetable peeler",
     "letter": "V",
     "definition": "See Peeler; also available as a Y-peeler or swivel peeler."
@@ -7218,9 +7531,19 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "An electric or stovetop appliance with a grid pattern for making waffles."
   },
   {
+    "term": "Walnut oil",
+    "letter": "W",
+    "definition": "Nut: Cold-pressed from walnuts. Rich, complex nutty flavour with a slightly bitter finish. Excellent in dressings and pasta. Best used cold. Low/no heat."
+  },
+  {
     "term": "Wasabi",
     "letter": "W",
     "definition": "Japanese rhizome with sharp, nasal heat; used with sushi and noodles."
+  },
+  {
+    "term": "Wheat germ oil",
+    "letter": "W",
+    "definition": "Grain: Extracted from wheat kernels. Nutty, rich flavour, extremely high in vitamin E. Primarily used as a nutritional supplement or cold in dressings. Low/no heat."
   },
   {
     "term": "Whetstone",

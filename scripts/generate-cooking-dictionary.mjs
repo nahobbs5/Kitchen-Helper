@@ -32,8 +32,8 @@ function parseEntries(markdown) {
       continue;
     }
 
-    const letterMatch = line.match(/^##\s+([A-Z])$/i);
-    const entryMatch = line.match(/^\*\*([^*]+)\*\*\s+—\s+(.+)$/);
+    const letterMatch = line.match(/^##\s+([A-Z])$/i) ?? line.match(/^\*\*([A-Z])\*\*$/i);
+    const entryMatch = line.match(/^-?\s*\*\*([^*]+)\*\*(?:\s+_\(([^)]+)\)_)?\s+—\s+(.+)$/);
 
     if (letterMatch) {
       activeLetter = letterMatch[1].toUpperCase();
@@ -42,7 +42,8 @@ function parseEntries(markdown) {
 
     if (entryMatch) {
       const term = stripMarkdown(entryMatch[1]).trim();
-      const definition = stripMarkdown(entryMatch[2]).trim();
+      const typePrefix = entryMatch[2] ? `${stripMarkdown(entryMatch[2])}: ` : '';
+      const definition = `${typePrefix}${stripMarkdown(entryMatch[3])}`.trim();
       const normalizedTerm = normalizeForSorting(term);
       const letter = activeLetter ?? (/^[a-z]/i.test(normalizedTerm) ? normalizedTerm[0].toUpperCase() : '#');
 
@@ -64,11 +65,16 @@ function parseEntries(markdown) {
 
 function splitIntoSections(markdown) {
   const lines = markdown.split(/\r?\n/);
-  const sections = { general: [], spices: [], alcohol: [], instruments: [] };
+  const sections = { general: [], spices: [], oils: [], alcohol: [], instruments: [] };
   let currentSection = 'general';
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
+
+    if (/^##\s+Oils$/i.test(line)) {
+      currentSection = 'oils';
+      continue;
+    }
 
     // Single # headings mark section boundaries — detect and switch, don't pass through
     if (/^#\s+/.test(line) && !/^##/.test(line)) {
@@ -94,12 +100,14 @@ async function main() {
 
   const generalEntries = parseEntries(sections.general.join('\n'));
   const spicesEntries = parseEntries(sections.spices.join('\n'));
+  const oilsEntries = parseEntries(sections.oils.join('\n'));
   const alcoholEntries = parseEntries(sections.alcohol.join('\n'));
   const instrumentsEntries = parseEntries(sections.instruments.join('\n'));
 
   const allEntries = [
     ...generalEntries,
     ...spicesEntries,
+    ...oilsEntries,
     ...alcoholEntries,
     ...instrumentsEntries,
   ].sort((left, right) => {
@@ -120,6 +128,8 @@ export const generalDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(gene
 
 export const spicesDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(spicesEntries, null, 2)};
 
+export const oilsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(oilsEntries, null, 2)};
+
 export const alcoholDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(alcoholEntries, null, 2)};
 
 export const instrumentsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(instrumentsEntries, null, 2)};
@@ -130,6 +140,7 @@ export const cookingDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(allE
   console.log(`Generated entries -> ${path.relative(projectRoot, outputPath)}`);
   console.log(`  General:     ${generalEntries.length}`);
   console.log(`  Spices:      ${spicesEntries.length}`);
+  console.log(`  Oils:        ${oilsEntries.length}`);
   console.log(`  Alcohol:     ${alcoholEntries.length}`);
   console.log(`  Instruments: ${instrumentsEntries.length}`);
   console.log(`  All:         ${allEntries.length}`);

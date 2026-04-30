@@ -8,13 +8,14 @@ import {
   cookingDictionaryEntries,
   generalDictionaryEntries,
   instrumentsDictionaryEntries,
+  oilsDictionaryEntries,
   spicesDictionaryEntries,
 } from '../data/cooking-dictionary';
 import { useAppSettings } from '../contexts/settings-context';
 
 type MainTab = 'conversions' | 'substitutions' | 'dictionary';
 type SubSection = 'all' | 'allergy' | 'pantry';
-type DictTab = 'all' | 'general' | 'spices' | 'alcohol' | 'instruments';
+type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'alcohol' | 'instruments';
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'conversions', label: 'Conversions' },
@@ -32,6 +33,7 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'general', label: 'General' },
   { key: 'spices', label: 'Spices' },
+  { key: 'oils', label: 'Oils' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -122,6 +124,7 @@ export default function ReferenceScreen() {
     switch (dictTab) {
       case 'general': return generalDictionaryEntries;
       case 'spices': return spicesDictionaryEntries;
+      case 'oils': return oilsDictionaryEntries;
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
       default: return cookingDictionaryEntries;

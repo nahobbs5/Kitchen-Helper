@@ -8,15 +8,17 @@ import {
   cookingDictionaryEntries,
   generalDictionaryEntries,
   instrumentsDictionaryEntries,
+  oilsDictionaryEntries,
   spicesDictionaryEntries,
 } from '../data/cooking-dictionary';
 
-type TabKey = 'all' | 'general' | 'spices' | 'alcohol' | 'instruments';
+type TabKey = 'all' | 'general' | 'spices' | 'oils' | 'alcohol' | 'instruments';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'general', label: 'General' },
   { key: 'spices', label: 'Spices' },
+  { key: 'oils', label: 'Oils' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -25,6 +27,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   all: 'Cooking terms and definitions',
   general: 'General cooking terms',
   spices: 'Spices and seasonings',
+  oils: 'Cooking oils and fats',
   alcohol: 'Alcohol and mixed drinks',
   instruments: 'Cooking instruments and utensils',
 };
@@ -41,6 +44,7 @@ export default function CookingDictionaryScreen() {
     switch (activeTab) {
       case 'general': return generalDictionaryEntries;
       case 'spices': return spicesDictionaryEntries;
+      case 'oils': return oilsDictionaryEntries;
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
       default: return cookingDictionaryEntries;
@@ -89,6 +93,30 @@ export default function CookingDictionaryScreen() {
     setSearchText('');
   }
 
+  const categoryTabs = (
+    <View style={styles.numberGrid}>
+      {TABS.map((tab) => {
+        const isActive = activeTab === tab.key;
+        return (
+          <Pressable
+            key={tab.key}
+            onPress={() => handleTabChange(tab.key)}
+            style={[
+              styles.numberButton,
+              { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+              isActive && styles.numberButtonActive,
+              isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+            ]}
+          >
+            <Text style={[styles.numberButtonText, { color: palette.text }]}>
+              {tab.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
@@ -117,29 +145,6 @@ export default function CookingDictionaryScreen() {
               Search by term or definition, or jump to a letter when you know what you are looking
               for.
             </Text>
-
-            {/* Category tabs */}
-            <View style={styles.numberGrid}>
-              {TABS.map((tab) => {
-                const isActive = activeTab === tab.key;
-                return (
-                  <Pressable
-                    key={tab.key}
-                    onPress={() => handleTabChange(tab.key)}
-                    style={[
-                      styles.numberButton,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                      isActive && styles.numberButtonActive,
-                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                    ]}
-                  >
-                    <Text style={[styles.numberButtonText, { color: palette.text }]}>
-                      {tab.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
 
             <TextInput
               value={searchText}
@@ -194,6 +199,7 @@ export default function CookingDictionaryScreen() {
 
         <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
           <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Glossary</Text>
+          {categoryTabs}
           <Text style={[styles.panelTitle, { color: palette.text }]}>{TAB_LABELS[activeTab]}</Text>
           <View style={styles.listStack}>
             {groupedEntries.map((group) => (

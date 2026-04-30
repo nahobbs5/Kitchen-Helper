@@ -1071,3 +1071,85 @@ Here are all three — each is a long response so I'll deliver them one after an
 
 **Zester** — A small tool with tiny sharp perforations for removing zest from citrus peel.
 ```
+
+
+## Oils
+**A**
+
+- **Almond oil** _(Nut)_ — Pressed from sweet almonds. Mild, slightly nutty flavour. Good for baking, sautéing, and as a finishing oil on salads or desserts. High heat.
+- **Avocado oil** _(Fruit)_ — Cold-pressed from avocado flesh. One of the highest smoke points of any oil, ideal for high-heat cooking, grilling, and frying. Buttery, mild flavour. High heat.
+
+**B**
+
+- **Black seed oil** _(Seed)_ — Extracted from Nigella sativa seeds. Strong, pungent, peppery taste. Primarily used as a nutritional supplement; not ideal for cooking. Low/no heat.
+
+**C**
+
+- **Canola oil** _(Seed)_ — Derived from rapeseed. Neutral flavour, low in saturated fat, versatile for frying, baking, and everyday cooking. One of the most widely used oils. High heat.
+- **Coconut oil** _(Fruit)_ — Pressed from coconut flesh. Solid at room temperature. Adds a distinct coconut flavour to curries, baking, and stir-fries. Medium heat.
+- **Corn oil** _(Grain)_ — Extracted from maize kernels. Neutral flavour with a high smoke point, popular for deep-frying and commercial food production. High heat.
+- **Cottonseed oil** _(Seed)_ — A by-product of cotton farming. Mild flavour, widely used in processed foods, margarines, and commercial frying. High heat.
+
+**F**
+
+- **Flaxseed oil** _(Seed)_ — Rich in omega-3 fatty acids. Nutty, slightly bitter taste. Best used cold as a dressing or supplement — breaks down quickly when heated. Low/no heat.
+
+**G**
+
+- **Ghee (clarified butter)** _(Dairy)_ — Butter with milk solids removed. Rich, nutty, deeply savoury flavour. High smoke point, widely used in Indian and South Asian cooking. High heat.
+- **Grapeseed oil** _(Seed)_ — A by-product of winemaking. Light, neutral flavour with a high smoke point. Good for sautéing and as a base for dressings. High heat.
+
+**H**
+
+- **Hazelnut oil** _(Nut)_ — Cold-pressed from hazelnuts. Rich, roasted, nutty flavour. Best used as a finishing oil or in desserts and vinaigrettes. Medium heat.
+- **Hemp seed oil** _(Seed)_ — Pressed from hemp seeds. Earthy, nutty taste with a green hue. Rich in omega-3 and omega-6. Use in dressings or smoothies — do not heat. Low/no heat.
+
+**J**
+
+- **Jojoba oil** _(Seed)_ — Technically a liquid wax. Rarely used in cooking; primarily valued in cosmetics and skincare for its moisturising properties. High heat.
+
+**L**
+
+- **Lard** _(Animal)_ — Rendered pig fat. Rich, savoury flavour. Excellent for pastry, frying, and roasting potatoes. Medium heat.
+
+**M**
+
+- **Macadamia oil** _(Nut)_ — Pressed from macadamia nuts. Rich, buttery, mild flavour. High in monounsaturated fats; good for cooking and finishing. High heat.
+- **MCT oil** _(Derived)_ — Medium-chain triglycerides from coconut or palm oil. Flavourless and odourless. Popular in keto diets; best used cold or added to drinks. Low/no heat.
+- **Mustard oil** _(Seed)_ — Pressed from mustard seeds. Pungent, sharp, and distinctive. Widely used in Indian, Bangladeshi, and Pakistani cooking. High heat.
+
+**O**
+
+- **Olive oil** _(Fruit)_ — Pressed from olives. Extra virgin is unrefined with a fruity, grassy flavour — best for dressings and low-heat cooking. Refined versions tolerate higher heat. Medium heat.
+
+**P**
+
+- **Palm oil** _(Fruit)_ — Extracted from palm fruit. Semi-solid at room temperature, mild flavour. Widely used in processed foods and commercial frying. Controversial due to environmental concerns. High heat.
+- **Peanut oil** _(Legume)_ — Pressed from peanuts. Mild, slightly nutty flavour. High smoke point; a favourite for deep-frying, especially in Asian and Southern US cooking. High heat.
+- **Pistachio oil** _(Nut)_ — Cold-pressed from pistachios. Vivid green hue with a rich, distinctive flavour. A luxury finishing oil for salads, pasta, and desserts. Low/no heat.
+- **Pumpkin seed oil** _(Seed)_ — Dark, intensely flavoured oil from roasted pumpkin seeds. Common in Central European cuisine as a finishing oil over salads and soups. Low/no heat.
+
+**R**
+
+- **Rice bran oil** _(Grain)_ — Extracted from the outer bran of rice. Light, neutral flavour with a very high smoke point. Popular in Asian cooking and considered heart-healthy. High heat.
+
+**S**
+
+- **Safflower oil** _(Seed)_ — Pressed from safflower seeds. Very neutral flavour and one of the highest smoke points available. Used in high-heat cooking, dressings, and margarines. High heat.
+- **Sesame oil** _(Seed)_ — Pressed from sesame seeds. Toasted sesame oil is dark and intensely nutty — used as a finishing flavour in Asian dishes. Light sesame oil handles moderate heat. Medium heat.
+- **Soybean oil** _(Legume)_ — Pressed from soybeans. Very neutral flavour, inexpensive, and versatile. One of the most widely produced oils globally. High heat.
+- **Sunflower oil** _(Seed)_ — Extracted from sunflower seeds. Mild, neutral flavour. One of the most common all-purpose oils for frying, roasting, and baking. High heat.
+
+**T**
+
+- **Tallow** _(Animal)_ — Rendered beef or mutton fat. Rich, beefy flavour. High smoke point; historically used for deep-frying and experiencing a culinary revival. High heat.
+- **Truffle oil** _(Derived)_ — Olive or neutral oil infused with truffle flavour. Intense, earthy, luxurious. Used as a finishing drizzle only — never for cooking. Low/no heat.
+
+**V**
+
+- **Vegetable oil** _(Blend)_ — A generic blend, usually of soybean, canola, or sunflower oils. Neutral taste, high smoke point, affordable, and suitable for almost any cooking method. High heat.
+
+**W**
+
+- **Walnut oil** _(Nut)_ — Cold-pressed from walnuts. Rich, complex nutty flavour with a slightly bitter finish. Excellent in dressings and pasta. Best used cold. Low/no heat.
+- **Wheat germ oil** _(Grain)_ — Extracted from wheat kernels. Nutty, rich flavour, extremely high in vitamin E. Primarily used as a nutritional supplement or cold in dressings. Low/no heat.
