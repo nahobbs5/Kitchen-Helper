@@ -338,6 +338,11 @@ export default function MyRecipesScreen() {
     };
   }, [clearDeletedRecipes, lastDeletedRecipes]);
 
+  const allStatsActive = activeCategoryFilters.length === 0;
+  const allStatsTextColor = allStatsActive ? palette.accentContrastText : palette.text;
+  const allStatsBodyColor = allStatsActive ? palette.accentContrastText : palette.textMuted;
+  const allStatsCountColor = allStatsActive ? palette.accentContrastText : '#000000';
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
@@ -985,27 +990,46 @@ export default function MyRecipesScreen() {
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe Stats</Text>
               <View style={styles.listStack}>
-                {recipeCategories.map((category) => (
-                  <Pressable
-                    key={category.name}
-                    onPress={() => toggleCategoryFilter(category.name)}
-                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                  >
-                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>{category.name}</Text>
-                    <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{category.count} recipes</Text>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      {activeCategoryFilters.includes(category.name) ? 'Current filter' : 'Tap to filter'}
-                    </Text>
-                  </Pressable>
-                ))}
+                {recipeCategories.map((category) => {
+                  const isActive = activeCategoryFilters.includes(category.name);
+                  const statTextColor = isActive ? palette.accentContrastText : palette.text;
+                  const statBodyColor = isActive ? palette.accentContrastText : palette.textMuted;
+                  const statCountColor = isActive ? palette.accentContrastText : '#000000';
+
+                  return (
+                    <Pressable
+                      key={category.name}
+                      onPress={() => toggleCategoryFilter(category.name)}
+                      style={[
+                        styles.detailCard,
+                        {
+                          backgroundColor: isActive ? palette.accent : palette.surface,
+                          borderColor: isActive ? palette.accent : palette.borderAlt,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.detailCardTitle, { color: statTextColor }]}>{category.name}</Text>
+                      <Text style={[styles.infoCardMeta, { color: statCountColor }]}>{category.count} recipes</Text>
+                      <Text style={[styles.detailCardBody, { color: statBodyColor }]}>
+                        {isActive ? 'Current filter' : 'Click to filter'}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
                 <Pressable
                   onPress={() => toggleCategoryFilter('All')}
-                  style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                  style={[
+                    styles.detailCard,
+                    {
+                      backgroundColor: allStatsActive ? palette.accent : palette.surface,
+                      borderColor: allStatsActive ? palette.accent : palette.borderAlt,
+                    },
+                  ]}
                 >
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>All recipes</Text>
-                  <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>{allRecipes.length} recipes</Text>
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                    {activeCategoryFilters.length === 0 ? 'Current filter' : 'Tap to clear filters'}
+                  <Text style={[styles.detailCardTitle, { color: allStatsTextColor }]}>All recipes</Text>
+                  <Text style={[styles.infoCardMeta, { color: allStatsCountColor }]}>{allRecipes.length} recipes</Text>
+                  <Text style={[styles.detailCardBody, { color: allStatsBodyColor }]}>
+                    {allStatsActive ? 'Current filter' : 'Click to clear filters'}
                   </Text>
                 </Pressable>
               </View>
