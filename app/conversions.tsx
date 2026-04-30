@@ -27,23 +27,44 @@ export default function ConversionsScreen() {
       (activeSection === 'All'
         ? conversionSections
         : conversionSections.filter((section) => section.title === activeSection))
-        .map((section) => ({
-          ...section,
-          entries: normalizedSearch
-            ? section.entries.filter((entry) =>
-                `${entry.from} ${entry.result}`.toLowerCase().includes(normalizedSearch)
-              )
-            : section.entries,
-        }))
+        .map((section) => {
+          const tableSearchText = section.table
+            ? [
+                section.title,
+                section.description,
+                ...section.table.columns,
+                ...section.table.rows.flat(),
+                section.table.note,
+              ]
+                .join(' ')
+                .toLowerCase()
+            : '';
+          const tableMatchesSearch = section.table
+            ? !normalizedSearch || tableSearchText.includes(normalizedSearch)
+            : false;
+
+          return {
+            ...section,
+            entries: normalizedSearch
+              ? section.entries.filter((entry) =>
+                  `${section.title} ${section.description} ${entry.from} ${entry.result}`
+                    .toLowerCase()
+                    .includes(normalizedSearch)
+                )
+              : section.entries,
+            table: tableMatchesSearch ? section.table : undefined,
+          };
+        })
         .filter(
           (section) =>
             section.entries.length > 0 ||
+            section.table ||
             (!normalizedSearch && (activeSection === 'All' || section.title === activeSection))
         ),
     [activeSection, normalizedSearch]
   );
   const visibleConversionCount = visibleSections.reduce(
-    (total, section) => total + section.entries.length,
+    (total, section) => total + section.entries.length + (section.table?.rows.length ?? 0),
     0
   );
 
@@ -130,6 +151,51 @@ export default function ConversionsScreen() {
                 >
                   {section.title}
                 </Text>
+                {section.table ? (
+                  <View
+                    style={[
+                      styles.detailCard,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                    ]}
+                  >
+                    <View style={styles.conversionTable}>
+                      <View style={[styles.conversionTableRow, styles.conversionTableHeader]}>
+                        {section.table.columns.map((column, index) => (
+                          <Text
+                            key={column}
+                            style={[
+                              styles.conversionTableCell,
+                              index === 0 && styles.conversionTableAmountCell,
+                              styles.conversionTableHeaderCell,
+                              { color: palette.accentText },
+                            ]}
+                          >
+                            {column}
+                          </Text>
+                        ))}
+                      </View>
+                      {section.table.rows.map((row) => (
+                        <View key={row.join('-')} style={styles.conversionTableRow}>
+                          {row.map((cell, index) => (
+                            <Text
+                              key={`${row[0]}-${index}`}
+                              style={[
+                                styles.conversionTableCell,
+                                index === 0 && styles.conversionTableAmountCell,
+                                { color: index === 0 ? palette.text : palette.textMuted },
+                              ]}
+                            >
+                              {cell}
+                            </Text>
+                          ))}
+                        </View>
+                      ))}
+                    </View>
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                      {section.table.note}
+                    </Text>
+                  </View>
+                ) : null}
                 {section.entries.map((entry) => (
                   <View
                     key={`${section.title}-${entry.from}-${entry.result}`}

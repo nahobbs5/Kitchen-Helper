@@ -287,6 +287,40 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
   },
+  conversionTable: {
+    width: '100%',
+    gap: 2,
+  },
+  conversionTableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  conversionTableHeader: {
+    backgroundColor: '#f4dfba',
+  },
+  conversionTableCell: {
+    flex: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    color: '#5b4c3b',
+    fontSize: 13,
+    lineHeight: 17,
+    textAlign: 'center',
+  },
+  conversionTableHeaderCell: {
+    color: '#8a5a24',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  conversionTableAmountCell: {
+    flex: 1.35,
+    color: '#2c2219',
+    fontWeight: '800',
+    textAlign: 'left',
+  },
   panelDarkEyebrow: {
     fontSize: 12,
     letterSpacing: 1.3,

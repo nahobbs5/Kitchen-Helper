@@ -14,6 +14,11 @@ export type ConversionSection = {
   title: string;
   description: string;
   entries: Conversion[];
+  table?: {
+    columns: string[];
+    rows: string[][];
+    note: string;
+  };
 };
 
 export type Substitute = {
@@ -88,6 +93,24 @@ export const conversionSections: ConversionSection[] = [
       { from: '1/2 cup butter', result: '1/4 cup + 2 tbsp olive oil' },
       { from: '1 cup butter', result: '3/4 cup olive oil' },
     ],
+  },
+  {
+    title: 'Butter sticks',
+    description: 'Quick reference for US butter sticks, tablespoons, cups, teaspoons, and grams.',
+    entries: [],
+    table: {
+      columns: ['Amount', 'Tbsp', 'Cups', 'Tsp', 'Grams'],
+      rows: [
+        ['1 tsp', '1/3', '-', '1', '4.7 g'],
+        ['1 tbsp', '1', '1/16', '3', '14.2 g'],
+        ['1/4 stick', '2', '1/8', '6', '28 g'],
+        ['1/2 stick', '4', '1/4', '12', '57 g'],
+        ['1 stick', '8', '1/2', '24', '113 g'],
+        ['1 1/2 sticks', '12', '3/4', '36', '170 g'],
+        ['2 sticks', '16', '1', '48', '227 g'],
+      ],
+      note: '1 US stick = 8 tbsp = 1/2 cup = 4 oz = 113 g',
+    },
   },
   {
     title: 'Can and bottle sizes',

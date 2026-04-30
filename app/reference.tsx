@@ -71,17 +71,38 @@ export default function ReferenceScreen() {
         ? conversionSections
         : conversionSections.filter((s) => s.title === convSection)
       )
-        .map((s) => ({
-          ...s,
-          entries: convNormalized
-            ? s.entries.filter((e) =>
-                `${e.from} ${e.result}`.toLowerCase().includes(convNormalized)
-              )
-            : s.entries,
-        }))
+        .map((s) => {
+          const tableSearchText = s.table
+            ? [
+                s.title,
+                s.description,
+                ...s.table.columns,
+                ...s.table.rows.flat(),
+                s.table.note,
+              ]
+                .join(' ')
+                .toLowerCase()
+            : '';
+          const tableMatchesSearch = s.table
+            ? !convNormalized || tableSearchText.includes(convNormalized)
+            : false;
+
+          return {
+            ...s,
+            entries: convNormalized
+              ? s.entries.filter((e) =>
+                  `${s.title} ${s.description} ${e.from} ${e.result}`
+                    .toLowerCase()
+                    .includes(convNormalized)
+                )
+              : s.entries,
+            table: tableMatchesSearch ? s.table : undefined,
+          };
+        })
         .filter(
           (s) =>
             s.entries.length > 0 ||
+            s.table ||
             (!convNormalized && (convSection === 'All' || s.title === convSection))
         ),
     [convSection, convNormalized]
@@ -371,6 +392,51 @@ export default function ReferenceScreen() {
                   <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8, marginBottom: 4 }]}>
                     {section.title}
                   </Text>
+                  {section.table ? (
+                    <View
+                      style={[
+                        styles.detailCard,
+                        { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      ]}
+                    >
+                      <View style={styles.conversionTable}>
+                        <View style={[styles.conversionTableRow, styles.conversionTableHeader]}>
+                          {section.table.columns.map((column, index) => (
+                            <Text
+                              key={column}
+                              style={[
+                                styles.conversionTableCell,
+                                index === 0 && styles.conversionTableAmountCell,
+                                styles.conversionTableHeaderCell,
+                                { color: palette.accentText },
+                              ]}
+                            >
+                              {column}
+                            </Text>
+                          ))}
+                        </View>
+                        {section.table.rows.map((row) => (
+                          <View key={row.join('-')} style={styles.conversionTableRow}>
+                            {row.map((cell, index) => (
+                              <Text
+                                key={`${row[0]}-${index}`}
+                                style={[
+                                  styles.conversionTableCell,
+                                  index === 0 && styles.conversionTableAmountCell,
+                                  { color: index === 0 ? palette.text : palette.textMuted },
+                                ]}
+                              >
+                                {cell}
+                              </Text>
+                            ))}
+                          </View>
+                        ))}
+                      </View>
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                        {section.table.note}
+                      </Text>
+                    </View>
+                  ) : null}
                   {section.entries.map((entry) => (
                     <View
                       key={`${section.title}-${entry.from}-${entry.result}`}
