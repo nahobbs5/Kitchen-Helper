@@ -515,61 +515,63 @@ export default function EditRecipeScreen() {
             </View>
           </View>
 
-          <View style={styles.secondaryColumn}>
-            <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Editing summary</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Current draft</Text>
+          {isWide ? (
+            <View style={styles.secondaryColumn}>
+              <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+                <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe preview</Text>
+                <Text style={[styles.panelTitle, { color: palette.text }]}>Current draft</Text>
 
-              <View style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{category}</Text>
-                <Text style={[styles.helperCardTitle, { color: palette.text }]}>
-                  {recipeName.trim() || 'Recipe name will appear here'}
-                </Text>
-                <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                  {ingredients.trim()
-                    ? `${ingredients.trim().split('\n').filter(Boolean).length} ingredient line(s) added`
-                    : 'No ingredients entered yet'}
-                </Text>
-                <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                  {directions.trim()
-                    ? `${directions.trim().split('\n').filter(Boolean).length} direction line(s) added`
-                    : 'No directions entered yet'}
-                </Text>
-                {cuisineRegion.trim() ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Cuisine region: {cuisineRegion.trim()}
+                <View style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                  <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{category}</Text>
+                  <Text style={[styles.helperCardTitle, { color: palette.text }]}>
+                    {recipeName.trim() || 'Recipe name will appear here'}
                   </Text>
-                ) : (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
-                )}
-                {recipe.sourceInfo?.websiteName ? (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Website: {recipe.sourceInfo.websiteName}
+                    {ingredients.trim()
+                      ? `${ingredients.trim().split('\n').filter(Boolean).length} ingredient line(s) added`
+                      : 'No ingredients entered yet'}
                   </Text>
-                ) : null}
-                {recipe.sourceInfo?.author ? (
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Author: {recipe.sourceInfo.author}
+                    {directions.trim()
+                      ? `${directions.trim().split('\n').filter(Boolean).length} direction line(s) added`
+                      : 'No directions entered yet'}
                   </Text>
-                ) : null}
-                {recipe.sourceInfo?.url ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Source: {recipe.sourceInfo.url}
-                  </Text>
-                ) : null}
-                {allergenTags.length > 0 ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Allergens: {allergenTags.join(', ')}
-                  </Text>
-                ) : null}
-                {allergyFriendlyTags.length > 0 ? (
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    Allergy-friendly: {allergyFriendlyTags.join(', ')}
-                  </Text>
-                ) : null}
+                  {cuisineRegion.trim() ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Cuisine region: {cuisineRegion.trim()}
+                    </Text>
+                  ) : (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
+                  )}
+                  {recipe.sourceInfo?.websiteName ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Website: {recipe.sourceInfo.websiteName}
+                    </Text>
+                  ) : null}
+                  {recipe.sourceInfo?.author ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Author: {recipe.sourceInfo.author}
+                    </Text>
+                  ) : null}
+                  {recipe.sourceInfo?.url ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Source: {recipe.sourceInfo.url}
+                    </Text>
+                  ) : null}
+                  {allergenTags.length > 0 ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Allergens: {allergenTags.join(', ')}
+                    </Text>
+                  ) : null}
+                  {allergyFriendlyTags.length > 0 ? (
+                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
+                      Allergy-friendly: {allergyFriendlyTags.join(', ')}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
             </View>
-          </View>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
