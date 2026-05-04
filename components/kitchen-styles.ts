@@ -412,6 +412,12 @@ export const kitchenStyles = StyleSheet.create({
     color: '#fff7ea',
     fontWeight: '700',
   },
+  selectableAllergenTag: {
+    backgroundColor: '#e98d34',
+  },
+  selectableAllergenTagText: {
+    color: '#fff7ea',
+  },
   allergyFriendlyTag: {
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -422,6 +428,12 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 12,
     color: '#33511c',
     fontWeight: '700',
+  },
+  selectableAllergyFriendlyTag: {
+    backgroundColor: '#cfe9b5',
+  },
+  selectableAllergyFriendlyTagText: {
+    color: '#33511c',
   },
   cuisineTag: {
     paddingHorizontal: 10,

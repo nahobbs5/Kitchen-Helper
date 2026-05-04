@@ -398,7 +398,7 @@ export default function EditRecipeScreen() {
                           style={[
                             styles.servingsButton,
                             { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.allergyFriendlyTag,
+                            isActive && styles.selectableAllergyFriendlyTag,
                             isActive && { borderColor: '#97bf72' },
                           ]}
                         >
@@ -406,7 +406,7 @@ export default function EditRecipeScreen() {
                             style={[
                               styles.servingsButtonText,
                               { color: palette.text },
-                              isActive && styles.allergyFriendlyTagText,
+                              isActive && styles.selectableAllergyFriendlyTagText,
                             ]}
                           >
                             {tag}
@@ -441,7 +441,7 @@ export default function EditRecipeScreen() {
                           style={[
                             styles.servingsButton,
                             { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.allergenTag,
+                            isActive && styles.selectableAllergenTag,
                             isActive && { borderColor: '#e98d34' },
                           ]}
                         >
@@ -449,7 +449,7 @@ export default function EditRecipeScreen() {
                             style={[
                               styles.servingsButtonText,
                               { color: palette.text },
-                              isActive && styles.allergenTagText,
+                              isActive && styles.selectableAllergenTagText,
                             ]}
                           >
                             {tag}
