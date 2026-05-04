@@ -1,5 +1,5 @@
 import { type RefObject } from 'react';
-import { Platform, Share, type View } from 'react-native';
+import { Platform, type View } from 'react-native';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -44,7 +44,7 @@ function nextFilename() {
 function nextRecipeShareFilename(recipe: ExportRecipe) {
   const timestamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+$/, '');
   const slug = recipe.slug.replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'recipe';
-  return `kitchen-helper-${slug}-${timestamp}.png`;
+  return `kitchen-helper-${slug}-${timestamp}.jpg`;
 }
 
 function compareRecipes(left: ExportRecipe, right: ExportRecipe) {
@@ -82,26 +82,6 @@ function renderSectionList(sections: RecipeSection[], ordered = false) {
       return `${title}<${wrapperTag} class="recipe-list">${items}</${wrapperTag}>`;
     })
     .join('');
-}
-
-function renderShareSectionList(sections: RecipeSection[], ordered = false) {
-  if (sections.length === 0) {
-    return [];
-  }
-
-  return sections.flatMap((section) => {
-    const lines: string[] = [];
-
-    if (section.title) {
-      lines.push(section.title);
-    }
-
-    section.items.forEach((item, index) => {
-      lines.push(ordered ? `${index + 1}. ${item}` : `- ${item}`);
-    });
-
-    return lines;
-  });
 }
 
 function renderSourceInfo(sourceInfo: RecipeSource) {
@@ -433,53 +413,6 @@ export function renderRecipesPdfHtml(recipes: ExportRecipe[]) {
   `;
 }
 
-export function renderRecipeShareText(recipe: ExportRecipe) {
-  const lines = [`Kitchen Helper: ${recipe.title}`];
-  const metadata = [
-    recipe.category,
-    recipe.sourceLabel,
-    recipe.cuisineRegion ? `Cuisine: ${recipe.cuisineRegion}` : null,
-    recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
-    recipe.cookTime ? `Cook: ${recipe.cookTime}` : null,
-    recipe.totalTime ? `Total: ${recipe.totalTime}` : null,
-    recipe.servings,
-  ].filter(Boolean) as string[];
-  const tags = [...recipe.allergyFriendlyTags, ...recipe.allergenTags];
-  const sourceLines = [
-    recipe.sourceInfo?.websiteName ? `Website: ${recipe.sourceInfo.websiteName}` : null,
-    recipe.sourceInfo?.author ? `Author: ${recipe.sourceInfo.author}` : null,
-    recipe.sourceInfo?.url ? `Source: ${recipe.sourceInfo.url}` : null,
-  ].filter(Boolean) as string[];
-  const ingredientLines = renderShareSectionList(recipe.ingredients);
-  const directionLines = renderShareSectionList(recipe.directions, true);
-
-  if (metadata.length > 0) {
-    lines.push('', metadata.join(' | '));
-  }
-
-  if (tags.length > 0) {
-    lines.push('', `Tags: ${tags.join(', ')}`);
-  }
-
-  if (sourceLines.length > 0) {
-    lines.push('', ...sourceLines);
-  }
-
-  if (ingredientLines.length > 0) {
-    lines.push('', 'Ingredients', ...ingredientLines);
-  }
-
-  if (directionLines.length > 0) {
-    lines.push('', 'Directions', ...directionLines);
-  }
-
-  if (recipe.notes) {
-    lines.push('', 'Notes', recipe.notes);
-  }
-
-  return lines.join('\n');
-}
-
 async function exportRecipesToPdfWeb(recipes: ExportRecipe[], filename: string) {
   if (typeof document === 'undefined') {
     throw new Error('Web PDF export is unavailable in this environment.');
@@ -577,20 +510,98 @@ async function exportRecipesToPdfNative(html: string, filename: string) {
   } satisfies ExportResult;
 }
 
-async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
+async function waitForRecipeCardPaint() {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
+async function captureRecipeCardNative(cardRef: RefObject<View | null>) {
   if (!cardRef.current) {
     throw new Error('Recipe share card is not ready yet.');
   }
 
-  const filename = nextRecipeShareFilename(recipe);
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  });
-  const capturedUri = await captureRef(cardRef, {
-    format: 'png',
-    quality: 1,
+  await waitForRecipeCardPaint();
+
+  return captureRef(cardRef, {
+    format: 'jpg',
+    quality: 0.95,
     result: 'tmpfile',
   });
+}
+
+async function captureRecipeCardWeb(cardRef: RefObject<View | null>) {
+  if (!cardRef.current) {
+    throw new Error('Recipe share card is not ready yet.');
+  }
+
+  await waitForRecipeCardPaint();
+
+  // The public captureRef wrapper calls findNodeHandle, which React Native Web does not support.
+  // Its web backend accepts the DOM node directly, so use that backend only on web.
+  // @ts-expect-error react-native-view-shot does not publish types for this platform backend.
+  const rnViewShotModule = await import('react-native-view-shot/src/RNViewShot');
+  const rnViewShot = rnViewShotModule.default as {
+    captureRef: (
+      view: unknown,
+      options: { format: 'jpg'; quality: number; result: 'data-uri' }
+    ) => Promise<string>;
+  };
+
+  return rnViewShot.captureRef(cardRef.current, {
+    format: 'jpg',
+    quality: 0.95,
+    result: 'data-uri',
+  });
+}
+
+async function shareRecipeImageWeb(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
+  if (typeof document === 'undefined') {
+    throw new Error('Recipe image sharing is unavailable in this environment.');
+  }
+
+  const filename = nextRecipeShareFilename(recipe);
+  const dataUri = await captureRecipeCardWeb(cardRef);
+  const blob = await fetch(dataUri).then((response) => response.blob());
+  const file = new File([blob], filename, { type: 'image/jpeg' });
+  const nav = navigator as Navigator & {
+    canShare?: (data: ShareData) => boolean;
+    share?: (data: ShareData) => Promise<void>;
+  };
+  const shareData = {
+    files: [file],
+    title: recipe.title,
+  } as ShareData;
+
+  function downloadImage() {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  if (nav.share && (!nav.canShare || nav.canShare(shareData))) {
+    try {
+      await nav.share(shareData);
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
+    }
+  }
+
+  downloadImage();
+}
+
+async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
+  const filename = nextRecipeShareFilename(recipe);
+  const capturedUri = await captureRecipeCardNative(cardRef);
   const shareUri = LegacyFileSystem.cacheDirectory
     ? `${LegacyFileSystem.cacheDirectory}${filename}`
     : capturedUri;
@@ -607,27 +618,19 @@ async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<V
   }
 
   await Sharing.shareAsync(shareUri, {
-    mimeType: 'image/png',
+    mimeType: 'image/jpeg',
     dialogTitle: `Share ${recipe.title}`,
-    UTI: 'public.png',
+    UTI: 'public.jpeg',
   });
 }
 
-export async function shareRecipe(recipe: ExportRecipe, cardRef?: RefObject<View | null>) {
-  if (Platform.OS !== 'web' && cardRef) {
-    try {
-      await shareRecipeImageNative(recipe, cardRef);
-      return;
-    } catch (error) {
-      console.warn('Recipe image share failed; falling back to text.', error);
-      // Fall back to text sharing when the platform cannot capture or share the PNG.
-    }
+export async function shareRecipe(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
+  if (Platform.OS === 'web') {
+    await shareRecipeImageWeb(recipe, cardRef);
+    return;
   }
 
-  await Share.share({
-    title: recipe.title,
-    message: renderRecipeShareText(recipe),
-  });
+  await shareRecipeImageNative(recipe, cardRef);
 }
 
 export async function exportRecipesToPdf(recipes: ExportRecipe[]) {

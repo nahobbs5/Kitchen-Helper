@@ -1,10 +1,9 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
   ScrollView,
-  Share,
   Text,
   TextInput,
   useWindowDimensions,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { RecipeShareCard, recipeShareCardWidth } from '../components/recipe-share-card';
 import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
@@ -19,6 +19,7 @@ import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
+import { shareRecipe, type ExportRecipe } from '../utils/export-recipes';
 
 const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
 const mobileHiddenAllergenFilters = new Set([
@@ -28,6 +29,40 @@ const mobileHiddenAllergenFilters = new Set([
   'Contains Nuts',
   'Contains Soy',
 ]);
+
+type LibraryRecipe = (typeof obsidianRecipes)[number] | ReturnType<typeof useCustomRecipes>['customRecipes'][number];
+
+function toExportRecipe(
+  recipe: LibraryRecipe,
+  recipeOverrideMap: ReturnType<typeof useCustomRecipes>['recipeOverrideMap']
+): ExportRecipe {
+  const override = recipeOverrideMap[recipe.slug];
+  const sourceInfo = 'sourceInfo' in recipe ? recipe.sourceInfo : override?.sourceInfo ?? null;
+
+  return {
+    slug: recipe.slug,
+    title: recipe.title,
+    category: recipe.category,
+    sourceLabel: recipe.source,
+    cuisineRegion: (recipe as { cuisineRegion?: string | null }).cuisineRegion ?? null,
+    prepTime: recipe.prepTime,
+    cookTime: recipe.cookTime,
+    totalTime: recipe.totalTime,
+    servings: recipe.servings,
+    allergyFriendlyTags: recipe.allergyFriendlyTags,
+    allergenTags: recipe.allergenTags,
+    ingredients: recipe.ingredients,
+    directions: recipe.directions,
+    notes: 'notes' in recipe && typeof recipe.notes === 'string' ? recipe.notes : null,
+    sourceInfo,
+  };
+}
+
+async function waitForHiddenShareCard() {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
 
 export default function MyRecipesScreen() {
   const router = useRouter();
@@ -49,6 +84,8 @@ export default function MyRecipesScreen() {
   const [bulkAllergenTagsToAdd, setBulkAllergenTagsToAdd] = useState<string[]>([]);
   const [bulkFriendlyTagsToAdd, setBulkFriendlyTagsToAdd] = useState<string[]>([]);
   const [dismissProgress, setDismissProgress] = useState(0);
+  const [recipePendingShare, setRecipePendingShare] = useState<ExportRecipe | null>(null);
+  const shareCardRef = useRef<View>(null);
   const {
     bulkUpdateRecipeMetadata,
     clearDeletedRecipes,
@@ -316,6 +353,19 @@ export default function MyRecipesScreen() {
     setBulkFriendlyTagsToAdd([]);
   }
 
+  async function handleShareRecipe(recipe: LibraryRecipe) {
+    const exportRecipe = toExportRecipe(recipe, recipeOverrideMap);
+
+    setRecipePendingShare(exportRecipe);
+
+    try {
+      await waitForHiddenShareCard();
+      await shareRecipe(exportRecipe, shareCardRef);
+    } finally {
+      setRecipePendingShare(null);
+    }
+  }
+
   useEffect(() => {
     if (lastDeletedRecipes.length === 0) {
       setDismissProgress(0);
@@ -345,6 +395,21 @@ export default function MyRecipesScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
+      {recipePendingShare ? (
+        <View
+          pointerEvents="none"
+          style={{
+            left: -10000,
+            position: 'absolute',
+            top: 0,
+            width: recipeShareCardWidth,
+          }}
+        >
+          <View ref={shareCardRef} collapsable={false}>
+            <RecipeShareCard recipe={recipePendingShare} />
+          </View>
+        </View>
+      ) : null}
       <ScrollView contentContainerStyle={styles.page}>
         <View
           style={[
@@ -862,32 +927,7 @@ export default function MyRecipesScreen() {
                           <Pressable
                             onPress={(event) => {
                               event.stopPropagation();
-                              const lines: string[] = [`🍽️ ${recipe.title}`];
-                              const ingredientLines = recipe.ingredients.flatMap((section) =>
-                                section.title ? [section.title, ...section.items] : section.items
-                              );
-                              const directionLines = recipe.directions.flatMap((section) =>
-                                section.title
-                                  ? [section.title, ...section.items]
-                                  : section.items
-                              );
-                              const notes =
-                                'notes' in recipe && typeof recipe.notes === 'string' ? recipe.notes : null;
-                              if (recipe.servings) lines.push(`Serves: ${recipe.servings}`);
-                              if (recipe.prepTime) lines.push(`Prep: ${recipe.prepTime}`);
-                              if (recipe.cookTime) lines.push(`Cook: ${recipe.cookTime}`);
-                              if (ingredientLines.length > 0) {
-                                lines.push('', 'Ingredients:', ...ingredientLines.map((item) => `• ${item}`));
-                              }
-                              if (directionLines.length > 0) {
-                                lines.push(
-                                  '',
-                                  'Directions:',
-                                  ...directionLines.map((item, idx) => `${idx + 1}. ${item}`)
-                                );
-                              }
-                              if (notes) lines.push('', `Notes: ${notes}`);
-                              Share.share({ title: recipe.title, message: lines.join('\n') });
+                              void handleShareRecipe(recipe);
                             }}
                             style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
                           >
