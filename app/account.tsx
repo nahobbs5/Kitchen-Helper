@@ -337,7 +337,6 @@ export default function AccountScreen() {
             styles.settingsCloseButton,
             {
               backgroundColor: isExporting || !loaded ? palette.borderAlt : palette.accent,
-              width: '30%',
             },
           ]}
         >
