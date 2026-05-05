@@ -377,9 +377,20 @@ export const kitchenStyles = StyleSheet.create({
   },
   detailCardHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  detailCardTitleBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 6,
+  },
+  detailCardActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+    gap: 8,
   },
   detailCardMeta: {
     fontSize: 13,

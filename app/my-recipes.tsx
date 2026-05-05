@@ -892,7 +892,7 @@ export default function MyRecipesScreen() {
                   >
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
                     <View style={styles.detailCardHeader}>
-                      <View style={{ flex: 1, gap: 6 }}>
+                      <View style={styles.detailCardTitleBlock}>
                         {selectionMode ? (
                           <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>
                             {selectedRecipeSlugs.includes(recipe.slug) ? 'Selected' : 'Tap to select'}
@@ -923,7 +923,7 @@ export default function MyRecipesScreen() {
                           </Text>
                         </Pressable>
                       ) : (
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <View style={styles.detailCardActionRow}>
                           <Pressable
                             onPress={(event) => {
                               event.stopPropagation();
