@@ -47,6 +47,7 @@ The project currently uses:
 - expo-print
 - expo-sharing
 - expo-file-system
+- expo-navigation-bar
 - react-native-svg
 
 ## How These Tools Fit Together
@@ -110,6 +111,14 @@ The app now uses a two-layer navigation model:
 - the shared header stays visible across screens and exposes shortcut buttons for Home, My Recipes, Kitchen Guides, the cook timer, and settings
 
 On compact/mobile widths, the header title collapses to `KH` so the shortcut row still fits cleanly.
+
+### Android System UI
+
+Android immersive navigation is owned by [`app/_layout.tsx`]. The root layout uses `expo-navigation-bar` to hide the bottom Android system navigation bar and sets the behavior to `overlay-swipe`, so users can still reveal the system controls with the normal swipe gesture.
+
+The implementation also listens for `AppState` changes and re-hides the navigation bar when the app becomes active again. A root-level responder calls the same hide helper on app taps and returns `false`, which keeps buttons, scrolling, inputs, headers, and overlays receiving their normal touch events.
+
+This behavior is Android-only. Web and iOS do not get system-navigation changes from this helper.
 
 ### pnpm
 
@@ -565,6 +574,7 @@ How it works:
 - confirm delete controls whether single app-recipe deletion asks first
 - bulk delete still always confirms, even if the single-delete setting is turned off
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
+- the scrollable settings overlay uses a backdrop, a sheet, fixed-width controls, and max-width/max-height constraints so the same modal remains usable on compact mobile screens and larger web layouts
 
 The dedicated Account screen now owns account-facing actions:
 
@@ -974,6 +984,8 @@ High-level sequence of what has happened:
 33. added full-library PDF export for web and Android
 34. replaced the old `/recipe` prototype with the imported-only `Sample Recipes` library
 35. added Supabase-backed account auth and cross-device recipe sync
+36. improved the settings modal with a scrollable mobile-friendly in-app sheet
+37. added Android immersive system navigation with swipe reveal, resume re-hide, and tap re-hide behavior
 
 ## How To Grow This File
 

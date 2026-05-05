@@ -61,6 +61,7 @@ This project currently uses:
 - expo-print
 - expo-sharing
 - expo-file-system
+- expo-navigation-bar
 - react-native-svg
 
 ## Recipe Sync Setup
@@ -154,6 +155,8 @@ Navigation is now split between three top-level patterns:
 - the dedicated `/account` screen, which handles sign-in, sync status, sign-out, export, and importer guidance
 
 On compact/mobile widths, the header title switches to `KH` so the top bar still has room for the shared shortcuts.
+
+On Android, the app hides the bottom system navigation bar for a less obstructed cooking view. The bar can still be revealed with the normal system swipe, then the app re-hides it when the app resumes or when the user taps inside the app without consuming that tap.
 
 Important routed files:
 
@@ -360,6 +363,7 @@ Covers:
 
 - native OCR testing
 - Android file/share flows
+- Android system navigation hide/reveal behavior
 - keep-awake behavior
 - full native feature validation
 
@@ -375,6 +379,8 @@ Covers:
 The app has a shared settings menu available from the gear icon in the shared header action row.
 
 Settings is now limited to local app preferences. Account sign-in, sync status, sign-out, PDF export, and importer guidance live on the dedicated Account page instead.
+
+The settings UI is a custom scrollable settings overlay with a backdrop and compact sheet sizing, so it remains usable on mobile screens while still working as an in-app modal on larger displays.
 
 Current saved settings:
 
