@@ -7,19 +7,16 @@ import { useAppSettings } from '../contexts/settings-context';
 
 const menuItems = [
   {
-    eyebrow: 'Your library',
     title: 'My Recipes',
     body: 'A personal library for your recipes.',
     href: '/my-recipes' as const,
   },
   {
-    eyebrow: 'Imported library',
     title: 'Sample Recipes',
     body: 'A curated listing of tested favorites from the developer.',
     href: '/recipe' as const,
   },
   {
-    eyebrow: 'Reference tools',
     title: 'Kitchen Guides',
     body: 'Conversions, substitutions, and cooking dictionary tools collected in one quick-reference space.',
     href: '/reference' as const,
@@ -68,7 +65,6 @@ export default function HomeScreen() {
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                     ]}
                   >
-                    <Text style={[styles.menuCardEyebrow, { color: palette.accentText }]}>{item.eyebrow}</Text>
                     <Text style={[styles.menuCardTitle, { color: palette.text }]}>{item.title}</Text>
                     <Text style={[styles.menuCardBody, { color: palette.textMuted }]}>{item.body}</Text>
                   </Pressable>

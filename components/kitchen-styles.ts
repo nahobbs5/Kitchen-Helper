@@ -753,7 +753,7 @@ export const kitchenStyles = StyleSheet.create({
   },
   settingsRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
   },

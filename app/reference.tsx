@@ -389,9 +389,11 @@ export default function ReferenceScreen() {
             <View style={styles.listStack}>
               {visibleConvSections.map((section) => (
                 <View key={section.title} style={{ gap: 14 }}>
-                  <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8, marginBottom: 4 }]}>
-                    {section.title}
-                  </Text>
+                  {convSection === 'All' ? (
+                    <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8, marginBottom: 4 }]}>
+                      {section.title}
+                    </Text>
+                  ) : null}
                   {section.table ? (
                     <View
                       style={[

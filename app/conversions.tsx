@@ -143,14 +143,16 @@ export default function ConversionsScreen() {
           <View style={styles.listStack}>
             {visibleSections.map((section) => (
               <View key={section.title} style={{ gap: 14 }}>
-                <Text
-                  style={[
-                    styles.panelEyebrow,
-                    { color: palette.accentText, marginTop: 8, marginBottom: 4 },
-                  ]}
-                >
-                  {section.title}
-                </Text>
+                {activeSection === 'All' ? (
+                  <Text
+                    style={[
+                      styles.panelEyebrow,
+                      { color: palette.accentText, marginTop: 8, marginBottom: 4 },
+                    ]}
+                  >
+                    {section.title}
+                  </Text>
+                ) : null}
                 {section.table ? (
                   <View
                     style={[
