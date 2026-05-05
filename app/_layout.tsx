@@ -1,5 +1,7 @@
+import * as NavigationBar from 'expo-navigation-bar';
 import { Stack } from 'expo-router';
-import { Image, Text, View, useWindowDimensions } from 'react-native';
+import { useEffect } from 'react';
+import { AppState, Image, Platform, Text, View, useWindowDimensions } from 'react-native';
 
 import { CookTimerModal } from '../components/cook-timer-modal';
 import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
@@ -14,21 +16,64 @@ const headerLogo = require('../assets/logo-header.png');
 const headerIcon = require('../assets/favicon.png');
 
 export default function RootLayout() {
+  useAndroidImmersiveNavigation();
+
   return (
-    <SettingsProvider>
-      <AuthProvider>
-        <CookTimerProvider>
-          <CustomRecipesProvider>
-            <FavoritesProvider>
-              <RootNavigator />
-              <SettingsMenuModal />
-              <CookTimerModal />
-            </FavoritesProvider>
-          </CustomRecipesProvider>
-        </CookTimerProvider>
-      </AuthProvider>
-    </SettingsProvider>
+    <View
+      style={{ flex: 1 }}
+      onStartShouldSetResponderCapture={handleAndroidImmersiveNavigationTouch}
+    >
+      <SettingsProvider>
+        <AuthProvider>
+          <CookTimerProvider>
+            <CustomRecipesProvider>
+              <FavoritesProvider>
+                <RootNavigator />
+                <SettingsMenuModal />
+                <CookTimerModal />
+              </FavoritesProvider>
+            </CustomRecipesProvider>
+          </CookTimerProvider>
+        </AuthProvider>
+      </SettingsProvider>
+    </View>
   );
+}
+
+function hideAndroidNavigationBar() {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+
+  void (async () => {
+    try {
+      await NavigationBar.setBehaviorAsync('overlay-swipe');
+      await NavigationBar.setVisibilityAsync('hidden');
+    } catch {
+      // Some Android navigation modes do not support programmatic control.
+    }
+  })();
+}
+
+function handleAndroidImmersiveNavigationTouch() {
+  hideAndroidNavigationBar();
+  return false;
+}
+
+function useAndroidImmersiveNavigation() {
+  useEffect(() => {
+    hideAndroidNavigationBar();
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        hideAndroidNavigationBar();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 }
 
 type HeaderBrandProps = {
