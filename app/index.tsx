@@ -58,7 +58,6 @@ export default function HomeScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Pick a kitchen helper</Text>
               <View style={styles.menuGrid}>
                 {menuItems.map((item) => (
                   <Pressable

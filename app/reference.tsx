@@ -404,9 +404,17 @@ export default function ReferenceScreen() {
                           {section.table.columns.map((column, index) => (
                             <Text
                               key={column}
+                              numberOfLines={1}
+                              adjustsFontSizeToFit
+                              minimumFontScale={0.82}
+                              maxFontSizeMultiplier={1.1}
                               style={[
                                 styles.conversionTableCell,
                                 index === 0 && styles.conversionTableAmountCell,
+                                index > 0 &&
+                                  index < section.table!.columns.length - 1 &&
+                                  styles.conversionTableShortCell,
+                                index === section.table!.columns.length - 1 && styles.conversionTableGramsCell,
                                 styles.conversionTableHeaderCell,
                                 { color: palette.accentText },
                               ]}
@@ -420,9 +428,15 @@ export default function ReferenceScreen() {
                             {row.map((cell, index) => (
                               <Text
                                 key={`${row[0]}-${index}`}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.82}
+                                maxFontSizeMultiplier={1.1}
                                 style={[
                                   styles.conversionTableCell,
                                   index === 0 && styles.conversionTableAmountCell,
+                                  index > 0 && index < row.length - 1 && styles.conversionTableShortCell,
+                                  index === row.length - 1 && styles.conversionTableGramsCell,
                                   { color: index === 0 ? palette.text : palette.textMuted },
                                 ]}
                               >

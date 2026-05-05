@@ -301,7 +301,8 @@ export const kitchenStyles = StyleSheet.create({
   },
   conversionTableCell: {
     flex: 1,
-    paddingHorizontal: 6,
+    minWidth: 0,
+    paddingHorizontal: 3,
     paddingVertical: 8,
     color: '#5b4c3b',
     fontSize: 13,
@@ -310,16 +311,23 @@ export const kitchenStyles = StyleSheet.create({
   },
   conversionTableHeaderCell: {
     color: '#8a5a24',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.8,
+    letterSpacing: 0.3,
+    lineHeight: 14,
     textTransform: 'uppercase',
   },
   conversionTableAmountCell: {
-    flex: 1.35,
+    flex: 1.65,
     color: '#2c2219',
     fontWeight: '800',
     textAlign: 'left',
+  },
+  conversionTableShortCell: {
+    flex: 0.72,
+  },
+  conversionTableGramsCell: {
+    flex: 1.05,
   },
   panelDarkEyebrow: {
     fontSize: 12,
