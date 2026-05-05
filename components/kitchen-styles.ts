@@ -662,7 +662,7 @@ export const kitchenStyles = StyleSheet.create({
     left: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 12,
     zIndex: 1000,
     elevation: 1000,
   },
@@ -680,7 +680,7 @@ export const kitchenStyles = StyleSheet.create({
     maxHeight: '88%',
     borderRadius: 28,
     borderWidth: 1,
-    padding: 24,
+    padding: 16,
   },
   settingsScroll: {
     width: '100%',
@@ -688,7 +688,7 @@ export const kitchenStyles = StyleSheet.create({
   settingsScrollContent: {
     gap: 16,
     paddingBottom: 4,
-    paddingHorizontal: 32,
+    paddingHorizontal: 0,
   },
   timerSheet: {
     maxWidth: 460,
@@ -745,12 +745,13 @@ export const kitchenStyles = StyleSheet.create({
   },
   settingsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: 16,
+    gap: 12,
   },
   settingsCopy: {
     flex: 1,
+    flexShrink: 1,
     gap: 4,
   },
   settingsLabel: {
