@@ -29,12 +29,15 @@ const unitWordMap: Record<string, { singular: string; plural: string }> = {
   teaspoons: { singular: 'teaspoon', plural: 'teaspoons' },
   tablespoon: { singular: 'tablespoon', plural: 'tablespoons' },
   tablespoons: { singular: 'tablespoon', plural: 'tablespoons' },
+  tbsp: { singular: 'tbsp', plural: 'tbsp' },
   cup: { singular: 'cup', plural: 'cups' },
   cups: { singular: 'cup', plural: 'cups' },
   ounce: { singular: 'ounce', plural: 'ounces' },
   ounces: { singular: 'ounce', plural: 'ounces' },
+  oz: { singular: 'oz', plural: 'oz' },
   pound: { singular: 'pound', plural: 'pounds' },
   pounds: { singular: 'pound', plural: 'pounds' },
+  lb: { singular: 'lb', plural: 'lb' },
   clove: { singular: 'clove', plural: 'cloves' },
   cloves: { singular: 'clove', plural: 'cloves' },
   egg: { singular: 'egg', plural: 'eggs' },
@@ -46,6 +49,10 @@ const unitWordMap: Record<string, { singular: string; plural: string }> = {
   stick: { singular: 'stick', plural: 'sticks' },
   sticks: { singular: 'stick', plural: 'sticks' },
 };
+
+function normalizeUnitWord(word: string): string {
+  return word.toLowerCase().replace(/\.$/, '');
+}
 
 function parseSingleAmount(value: string): number | null {
   const trimmed = value.trim();
@@ -128,7 +135,7 @@ function pluralizeLeadingUnit(remainder: string, quantity: number): string {
   }
 
   const [, whitespace, word, rest] = match;
-  const normalizedWord = word.toLowerCase();
+  const normalizedWord = normalizeUnitWord(word);
   const unit = unitWordMap[normalizedWord];
 
   if (!unit) {
@@ -137,6 +144,48 @@ function pluralizeLeadingUnit(remainder: string, quantity: number): string {
 
   const replacement = shouldUseSingular(quantity) ? unit.singular : unit.plural;
   return `${whitespace}${replacement}${rest}`;
+}
+
+function scaleParentheticalMeasurements(text: string, multiplier: number): string {
+  const pattern = new RegExp(
+    `\\(\\s*(${numberPattern})(\\s*[-–]\\s*(${numberPattern}))?(\\s+)([A-Za-z]+\\.?)([^)]*)\\)`,
+    'g'
+  );
+
+  return text.replace(
+    pattern,
+    (fullMatch, firstAmount, rangeText, secondAmount, unitSpacing, unitWord, rest) => {
+      const unit = unitWordMap[normalizeUnitWord(unitWord)];
+
+      if (!unit) {
+        return fullMatch;
+      }
+
+      const firstValue = parseSingleAmount(firstAmount);
+
+      if (firstValue === null) {
+        return fullMatch;
+      }
+
+      const scaledFirstValue = firstValue * multiplier;
+      let scaledAmount = formatScaledAmount(scaledFirstValue);
+      let quantityForUnit = scaledFirstValue;
+
+      if (rangeText && secondAmount) {
+        const secondValue = parseSingleAmount(secondAmount);
+
+        if (secondValue !== null) {
+          const separator = rangeText.includes('–') ? '–' : '-';
+          const scaledSecondValue = secondValue * multiplier;
+          scaledAmount = `${scaledAmount}${separator}${formatScaledAmount(scaledSecondValue)}`;
+          quantityForUnit = Math.max(scaledFirstValue, scaledSecondValue);
+        }
+      }
+
+      const replacementUnit = shouldUseSingular(quantityForUnit) ? unit.singular : unit.plural;
+      return `(${scaledAmount}${unitSpacing}${replacementUnit}${rest})`;
+    }
+  );
 }
 
 export function extractBaseServings(servingsText: string | null): number | null {
@@ -176,7 +225,8 @@ export function scaleIngredientLine(line: string, multiplier: number): string {
     const secondValue = parseSingleAmount(secondAmount);
 
     if (secondValue === null) {
-      return `${scaledFirst}${pluralizeLeadingUnit(remainder, firstValue * multiplier)}`;
+      const scaledRemainder = pluralizeLeadingUnit(remainder, firstValue * multiplier);
+      return `${scaledFirst}${scaleParentheticalMeasurements(scaledRemainder, multiplier)}`;
     }
 
     const separator = rangeText.includes('–') ? '–' : '-';
@@ -186,8 +236,12 @@ export function scaleIngredientLine(line: string, multiplier: number): string {
       Math.max(firstValue * multiplier, scaledSecondValue)
     );
 
-    return `${scaledFirst}${separator}${formatScaledAmount(scaledSecondValue)}${scaledRemainder}`;
+    return `${scaledFirst}${separator}${formatScaledAmount(scaledSecondValue)}${scaleParentheticalMeasurements(
+      scaledRemainder,
+      multiplier
+    )}`;
   }
 
-  return `${scaledFirst}${pluralizeLeadingUnit(remainder, firstValue * multiplier)}`;
+  const scaledRemainder = pluralizeLeadingUnit(remainder, firstValue * multiplier);
+  return `${scaledFirst}${scaleParentheticalMeasurements(scaledRemainder, multiplier)}`;
 }
