@@ -318,7 +318,6 @@ export default function UserRecipeScreen() {
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Ingredients</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Scaled from your saved form</Text>
               <View style={styles.listStack}>
                 {scaledIngredients.length > 0 ? (
                   scaledIngredients.map((section, index) => (
@@ -346,7 +345,6 @@ export default function UserRecipeScreen() {
           <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe steps</Text>
               <View style={styles.listStack}>
                 {recipe.directions.length > 0 ? (
                   recipe.directions.map((section, sectionIndex) => (
@@ -371,17 +369,20 @@ export default function UserRecipeScreen() {
             </View>
 
             {(recipe.notes || recipe.cuisineRegion) ? (
-              <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-                <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe notes</Text>
-                <Text style={[styles.panelDarkTitle, { color: palette.inverseText }]}>Saved extras</Text>
-                {recipe.cuisineRegion ? (
-                  <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                    Cuisine region: {recipe.cuisineRegion}
-                  </Text>
-                ) : null}
-                {recipe.notes ? (
-                  <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>{recipe.notes}</Text>
-                ) : null}
+              <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+                <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Notes</Text>
+                <View style={styles.listStack}>
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    {recipe.cuisineRegion ? (
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                        Cuisine region: {recipe.cuisineRegion}
+                      </Text>
+                    ) : null}
+                    {recipe.notes ? (
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
+                    ) : null}
+                  </View>
+                </View>
               </View>
             ) : null}
           </View>

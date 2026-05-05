@@ -430,30 +430,27 @@ export default function ObsidianRecipeScreen() {
               </View>
             </View>
 
-            <View style={[styles.panelDark, { backgroundColor: palette.elevatedDark }]}>
-              <Text style={[styles.panelDarkEyebrow, { color: palette.accentSoft }]}>Recipe notes</Text>
-              <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>
-                If you update the Markdown file, rerun `corepack pnpm sync:recipes` to regenerate
-                the app data from the vault. Edits made here are stored locally in the app as
-                overrides, so the original Markdown note stays untouched.
-              </Text>
-              {recipe.notes ? (
-                <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>{recipe.notes}</Text>
-              ) : null}
-              {recipe.prepTime || recipe.cookTime || recipe.totalTime ? (
+            {(recipe.notes || recipe.prepTime || recipe.cookTime || recipe.totalTime) ? (
+              <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+                <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Notes</Text>
                 <View style={styles.listStack}>
-                  {recipe.prepTime ? (
-                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Prep time: {recipe.prepTime}</Text>
-                  ) : null}
-                  {recipe.cookTime ? (
-                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Cook time: {recipe.cookTime}</Text>
-                  ) : null}
-                  {recipe.totalTime ? (
-                    <Text style={[styles.panelDarkText, { color: palette.inverseMuted }]}>Total time: {recipe.totalTime}</Text>
-                  ) : null}
+                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                    {recipe.notes ? (
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
+                    ) : null}
+                    {recipe.prepTime ? (
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Prep time: {recipe.prepTime}</Text>
+                    ) : null}
+                    {recipe.cookTime ? (
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Cook time: {recipe.cookTime}</Text>
+                    ) : null}
+                    {recipe.totalTime ? (
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Total time: {recipe.totalTime}</Text>
+                    ) : null}
+                  </View>
                 </View>
-              ) : null}
-            </View>
+              </View>
+            ) : null}
           </View>
         </View>
       </ScrollView>
