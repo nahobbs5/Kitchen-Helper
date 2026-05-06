@@ -830,6 +830,17 @@ After aligning those package versions to Expo SDK 54-compatible releases:
 
 That was an important reminder that native-feeling runtime errors in Expo are sometimes dependency alignment problems rather than component bugs.
 
+## React Key Warning Lesson
+
+React duplicate-key warnings in the Expo/dev console should be treated as real rendering signals, even if a finished production APK may not show the warning text.
+
+The dictionary and substitutions pages both hit this when list keys were built from display fields that looked unique but were not:
+
+- the dictionary `All` tab combined categories, so valid terms like `Zester` and `Yeast` appeared more than once
+- the Egg-free substitutions included two valid `1 egg` swaps, which both produced the same `Egg-free-1 egg` key
+
+The useful fix pattern is to preserve valid duplicated content and make the React key include enough rendering context to be unique. Category, letter, swap text, and list index can be used as disambiguators when the source data does not have a dedicated stable id.
+
 ## Configuration Files
 
 ### [`package.json`](package.json)
@@ -986,6 +997,7 @@ High-level sequence of what has happened:
 35. added Supabase-backed account auth and cross-device recipe sync
 36. improved the settings modal with a scrollable mobile-friendly in-app sheet
 37. added Android immersive system navigation with swipe reveal, resume re-hide, and tap re-hide behavior
+38. resolved duplicate React key warnings for dictionary and allergy substitution cards
 
 ## How To Grow This File
 

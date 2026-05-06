@@ -532,9 +532,8 @@ export default function ReferenceScreen() {
 
         {activeTab === 'dictionary' && (
           <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-            <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Glossary</Text>
             <Text style={[styles.panelTitle, { color: palette.text }]}>
-              {dictTab === 'all' ? 'Cooking terms and definitions' : DICT_TABS.find((t) => t.key === dictTab)?.label ?? ''}
+              {dictTab === 'all' ? 'All Entries' : DICT_TABS.find((t) => t.key === dictTab)?.label ?? ''}
             </Text>
             <View style={styles.listStack}>
               {groupedDictEntries.map((group) => (

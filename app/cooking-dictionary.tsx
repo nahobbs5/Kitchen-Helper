@@ -24,7 +24,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const TAB_LABELS: Record<TabKey, string> = {
-  all: 'Cooking terms and definitions',
+  all: 'All Entries',
   general: 'General cooking terms',
   spices: 'Spices and seasonings',
   oils: 'Cooking oils and fats',
@@ -198,7 +198,6 @@ export default function CookingDictionaryScreen() {
         </View>
 
         <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-          <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Glossary</Text>
           {categoryTabs}
           <Text style={[styles.panelTitle, { color: palette.text }]}>{TAB_LABELS[activeTab]}</Text>
           <View style={styles.listStack}>
