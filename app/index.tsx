@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
-import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Image, Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAuth } from '../contexts/auth-context';
 import { useAppSettings } from '../contexts/settings-context';
+
+const homeHeroLogo = require('../assets/kitchen-helper-logo-icon.png');
 
 const menuItems = [
   {
@@ -27,6 +29,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const isMobile = width < 768;
   const { palette } = useAppSettings();
   const { configured, user } = useAuth();
 
@@ -41,7 +44,17 @@ export default function HomeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.title, { color: palette.text }]}>Your Kitchen. Your Way.</Text>
+            {isMobile ? (
+              <View style={styles.heroTitleStack}>
+                <Text style={[styles.title, { color: palette.text }]}>Your Kitchen.</Text>
+                <View style={styles.heroTitleRow}>
+                  <Text style={[styles.title, { color: palette.text }]}>Your Way.</Text>
+                  <Image source={homeHeroLogo} style={styles.heroTitleLogo} resizeMode="contain" />
+                </View>
+              </View>
+            ) : (
+              <Text style={[styles.title, { color: palette.text }]}>Your Kitchen. Your Way.</Text>
+            )}
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               {configured
                 ? user

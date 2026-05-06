@@ -40,6 +40,20 @@ export const kitchenStyles = StyleSheet.create({
     color: '#2a2118',
     fontWeight: '800',
   },
+  heroTitleStack: {
+    gap: 0,
+  },
+  heroTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    gap: 10,
+  },
+  heroTitleLogo: {
+    borderRadius: 8,
+    height: 40,
+    width: 40,
+  },
   subtitle: {
     fontSize: 16,
     lineHeight: 24,

@@ -12,8 +12,7 @@ import { FavoritesProvider } from '../contexts/favorites-context';
 import type { AppPalette } from '../components/app-theme';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
 
-const headerLogo = require('../assets/logo-header.png');
-const headerIcon = require('../assets/favicon.png');
+const headerLogo = require('../assets/kitchen-helper-logo-icon.png');
 
 export default function RootLayout() {
   useAndroidImmersiveNavigation();
@@ -86,25 +85,16 @@ function HeaderBrand({ compact, palette, title }: HeaderBrandProps) {
   const showRouteTitle = title && title !== 'Kitchen Helper';
 
   if (compact) {
-    return (
-      <View style={{ alignItems: 'center', flexDirection: 'row', gap: 8 }}>
-        <Image
-          source={headerIcon}
-          style={{ borderRadius: 8, height: 28, width: 28 }}
-          resizeMode="contain"
-        />
-        {showRouteTitle ? (
-          <Text numberOfLines={1} style={{ color: palette.text, fontSize: 15, fontWeight: '700' }}>
-            {title}
-          </Text>
-        ) : null}
-      </View>
-    );
+    return showRouteTitle ? (
+      <Text numberOfLines={1} style={{ color: palette.text, fontSize: 15, fontWeight: '700' }}>
+        {title}
+      </Text>
+    ) : null;
   }
 
   return (
     <View style={{ alignItems: 'center', flexDirection: 'row', gap: 12 }}>
-      <Image source={headerLogo} style={{ height: 44, width: 168 }} resizeMode="contain" />
+      <Image source={headerLogo} style={{ height: 44, width: 44 }} resizeMode="contain" />
       {showRouteTitle ? (
         <Text
           numberOfLines={1}
