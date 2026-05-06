@@ -223,7 +223,6 @@ export default function EditRecipeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe form</Text>
             <Text style={[styles.title, { color: palette.text }]}>Edit saved recipe</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This editor updates the version of the recipe stored in local app storage. Required
@@ -248,23 +247,11 @@ export default function EditRecipeScreen() {
 
           </View>
 
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Editing mode</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Update your saved version</Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              {effectiveSource === 'custom'
-                ? 'Changes here update the recipe already stored inside the app.'
-                : 'Changes here are saved as local app overrides, so your Obsidian note stays unchanged.'}
-            </Text>
-          </View>
         </View>
 
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Manual entry</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe form</Text>
-
               <View style={styles.formStack}>
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Category *</Text>

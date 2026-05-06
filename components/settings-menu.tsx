@@ -315,8 +315,7 @@ export function SettingsMenuModal() {
           contentContainerStyle={styles.settingsScrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={[styles.settingsEyebrow, { color: palette.accentText }]}>Settings</Text>
-          <Text style={[styles.settingsTitle, { color: palette.text }]}>Kitchen preferences</Text>
+          <Text style={[styles.settingsTitle, { color: palette.text }]}>Preferences</Text>
           <Text style={[styles.settingsBody, { color: palette.textMuted }]}>
             These options are saved on this device so the app keeps the same feel the next time
             you open it.

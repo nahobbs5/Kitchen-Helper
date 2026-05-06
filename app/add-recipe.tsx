@@ -294,7 +294,6 @@ export default function AddRecipeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe form</Text>
             <Text style={[styles.title, { color: palette.text }]}>Add a new recipe</Text>
             <View style={styles.actionRow}>
               <Pressable
@@ -313,9 +312,6 @@ export default function AddRecipeScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe entry</Text>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Choose how to start</Text>
-
               <View style={styles.formStack}>
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Entry mode</Text>
