@@ -223,6 +223,78 @@ export const kitchenStyles = StyleSheet.create({
     borderColor: '#edd8b1',
     gap: 8,
   },
+  homeKitchenGuidesCardMobile: {
+    minHeight: 116,
+    paddingRight: 62,
+  },
+  homeKitchenGuidesBodyMobile: {
+    maxWidth: 292,
+  },
+  homeAddRecipeDesktopRow: {
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  homeAddRecipeButton: {
+    alignItems: 'center',
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  homeAddRecipeButtonFloating: {
+    position: 'absolute',
+    right: -16,
+    bottom: -18,
+    width: 72,
+    height: 72,
+    borderRadius: 999,
+  },
+  homeAddRecipeButtonDesktop: {
+    borderRadius: 999,
+    gap: 10,
+    minHeight: 52,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  homeAddRecipeIconWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 38,
+    height: 38,
+  },
+  homeAddRecipeIconWrapFloating: {
+    width: 66,
+    height: 66,
+  },
+  homeAddRecipePlusBadge: {
+    position: 'absolute',
+    right: -4,
+    bottom: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 999,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  homeAddRecipePlusBadgeFloating: {
+    right: -6,
+    bottom: -6,
+    width: 27,
+    height: 27,
+  },
+  homeAddRecipePlusText: {
+    fontSize: 15,
+    lineHeight: 15,
+    fontWeight: '900',
+  },
+  homeAddRecipePlusTextFloating: {
+    fontSize: 22,
+    lineHeight: 22,
+  },
+  homeAddRecipeLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
   menuCardEyebrow: {
     fontSize: 12,
     color: '#8a5a24',

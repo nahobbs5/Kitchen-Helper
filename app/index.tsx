@@ -1,11 +1,13 @@
 import { useRouter } from 'expo-router';
 import { Image, Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAuth } from '../contexts/auth-context';
 import { useAppSettings } from '../contexts/settings-context';
 
 const homeHeroLogo = require('../assets/kitchen-helper-logo-icon.png');
+const addRecipeHref = '/add-recipe' as const;
 
 const menuItems = [
   {
@@ -32,6 +34,41 @@ export default function HomeScreen() {
   const isMobile = width < 768;
   const { palette } = useAppSettings();
   const { configured, user } = useAuth();
+  const addRecipeButton = (
+    <Pressable
+      accessibilityLabel="Add recipe"
+      onPress={() => router.push(addRecipeHref)}
+      style={[
+        styles.homeAddRecipeButton,
+        isMobile ? styles.homeAddRecipeButtonFloating : styles.homeAddRecipeButtonDesktop,
+        { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+      ]}
+    >
+      <View style={[styles.homeAddRecipeIconWrap, isMobile && styles.homeAddRecipeIconWrapFloating]}>
+        <FryingPanIcon size={isMobile ? 66 : 38} />
+        <View
+          style={[
+            styles.homeAddRecipePlusBadge,
+            isMobile && styles.homeAddRecipePlusBadgeFloating,
+            { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+          ]}
+        >
+          <Text
+            style={[
+              styles.homeAddRecipePlusText,
+              isMobile && styles.homeAddRecipePlusTextFloating,
+              { color: '#4a2d63' },
+            ]}
+          >
+            +
+          </Text>
+        </View>
+      </View>
+      {!isMobile ? (
+        <Text style={[styles.homeAddRecipeLabel, { color: '#4a2d63' }]}>Add Recipe</Text>
+      ) : null}
+    </Pressable>
+  );
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -75,13 +112,23 @@ export default function HomeScreen() {
                     onPress={() => router.push(item.href)}
                     style={[
                       styles.menuCard,
+                      isMobile && item.title === 'Kitchen Guides' && styles.homeKitchenGuidesCardMobile,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                     ]}
                   >
                     <Text style={[styles.menuCardTitle, { color: palette.text }]}>{item.title}</Text>
-                    <Text style={[styles.menuCardBody, { color: palette.textMuted }]}>{item.body}</Text>
+                    <Text
+                      style={[
+                        styles.menuCardBody,
+                        isMobile && item.title === 'Kitchen Guides' && styles.homeKitchenGuidesBodyMobile,
+                        { color: palette.textMuted },
+                      ]}
+                    >
+                      {item.body}
+                    </Text>
                   </Pressable>
                 ))}
+                {isMobile ? addRecipeButton : <View style={styles.homeAddRecipeDesktopRow}>{addRecipeButton}</View>}
               </View>
             </View>
           </View>
@@ -89,5 +136,33 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function FryingPanIcon({ size }: { size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="6 11 27 24" fill="none">
+      <Path
+        d="M17 22.3L26.2 28.8"
+        stroke="#4a2d63"
+        strokeWidth={3.2}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M24.3 27.5L29 30.8"
+        stroke="#4a2d63"
+        strokeWidth={4.4}
+        strokeLinecap="round"
+      />
+      <Circle cx={15.1} cy={20.4} r={7.2} fill="#4a2d63" />
+      <Circle cx={15.1} cy={20.4} r={3.9} fill="#fff8ef" />
+      <Circle cx={15.1} cy={20.4} r={1.8} fill="#d3a64f" />
+      <Path
+        d="M11.3 17.3C12.3 16.4 13.6 15.9 15.1 15.9"
+        stroke="#7d6293"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+    </Svg>
   );
 }
