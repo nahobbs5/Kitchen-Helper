@@ -154,9 +154,9 @@ export default function AllergySubstitutionsScreen() {
               {activeTag ? `${activeTag} substitutions` : 'Allergy Substitutions'}
             </Text>
             <View style={styles.listStack}>
-              {filteredAllergySubstitutions.map((item) => (
+              {filteredAllergySubstitutions.map((item, index) => (
                 <View
-                  key={`${item.allergy}-${item.avoid}`}
+                  key={`${item.allergy}-${item.avoid}-${item.swap}-${index}`}
                   style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                 >
                   <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{item.allergy}</Text>

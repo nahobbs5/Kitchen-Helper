@@ -193,8 +193,7 @@ export default function ReferenceScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Quick reference</Text>
-            <Text style={[styles.title, { color: palette.text }]}>Kitchen guides</Text>
+            <Text style={[styles.title, { color: palette.text }]}>Kitchen Guides</Text>
             <View style={styles.numberGrid}>
               {MAIN_TABS.map((tab) => {
                 const isActive = activeTab === tab.key;
@@ -382,7 +381,6 @@ export default function ReferenceScreen() {
 
         {activeTab === 'conversions' && (
           <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-            <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Cheat sheet</Text>
             <Text style={[styles.panelTitle, { color: palette.text }]}>
               {convSection === 'All' ? 'All conversion sections' : convSection}
             </Text>

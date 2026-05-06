@@ -419,7 +419,6 @@ export default function MyRecipesScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
             {syncEnabled && (syncBusy || syncError) ? (
               <View
@@ -733,7 +732,6 @@ export default function MyRecipesScreen() {
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>SORT & FILTER</Text>
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
 
             <TextInput

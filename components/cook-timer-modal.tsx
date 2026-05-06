@@ -59,8 +59,7 @@ export function CookTimerModal() {
       >
         <View style={styles.timerModalHeader}>
           <View style={{ alignItems: 'center', flex: 1 }}>
-            <Text style={[styles.settingsEyebrow, { color: palette.accentText }]}>Cook Timer</Text>
-            <Text style={[styles.settingsTitle, { color: palette.text, fontSize: 20 }]}>Kitchen timers</Text>
+            <Text style={[styles.settingsTitle, { color: palette.text, fontSize: 20 }]}>Kitchen Timers</Text>
           </View>
           <Pressable
             onPress={closeCookTimer}

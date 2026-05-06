@@ -212,9 +212,9 @@ export default function CookingDictionaryScreen() {
                 >
                   {group.letter}
                 </Text>
-                {group.entries.map((entry) => (
+                {group.entries.map((entry, index) => (
                   <View
-                    key={`${activeTab}-${entry.term}`}
+                    key={`${activeTab}-${group.letter}-${entry.term}-${index}`}
                     style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.term}</Text>

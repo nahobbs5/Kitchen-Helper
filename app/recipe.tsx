@@ -15,7 +15,7 @@ export default function SampleRecipesScreen() {
   const isWide = width >= 960;
   const { palette } = useAppSettings();
   const { recipeOverrideMap } = useCustomRecipes();
-  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [searchText, setSearchText] = useState('');
 
   const sampleRecipes = useMemo(
@@ -59,7 +59,8 @@ export default function SampleRecipesScreen() {
     const normalizedSearch = searchText.trim().toLowerCase();
 
     return sampleRecipes.filter((recipe) => {
-      const matchesCategory = activeCategory === 'All' ? true : recipe.category === activeCategory;
+      const matchesCategory =
+        activeCategoryFilters.length === 0 ? true : activeCategoryFilters.includes(recipe.category);
       const cuisine = (recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '';
       const tagText = [...recipe.allergyFriendlyTags, ...recipe.allergenTags].join(' ');
       const matchesSearch = normalizedSearch
@@ -68,7 +69,23 @@ export default function SampleRecipesScreen() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, sampleRecipes, searchText]);
+  }, [activeCategoryFilters, sampleRecipes, searchText]);
+
+  function toggleCategoryFilter(tag: string) {
+    if (tag === 'All') {
+      setActiveCategoryFilters([]);
+      return;
+    }
+
+    setActiveCategoryFilters((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
+    );
+  }
+
+  const allStatsActive = activeCategoryFilters.length === 0;
+  const allStatsTextColor = allStatsActive ? palette.accentContrastText : palette.text;
+  const allStatsBodyColor = allStatsActive ? palette.accentContrastText : palette.textMuted;
+  const allStatsCountColor = allStatsActive ? palette.accentContrastText : '#000000';
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -81,7 +98,6 @@ export default function SampleRecipesScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>Imported recipe library</Text>
             <Text style={[styles.title, { color: palette.text }]}>Sample Recipes</Text>
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               A curated listing of tested favorites from the developer.
@@ -89,7 +105,6 @@ export default function SampleRecipesScreen() {
           </View>
 
           <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Imported sample set</Text>
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
               {filteredRecipes.length} recipes shown
             </Text>
@@ -106,12 +121,12 @@ export default function SampleRecipesScreen() {
 
             <View style={styles.servingsRow}>
               {['All', ...sampleRecipeCategories].map((category) => {
-                const isActive = activeCategory === category;
+                const isActive = category === 'All' ? activeCategoryFilters.length === 0 : activeCategoryFilters.includes(category);
 
                 return (
                   <Pressable
                     key={category}
-                    onPress={() => setActiveCategory(category)}
+                    onPress={() => toggleCategoryFilter(category)}
                     style={[
                       styles.servingsButton,
                       { borderColor: palette.borderAlt },
@@ -139,7 +154,6 @@ export default function SampleRecipesScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Imported Samples</Text>
               <View style={styles.listStack}>
                 {filteredRecipes.map((recipe) => (
                   <Pressable
@@ -220,33 +234,48 @@ export default function SampleRecipesScreen() {
               <View
                 style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
               >
-                <Text style={[styles.panelTitle, { color: palette.text }]}>Sample Categories</Text>
+                <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe Stats</Text>
                 <View style={styles.listStack}>
-                  {categoryCounts.map((category) => (
-                    <Pressable
-                      key={category.name}
-                      onPress={() => setActiveCategory(category.name)}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{category.name}</Text>
-                      <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>
-                        {category.count} recipes
-                      </Text>
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                        {activeCategory === category.name ? 'Current filter' : 'Tap to filter this sample group'}
-                      </Text>
-                    </Pressable>
-                  ))}
+                  {categoryCounts.map((category) => {
+                    const isActive = activeCategoryFilters.includes(category.name);
+                    const statTextColor = isActive ? palette.accentContrastText : palette.text;
+                    const statBodyColor = isActive ? palette.accentContrastText : palette.textMuted;
+                    const statCountColor = isActive ? palette.accentContrastText : '#000000';
+
+                    return (
+                      <Pressable
+                        key={category.name}
+                        onPress={() => toggleCategoryFilter(category.name)}
+                        style={[
+                          styles.detailCard,
+                          {
+                            backgroundColor: isActive ? palette.accent : palette.surface,
+                            borderColor: isActive ? palette.accent : palette.borderAlt,
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.detailCardTitle, { color: statTextColor }]}>{category.name}</Text>
+                        <Text style={[styles.infoCardMeta, { color: statCountColor }]}>{category.count} recipes</Text>
+                        <Text style={[styles.detailCardBody, { color: statBodyColor }]}>
+                          {isActive ? 'Current filter' : 'Click to filter'}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                   <Pressable
-                    onPress={() => setActiveCategory('All')}
-                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    onPress={() => toggleCategoryFilter('All')}
+                    style={[
+                      styles.detailCard,
+                      {
+                        backgroundColor: allStatsActive ? palette.accent : palette.surface,
+                        borderColor: allStatsActive ? palette.accent : palette.borderAlt,
+                      },
+                    ]}
                   >
-                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>All sample recipes</Text>
-                    <Text style={[styles.infoCardMeta, { color: palette.accentText }]}>
-                      {sampleRecipes.length} recipes
-                    </Text>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      {activeCategory === 'All' ? 'Current filter' : 'Tap to show the full sample set'}
+                    <Text style={[styles.detailCardTitle, { color: allStatsTextColor }]}>All recipes</Text>
+                    <Text style={[styles.infoCardMeta, { color: allStatsCountColor }]}>{sampleRecipes.length} recipes</Text>
+                    <Text style={[styles.detailCardBody, { color: allStatsBodyColor }]}>
+                      {allStatsActive ? 'Current filter' : 'Click to clear filters'}
                     </Text>
                   </Pressable>
                 </View>
