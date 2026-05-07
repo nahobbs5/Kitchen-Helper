@@ -1,19 +1,13 @@
-import { useEffect } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, Vibration, useWindowDimensions, View } from 'react-native';
-import { useAudioPlayer } from 'expo-audio';
+import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer, formatTimerRemaining } from '../contexts/cook-timer-context';
 import { useAppSettings } from '../contexts/settings-context';
 
-const timerBeep = require('../assets/timer-beep.wav');
-
 export function CookTimerModal() {
   const {
     closeCookTimer,
-    completedEventCount,
     isCookTimerOpen,
-    openCookTimer,
     resetTimer,
     timers,
     toggleTimer,
@@ -23,21 +17,6 @@ export function CookTimerModal() {
   const { palette } = useAppSettings();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const player = useAudioPlayer(timerBeep);
-
-  useEffect(() => {
-    if (completedEventCount === 0) {
-      return;
-    }
-
-    try {
-      player.seekTo(0);
-      player.play();
-    } catch {}
-
-    Vibration.vibrate([0, 220, 120, 220]);
-    openCookTimer();
-  }, [completedEventCount, openCookTimer, player]);
 
   if (!isCookTimerOpen) {
     return null;

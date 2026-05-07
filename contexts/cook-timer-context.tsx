@@ -12,12 +12,21 @@ export type CookTimerSlot = {
   hasStarted: boolean;
 };
 
+export type CookTimerFinishedAlert = {
+  id: string;
+  timerId: number;
+  timerName: string;
+  completedAt: number;
+};
+
 type CookTimerContextValue = {
   completedEventCount: number;
+  finishedTimerAlerts: CookTimerFinishedAlert[];
   isCookTimerOpen: boolean;
   openCookTimer: () => void;
   closeCookTimer: () => void;
   timers: CookTimerSlot[];
+  dismissFinishedTimerAlert: (alertId: string) => void;
   updateTimerLabel: (id: number, label: string) => void;
   updateTimerDurationInput: (id: number, value: string) => void;
   toggleTimer: (id: number) => void;
@@ -95,6 +104,7 @@ export function formatTimerRemaining(ms: number) {
 export function CookTimerProvider({ children }: PropsWithChildren) {
   const { timerCount } = useAppSettings();
   const [completedEventCount, setCompletedEventCount] = useState(0);
+  const [finishedTimerAlerts, setFinishedTimerAlerts] = useState<CookTimerFinishedAlert[]>([]);
   const [isCookTimerOpen, setIsCookTimerOpen] = useState(false);
   const [timers, setTimers] = useState<CookTimerSlot[]>(() => makeTimers(timerCount));
 
@@ -145,7 +155,9 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
 
     const intervalId = setInterval(() => {
       const now = Date.now();
-      let completedThisTick = 0;
+      const completedTimers = timers.filter(
+        (timer) => timer.active && timer.endAt && Math.max(0, timer.endAt - now) === 0
+      );
 
       setTimers((current) =>
         current.map((timer) => {
@@ -156,8 +168,6 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
           const nextRemaining = Math.max(0, timer.endAt - now);
 
           if (nextRemaining === 0) {
-            completedThisTick += 1;
-
             return {
               ...timer,
               active: false,
@@ -173,8 +183,17 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
         })
       );
 
-      if (completedThisTick > 0) {
-        setCompletedEventCount((current) => current + completedThisTick);
+      if (completedTimers.length > 0) {
+        setCompletedEventCount((current) => current + completedTimers.length);
+        setFinishedTimerAlerts((current) => [
+          ...current,
+          ...completedTimers.map((timer, index) => ({
+            id: `${timer.id}-${now}-${index}`,
+            timerId: timer.id,
+            timerName: timer.label.trim() || `Timer ${timer.id}`,
+            completedAt: now,
+          })),
+        ]);
       }
     }, 200);
 
@@ -184,10 +203,14 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
   const value = useMemo<CookTimerContextValue>(
     () => ({
       completedEventCount,
+      finishedTimerAlerts,
       isCookTimerOpen,
       openCookTimer: () => setIsCookTimerOpen(true),
       closeCookTimer: () => setIsCookTimerOpen(false),
       timers,
+      dismissFinishedTimerAlert: (alertId: string) => {
+        setFinishedTimerAlerts((current) => current.filter((alert) => alert.id !== alertId));
+      },
       updateTimerLabel: (id: number, label: string) => {
         setTimers((current) =>
           current.map((timer) => (timer.id === id ? { ...timer, label } : timer))
@@ -244,6 +267,7 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
         );
       },
       resetTimer: (id: number) => {
+        setFinishedTimerAlerts((current) => current.filter((alert) => alert.timerId !== id));
         setTimers((current) =>
           current.map((timer) =>
             timer.id === id
@@ -259,7 +283,7 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
         );
       },
     }),
-    [completedEventCount, isCookTimerOpen, timers]
+    [completedEventCount, finishedTimerAlerts, isCookTimerOpen, timers]
   );
 
   return <CookTimerContext.Provider value={value}>{children}</CookTimerContext.Provider>;

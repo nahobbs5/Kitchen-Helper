@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { AppState, Image, Platform, Text, View, useWindowDimensions } from 'react-native';
 
+import { CookTimerFinishedAlerts } from '../components/cook-timer-alerts';
 import { CookTimerModal } from '../components/cook-timer-modal';
 import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
 import { AuthProvider } from '../contexts/auth-context';
@@ -30,6 +31,7 @@ export default function RootLayout() {
                 <RootNavigator />
                 <SettingsMenuModal />
                 <CookTimerModal />
+                <CookTimerFinishedAlerts />
               </FavoritesProvider>
             </CustomRecipesProvider>
           </CookTimerProvider>
