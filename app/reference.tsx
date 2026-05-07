@@ -1,5 +1,14 @@
-import { useMemo, useRef, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  LayoutChangeEvent,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
@@ -51,9 +60,14 @@ export default function ReferenceScreen() {
   const isWide = width >= 960;
   const isMobile = width < 768;
   const scrollRef = useRef<ScrollView>(null);
+  const scrollOffsetRef = useRef(0);
+  const heroLayoutYRef = useRef(0);
+  const heroCardLayoutYRef = useRef(0);
 
   const [activeTab, setActiveTab] = useState<MainTab>('conversions');
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
+  const [showStickySearch, setShowStickySearch] = useState(false);
 
   // Conversions state
   const [convSection, setConvSection] = useState('All');
@@ -192,6 +206,63 @@ export default function ReferenceScreen() {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   }
 
+  useEffect(() => {
+    setSearchStickyThreshold(null);
+    setShowStickySearch(false);
+  }, [activeTab]);
+
+  function updateStickySearch(offsetY: number, threshold = searchStickyThreshold) {
+    if (threshold === null) {
+      setShowStickySearch(false);
+      return;
+    }
+    const shouldShow = offsetY >= threshold;
+    setShowStickySearch((current) => (current === shouldShow ? current : shouldShow));
+  }
+
+  function handleInlineSearchLayout(event: LayoutChangeEvent) {
+    const threshold = heroLayoutYRef.current + heroCardLayoutYRef.current + event.nativeEvent.layout.y;
+    setSearchStickyThreshold(threshold);
+    updateStickySearch(scrollOffsetRef.current, threshold);
+  }
+
+  function renderSearchInput(variant: 'inline' | 'sticky') {
+    const inputStyle = [
+      styles.searchInput,
+      variant === 'sticky' && styles.referenceStickySearchInput,
+      { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+    ];
+
+    return activeTab === 'conversions' ? (
+      <TextInput
+        value={convSearch}
+        onChangeText={setConvSearch}
+        placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
+        placeholderTextColor={palette.searchPlaceholder}
+        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
+        style={inputStyle}
+      />
+    ) : activeTab === 'substitutions' ? (
+      <TextInput
+        value={subSearch}
+        onChangeText={setSubSearch}
+        placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
+        placeholderTextColor={palette.searchPlaceholder}
+        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
+        style={inputStyle}
+      />
+    ) : (
+      <TextInput
+        value={dictSearch}
+        onChangeText={setDictSearch}
+        placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
+        placeholderTextColor={palette.searchPlaceholder}
+        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
+        style={inputStyle}
+      />
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView
@@ -201,12 +272,18 @@ export default function ReferenceScreen() {
           isMobile && activeTab === 'dictionary' && styles.dictionaryPageWithBackToTop,
         ]}
         onScroll={(event) => {
-          const shouldShow = event.nativeEvent.contentOffset.y > BACK_TO_TOP_SCROLL_THRESHOLD;
-          setShowBackToTop((current) => (current === shouldShow ? current : shouldShow));
+          const offsetY = event.nativeEvent.contentOffset.y;
+          scrollOffsetRef.current = offsetY;
+          const shouldShowBackToTop = offsetY > BACK_TO_TOP_SCROLL_THRESHOLD;
+          setShowBackToTop((current) => (current === shouldShowBackToTop ? current : shouldShowBackToTop));
+          updateStickySearch(offsetY);
         }}
         scrollEventThrottle={16}
       >
         <View
+          onLayout={(event) => {
+            heroLayoutYRef.current = event.nativeEvent.layout.y;
+          }}
           style={[
             styles.hero,
             isWide && styles.heroWide,
@@ -235,20 +312,16 @@ export default function ReferenceScreen() {
             </View>
           </View>
 
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+          <View
+            onLayout={(event) => {
+              heroCardLayoutYRef.current = event.nativeEvent.layout.y;
+            }}
+            style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}
+          >
             {activeTab === 'conversions' && (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Conversions</Text>
-                <TextInput
-                  value={convSearch}
-                  onChangeText={setConvSearch}
-                  placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
-                  placeholderTextColor={palette.searchPlaceholder}
-                  style={[
-                    styles.searchInput,
-                    { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
-                  ]}
-                />
+                {renderSearchInput('inline')}
                 <View style={styles.numberGrid}>
                   {convOptions.map((opt) => {
                     const isActive = convSection === opt;
@@ -273,6 +346,7 @@ export default function ReferenceScreen() {
             {activeTab === 'substitutions' && (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Substitutions</Text>
+                {renderSearchInput('inline')}
                 <View style={styles.numberGrid}>
                   {SUB_SECTION_TABS.map((tab) => {
                     const isActive = subSection === tab.key;
@@ -315,16 +389,6 @@ export default function ReferenceScreen() {
                     })}
                   </View>
                 ) : null}
-                <TextInput
-                  value={subSearch}
-                  onChangeText={setSubSearch}
-                  placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
-                  placeholderTextColor={palette.searchPlaceholder}
-                  style={[
-                    styles.searchInput,
-                    { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
-                  ]}
-                />
               </>
             )}
 
@@ -334,6 +398,7 @@ export default function ReferenceScreen() {
                 <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
                   {visibleDictEntries.length} terms shown
                 </Text>
+                {renderSearchInput('inline')}
                 <View style={styles.numberGrid}>
                   {DICT_TABS.map((tab) => {
                     const isActive = dictTab === tab.key;
@@ -356,16 +421,6 @@ export default function ReferenceScreen() {
                     );
                   })}
                 </View>
-                <TextInput
-                  value={dictSearch}
-                  onChangeText={setDictSearch}
-                  placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
-                  placeholderTextColor={palette.searchPlaceholder}
-                  style={[
-                    styles.searchInput,
-                    { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
-                  ]}
-                />
                 <View style={styles.numberGrid}>
                   {letterOptions.map((letter) => {
                     const isActive = dictLetter === letter;
@@ -585,6 +640,17 @@ export default function ReferenceScreen() {
           </View>
         )}
       </ScrollView>
+      {showStickySearch ? (
+        <View
+          style={[
+            styles.referenceStickySearch,
+            isWide && styles.referenceStickySearchWide,
+            { backgroundColor: palette.background, borderColor: palette.borderAlt },
+          ]}
+        >
+          {renderSearchInput('sticky')}
+        </View>
+      ) : null}
       {isMobile && activeTab === 'dictionary' && showBackToTop ? (
         <Pressable
           accessibilityRole="button"

@@ -618,6 +618,25 @@ export const kitchenStyles = StyleSheet.create({
     color: '#2c2219',
     marginTop: 6,
   },
+  referenceStickySearch: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    zIndex: 20,
+    elevation: 12,
+  },
+  referenceStickySearchWide: {
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  referenceStickySearchInput: {
+    marginTop: 0,
+  },
   formStack: {
     gap: 16,
     marginTop: 6,

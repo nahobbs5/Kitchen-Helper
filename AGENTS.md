@@ -18,3 +18,4 @@ This project uses git worktrees. Before editing any file, grep for duplicates ac
 - After any content removal, verify the section is gone by grepping for a unique string from the removed block.
 - When scope or intent is unclear, ask rather than guess. A brief clarification upfront is cheaper than rework.
 - always push files from worktree to main unless I say otherwise
+- do not start a new web server unless I say otherwise

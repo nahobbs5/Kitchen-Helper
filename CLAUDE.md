@@ -19,3 +19,4 @@ This project uses git worktrees. Before editing any file, grep for duplicates ac
 - When scope or intent is unclear, ask rather than guess. A brief clarification upfront is cheaper than rework.
 - always push files from worktree to my main local directory unless I say otherwise.
 - do not push to GitHub unless I say so.
+- do not start a new web server unless I say otherwise
