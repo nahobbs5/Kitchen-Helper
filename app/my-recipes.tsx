@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  LayoutChangeEvent,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -69,10 +70,15 @@ export default function MyRecipesScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const { palette } = useAppSettings();
+  const scrollOffsetRef = useRef(0);
+  const heroLayoutYRef = useRef(0);
+  const heroCardLayoutYRef = useRef(0);
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
   const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
+  const [showStickySearch, setShowStickySearch] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedRecipeSlugs, setSelectedRecipeSlugs] = useState<string[]>([]);
   const [selectionAnchorSlug, setSelectionAnchorSlug] = useState<string | null>(null);
@@ -393,6 +399,38 @@ export default function MyRecipesScreen() {
   const allStatsBodyColor = allStatsActive ? palette.accentContrastText : palette.textMuted;
   const allStatsCountColor = allStatsActive ? palette.accentContrastText : '#000000';
 
+  function updateStickySearch(offsetY: number, threshold = searchStickyThreshold) {
+    if (threshold === null) {
+      setShowStickySearch(false);
+      return;
+    }
+    const shouldShow = offsetY >= threshold;
+    setShowStickySearch((current) => (current === shouldShow ? current : shouldShow));
+  }
+
+  function handleInlineSearchLayout(event: LayoutChangeEvent) {
+    const threshold = heroLayoutYRef.current + heroCardLayoutYRef.current + event.nativeEvent.layout.y;
+    setSearchStickyThreshold(threshold);
+    updateStickySearch(scrollOffsetRef.current, threshold);
+  }
+
+  function renderRecipeSearchInput(variant: 'inline' | 'sticky') {
+    return (
+      <TextInput
+        value={searchText}
+        onChangeText={setSearchText}
+        placeholder={isWide ? "Search recipes, categories, or tags" : "Search recipes…"}
+        placeholderTextColor={palette.searchPlaceholder}
+        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
+        style={[
+          styles.searchInput,
+          variant === 'sticky' && styles.referenceStickySearchInput,
+          { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+        ]}
+      />
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       {recipePendingShare ? (
@@ -410,8 +448,19 @@ export default function MyRecipesScreen() {
           </View>
         </View>
       ) : null}
-      <ScrollView contentContainerStyle={styles.page}>
+      <ScrollView
+        contentContainerStyle={styles.page}
+        onScroll={(event) => {
+          const offsetY = event.nativeEvent.contentOffset.y;
+          scrollOffsetRef.current = offsetY;
+          updateStickySearch(offsetY);
+        }}
+        scrollEventThrottle={16}
+      >
         <View
+          onLayout={(event) => {
+            heroLayoutYRef.current = event.nativeEvent.layout.y;
+          }}
           style={[
             styles.hero,
             isWide && styles.heroWide,
@@ -731,19 +780,15 @@ export default function MyRecipesScreen() {
 
           </View>
 
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+          <View
+            onLayout={(event) => {
+              heroCardLayoutYRef.current = event.nativeEvent.layout.y;
+            }}
+            style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}
+          >
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
 
-            <TextInput
-              value={searchText}
-              onChangeText={setSearchText}
-              placeholder={isWide ? "Search recipes, categories, or tags" : "Search recipes…"}
-              placeholderTextColor={palette.searchPlaceholder}
-              style={[
-                styles.searchInput,
-                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
-              ]}
-            />
+            {renderRecipeSearchInput('inline')}
 
             <View style={styles.servingsRow}>
               {categoryFilters.map((category) => {
@@ -1075,6 +1120,17 @@ export default function MyRecipesScreen() {
           </View> : null}
         </View>
       </ScrollView>
+      {showStickySearch ? (
+        <View
+          style={[
+            styles.referenceStickySearch,
+            isWide && styles.referenceStickySearchWide,
+            { backgroundColor: palette.background, borderColor: palette.borderAlt },
+          ]}
+        >
+          {renderRecipeSearchInput('sticky')}
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
