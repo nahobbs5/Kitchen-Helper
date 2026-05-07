@@ -1007,11 +1007,6 @@ export const kitchenStyles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '700',
   },
-  timerAlertDone: {
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '800',
-  },
   timerAlertDismissButton: {
     alignItems: 'center',
     justifyContent: 'center',

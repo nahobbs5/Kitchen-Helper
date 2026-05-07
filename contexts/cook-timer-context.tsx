@@ -49,7 +49,7 @@ function makeTimers(count: number): CookTimerSlot[] {
 const CookTimerContext = createContext<CookTimerContextValue | undefined>(undefined);
 
 function parseDurationInput(value: string) {
-  const trimmed = value.trim();
+  const trimmed = value.trim().replace(/\./g, ':');
 
   if (!trimmed) {
     return 0;

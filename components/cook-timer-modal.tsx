@@ -93,10 +93,12 @@ export function CookTimerModal() {
 
                 <TextInput
                   value={timer.durationInput}
-                  onChangeText={(value) => updateTimerDurationInput(timer.id, value)}
+                  onChangeText={(value) => updateTimerDurationInput(timer.id, value.replace(/\./g, ':'))}
                   placeholder="5 or 1:30"
                   placeholderTextColor={palette.searchPlaceholder}
                   editable={!timer.active}
+                  keyboardType="decimal-pad"
+                  inputMode="decimal"
                   style={[
                     styles.formInput,
                     styles.timerDurationInput,

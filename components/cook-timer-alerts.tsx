@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import {
   Animated,
   PanResponder,
+  Platform,
   Pressable,
   Text,
   useWindowDimensions,
@@ -108,7 +109,8 @@ function FinishedTimerAlertCard({ alert, isWide, onDismiss }: FinishedTimerAlert
   const translateX = useRef(new Animated.Value(-360)).current;
   const dismissingRef = useRef(false);
   const dismissDistance = isWide ? 520 : 380;
-  const dismissThreshold = isWide ? 120 : 84;
+  const dismissThreshold = isWide ? 92 : 72;
+  const dismissDuration = Platform.OS === 'web' ? 280 : 180;
 
   const dismiss = (direction: number) => {
     if (dismissingRef.current) {
@@ -118,7 +120,7 @@ function FinishedTimerAlertCard({ alert, isWide, onDismiss }: FinishedTimerAlert
     dismissingRef.current = true;
     Animated.timing(translateX, {
       toValue: direction * dismissDistance,
-      duration: 180,
+      duration: dismissDuration,
       useNativeDriver: true,
     }).start(() => onDismiss(alert.id));
   };
@@ -129,9 +131,13 @@ function FinishedTimerAlertCard({ alert, isWide, onDismiss }: FinishedTimerAlert
         Math.abs(gestureState.dx) > 8 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
       onPanResponderMove: (_, gestureState) => {
         translateX.setValue(gestureState.dx);
+
+        if (Math.abs(gestureState.dx) >= dismissThreshold) {
+          dismiss(gestureState.dx >= 0 ? 1 : -1);
+        }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (Math.abs(gestureState.dx) >= dismissThreshold) {
+        if (!dismissingRef.current && Math.abs(gestureState.dx) >= dismissThreshold) {
           dismiss(gestureState.dx >= 0 ? 1 : -1);
           return;
         }
@@ -185,7 +191,6 @@ function FinishedTimerAlertCard({ alert, isWide, onDismiss }: FinishedTimerAlert
             Timer finished
           </Text>
         </View>
-        <Text style={[styles.timerAlertDone, { color: palette.accent }]}>Done</Text>
       </View>
 
       <Pressable
