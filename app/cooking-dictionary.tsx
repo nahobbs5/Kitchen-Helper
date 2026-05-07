@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAppSettings } from '../contexts/settings-context';
@@ -13,6 +14,8 @@ import {
 } from '../data/cooking-dictionary';
 
 type TabKey = 'all' | 'general' | 'spices' | 'oils' | 'alcohol' | 'instruments';
+
+const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -35,10 +38,13 @@ const TAB_LABELS: Record<TabKey, string> = {
 export default function CookingDictionaryScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const isMobile = width < 768;
   const { palette } = useAppSettings();
+  const scrollRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [activeLetter, setActiveLetter] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   const sourceEntries = useMemo(() => {
     switch (activeTab) {
@@ -93,6 +99,10 @@ export default function CookingDictionaryScreen() {
     setSearchText('');
   }
 
+  function handleBackToTop() {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }
+
   const categoryTabs = (
     <View style={styles.numberGrid}>
       {TABS.map((tab) => {
@@ -119,7 +129,15 @@ export default function CookingDictionaryScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      <ScrollView contentContainerStyle={styles.page}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={[styles.page, isMobile && styles.dictionaryPageWithBackToTop]}
+        onScroll={(event) => {
+          const shouldShow = event.nativeEvent.contentOffset.y > BACK_TO_TOP_SCROLL_THRESHOLD;
+          setShowBackToTop((current) => (current === shouldShow ? current : shouldShow));
+        }}
+        scrollEventThrottle={16}
+      >
         <View
           style={[
             styles.hero,
@@ -233,6 +251,33 @@ export default function CookingDictionaryScreen() {
           </View>
         </View>
       </ScrollView>
+      {isMobile && showBackToTop ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Back to top"
+          onPress={handleBackToTop}
+          style={[
+            styles.dictionaryBackToTopButton,
+            { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
+          ]}
+        >
+          <ChevronUpIcon color={palette.accent} />
+        </Pressable>
+      ) : null}
     </SafeAreaView>
+  );
+}
+
+function ChevronUpIcon({ color }: { color: string }) {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 14L12 8L18 14"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
   );
 }

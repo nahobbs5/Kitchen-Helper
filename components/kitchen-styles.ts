@@ -11,6 +11,9 @@ export const kitchenStyles = StyleSheet.create({
     paddingBottom: 32,
     gap: 20,
   },
+  dictionaryPageWithBackToTop: {
+    paddingBottom: 104,
+  },
   homePageWithFloatingAction: {
     paddingBottom: 116,
   },
@@ -763,6 +766,25 @@ export const kitchenStyles = StyleSheet.create({
   settingsGearIcon: {
     fontSize: 18,
     fontWeight: '800',
+  },
+  dictionaryBackToTopButton: {
+    position: 'absolute',
+    left: '50%',
+    bottom: 24,
+    width: 46,
+    height: 46,
+    marginLeft: -23,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.9,
+    shadowColor: '#000',
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    zIndex: 30,
+    elevation: 10,
   },
   settingsOverlay: {
     position: 'absolute',

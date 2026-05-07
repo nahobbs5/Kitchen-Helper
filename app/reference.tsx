@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions, conversionSections } from '../components/sample-data';
@@ -16,6 +17,8 @@ import { useAppSettings } from '../contexts/settings-context';
 type MainTab = 'conversions' | 'substitutions' | 'dictionary';
 type SubSection = 'all' | 'allergy' | 'pantry';
 type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'alcohol' | 'instruments';
+
+const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'conversions', label: 'Conversions' },
@@ -46,8 +49,11 @@ export default function ReferenceScreen() {
   const { palette } = useAppSettings();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const isMobile = width < 768;
+  const scrollRef = useRef<ScrollView>(null);
 
   const [activeTab, setActiveTab] = useState<MainTab>('conversions');
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Conversions state
   const [convSection, setConvSection] = useState('All');
@@ -182,9 +188,24 @@ export default function ReferenceScreen() {
     return groups;
   }, [visibleDictEntries]);
 
+  function handleBackToTop() {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      <ScrollView contentContainerStyle={styles.page}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={[
+          styles.page,
+          isMobile && activeTab === 'dictionary' && styles.dictionaryPageWithBackToTop,
+        ]}
+        onScroll={(event) => {
+          const shouldShow = event.nativeEvent.contentOffset.y > BACK_TO_TOP_SCROLL_THRESHOLD;
+          setShowBackToTop((current) => (current === shouldShow ? current : shouldShow));
+        }}
+        scrollEventThrottle={16}
+      >
         <View
           style={[
             styles.hero,
@@ -564,6 +585,33 @@ export default function ReferenceScreen() {
           </View>
         )}
       </ScrollView>
+      {isMobile && activeTab === 'dictionary' && showBackToTop ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Back to top"
+          onPress={handleBackToTop}
+          style={[
+            styles.dictionaryBackToTopButton,
+            { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
+          ]}
+        >
+          <ChevronUpIcon color={palette.accent} />
+        </Pressable>
+      ) : null}
     </SafeAreaView>
+  );
+}
+
+function ChevronUpIcon({ color }: { color: string }) {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 14L12 8L18 14"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
   );
 }
