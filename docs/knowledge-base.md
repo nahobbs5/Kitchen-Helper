@@ -154,7 +154,7 @@ AsyncStorage is still used locally, but it is no longer the canonical recipe sto
 Right now it stores:
 
 - favorite recipes
-- saved settings like dark mode and keep-awake mode
+- saved settings like dark mode, keep-awake mode, timer count, confirm delete, and mobile vibration
 - auth sessions
 - per-user cached synced recipes
 - per-user cached imported-recipe overrides
@@ -398,6 +398,7 @@ Current capabilities:
 - a `Sample Recipes` screen for imported-only browsing of the sample Obsidian recipe set
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
+- sticky search bars on recipe and reference browsing screens
 - a `My Recipes` page backed by real Obsidian recipe notes
 - account-backed recipe sync across devices
 - recipe creation in a shared synced library
@@ -409,6 +410,7 @@ Current capabilities:
 - filtering recipes by category, cuisine region, favorites, and allergen tags
 - multi-select recipe filters for category, cuisine region, and allergen tags
 - searching recipes by title, category, cuisine region, and allergy tags
+- sticky search overlays for long recipe and reference lists
 - bulk recipe selection with checkboxes
 - desktop shift-click range selection
 - bulk metadata editing
@@ -427,7 +429,7 @@ Current capabilities:
 - dark mode
 - keep-screen-awake cook mode
 - a full-library PDF export from the Account screen
-- a shared cook timer popup with a configurable number of timer slots
+- a global shared cook timer popup/modal with a configurable number of timer slots
 - responsive layouts for both Android and web
 
 What it does not yet support:
@@ -543,6 +545,10 @@ Recent cleanup details that mattered here:
 - letters with no entries are visibly disabled
 - sorting was adjusted to behave more like a real glossary
 
+## Sticky Search
+
+Sticky search uses paired inline and overlay search inputs tied to scroll position on the main recipe and reference browsing surfaces, so search remains reachable after users scroll past the original search field.
+
 ## Settings System
 
 The app has a shared settings menu that can be opened from the gear icon in the shared header.
@@ -560,6 +566,7 @@ Current saved settings:
 - `Dark mode`
 - `Keep screen awake`
 - `Number of timers`
+- `Allow vibration`
 - `Confirm delete`
 
 How it works:
@@ -567,10 +574,11 @@ How it works:
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on launch
 - restore defaults is an immediate in-app action, not just a placeholder label
-- restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timer count to 3
+- restore defaults immediately resets dark mode to Off, keep screen awake to Off, vibration to On, confirm delete to On, and timer count to 3
 - dark mode swaps between centralized light and dark palettes
 - keep-awake mode uses `expo-keep-awake`
 - timer count controls how many timer slots the shared cook timer exposes and is clamped to `1-6`
+- allow vibration controls phone vibration when a cook timer ends; it defaults to On and only appears on iOS/Android
 - confirm delete controls whether single app-recipe deletion asks first
 - bulk delete still always confirms, even if the single-delete setting is turned off
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
@@ -783,7 +791,7 @@ The visual system is also intentional:
 
 ## Cook Timer
 
-The app now includes a shared cook timer popup available from the header on every screen.
+The app now includes a global shared cook timer popup/modal available from the header on every screen.
 
 Important files:
 
@@ -796,10 +804,10 @@ Current behavior:
 
 - configurable timer slots from `1-6`
 - custom timer names
-- whole-minute or `mm:ss` input
+- whole-minute or `mm:ss` input with numeric/decimal keyboard support (`.` is treated as `:`)
 - shrinking horizontal progress bars
 - beep at zero
-- vibration on supported native devices
+- optional vibration on supported native devices when `Allow vibration` is enabled
 - `Start`, `Pause`, and `Resume` labels that track real timer state
 - `Reset` stays disabled until the timer has actually been started
 

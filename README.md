@@ -27,6 +27,7 @@ The app currently includes:
 - a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
 - a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
+- sticky search bars on recipe and reference browsing screens
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
 - cloud-synced user recipes and recipe overrides backed by Supabase-compatible auth and database APIs
 - clickable recipe detail pages generated from Markdown
@@ -40,7 +41,7 @@ The app currently includes:
 - dark mode
 - a keep-screen-awake cook mode setting
 - an account page with sync controls, importer guidance, and a PDF export action for the full recipe library
-- a shared cook timer popup with a configurable number of timer slots
+- a global shared cook timer popup/modal with a configurable number of timer slots
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
 - scaled directions with per-step warnings, cue highlights, and local step edits
@@ -388,6 +389,7 @@ Current saved settings:
 - `Dark mode`
 - `Keep screen awake`
 - `Number of timers`
+- `Allow vibration`
 - `Confirm delete`
 
 How it works:
@@ -395,10 +397,11 @@ How it works:
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on app launch
 - restore defaults is a real immediate action in settings
-- restore defaults immediately resets dark mode to Off, keep screen awake to Off, confirm delete to On, and timers to 3
+- restore defaults immediately resets dark mode to Off, keep screen awake to Off, vibration to On, confirm delete to On, and timers to 3
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
 - number of timers controls how many cook-timer slots are available and is clamped to `1-6`
+- allow vibration controls phone vibration when a cook timer ends; it defaults to On and only appears on iOS/Android
 - confirm delete asks before deleting a saved app recipe and does not apply to bulk deletes
 
 Account page behavior:
@@ -512,15 +515,15 @@ Important files:
 
 ## Cook Timer
 
-The app now includes a shared cook timer popup available from the header.
+The app now includes a global shared cook timer popup/modal available from the header.
 
 Current timer behavior:
 
 - configurable timer slots from `1-6`
 - custom names
-- minutes or `mm:ss` input
+- whole-minute or `mm:ss` input with numeric/decimal keyboard support (`.` is treated as `:`)
 - shrinking horizontal progress bars
-- beep and vibration when a timer finishes
+- beep at zero and optional mobile vibration when `Allow vibration` is enabled
 - button labels that correctly distinguish `Start` from `Resume`
 - `Reset` is disabled until a timer has actually been started
 
@@ -618,8 +621,6 @@ Natural next steps from here:
 
 1. add more bulk actions like unfavorite or bulk tag removal
 2. improve dictionary formatting for very long entries
-3. add recipe search from the home screen
-4. standardize more recipe note formats so more metadata can be parsed cleanly
-5. add richer timer presets or recipe-step-linked timers
-
+3. standardize more recipe note formats so more metadata can be parsed cleanly
+4. add richer timer presets or recipe-step-linked timers
 
