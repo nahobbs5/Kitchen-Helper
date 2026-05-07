@@ -72,7 +72,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      <ScrollView contentContainerStyle={styles.page}>
+      <ScrollView contentContainerStyle={[styles.page, isMobile && styles.homePageWithFloatingAction]}>
         <View
           style={[
             styles.hero,
@@ -128,13 +128,14 @@ export default function HomeScreen() {
                     </Text>
                   </Pressable>
                 ))}
-                {isMobile ? addRecipeButton : <View style={styles.homeAddRecipeDesktopRow}>{addRecipeButton}</View>}
+                {isMobile ? null : <View style={styles.homeAddRecipeDesktopRow}>{addRecipeButton}</View>}
               </View>
             </View>
           </View>
 
         </View>
       </ScrollView>
+      {isMobile ? addRecipeButton : null}
     </SafeAreaView>
   );
 }

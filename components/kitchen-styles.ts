@@ -11,6 +11,9 @@ export const kitchenStyles = StyleSheet.create({
     paddingBottom: 32,
     gap: 20,
   },
+  homePageWithFloatingAction: {
+    paddingBottom: 116,
+  },
   hero: {
     backgroundColor: '#fff7ea',
     borderRadius: 28,
@@ -242,11 +245,13 @@ export const kitchenStyles = StyleSheet.create({
   },
   homeAddRecipeButtonFloating: {
     position: 'absolute',
-    right: -16,
-    bottom: -18,
+    right: 20,
+    bottom: 28,
     width: 72,
     height: 72,
     borderRadius: 999,
+    zIndex: 20,
+    elevation: 20,
   },
   homeAddRecipeButtonDesktop: {
     borderRadius: 999,
