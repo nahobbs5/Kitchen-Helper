@@ -15,6 +15,7 @@ import { AppPalette, darkPalette, lightPalette } from '../components/app-theme';
 type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
+  allowVibration: boolean;
   confirmDeleteEnabled: boolean;
   timerCount: number;
   loaded: boolean;
@@ -24,6 +25,7 @@ type SettingsContextValue = {
   closeSettings: () => void;
   toggleDarkMode: (value?: boolean) => void;
   toggleKeepScreenAwake: (value?: boolean) => void;
+  toggleAllowVibration: (value?: boolean) => void;
   toggleConfirmDelete: (value?: boolean) => void;
   setTimerCount: (value: number) => void;
   resetToDefaults: () => void;
@@ -36,6 +38,7 @@ export const MAX_TIMER_COUNT = 6;
 const DEFAULT_SETTINGS = {
   darkModeEnabled: false,
   keepScreenAwake: false,
+  allowVibration: true,
   confirmDeleteEnabled: true,
   timerCount: 3,
 };
@@ -49,6 +52,7 @@ const SettingsContext = createContext<SettingsContextValue | undefined>(undefine
 type StoredSettings = {
   darkModeEnabled?: boolean;
   keepScreenAwake?: boolean;
+  allowVibration?: boolean;
   confirmDeleteEnabled?: boolean;
   timerCount?: number;
 };
@@ -56,6 +60,7 @@ type StoredSettings = {
 export function SettingsProvider({ children }: PropsWithChildren) {
   const [darkModeEnabled, setDarkModeEnabled] = useState(DEFAULT_SETTINGS.darkModeEnabled);
   const [keepScreenAwake, setKeepScreenAwake] = useState(DEFAULT_SETTINGS.keepScreenAwake);
+  const [allowVibration, setAllowVibration] = useState(DEFAULT_SETTINGS.allowVibration);
   const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(DEFAULT_SETTINGS.confirmDeleteEnabled);
   const [timerCount, setTimerCount] = useState(DEFAULT_SETTINGS.timerCount);
   const [loaded, setLoaded] = useState(false);
@@ -80,6 +85,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           const parsed = JSON.parse(value) as StoredSettings;
           setDarkModeEnabled(parsed.darkModeEnabled ?? DEFAULT_SETTINGS.darkModeEnabled);
           setKeepScreenAwake(parsed.keepScreenAwake ?? DEFAULT_SETTINGS.keepScreenAwake);
+          setAllowVibration(parsed.allowVibration ?? DEFAULT_SETTINGS.allowVibration);
           setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? DEFAULT_SETTINGS.confirmDeleteEnabled);
           if (typeof parsed.timerCount === 'number' && parsed.timerCount >= MIN_TIMER_COUNT) {
             setTimerCount(clampTimerCount(parsed.timerCount));
@@ -111,11 +117,12 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       JSON.stringify({
         darkModeEnabled,
         keepScreenAwake,
+        allowVibration,
         confirmDeleteEnabled,
         timerCount,
       } satisfies StoredSettings)
     ).catch(() => {});
-  }, [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded]);
+  }, [allowVibration, confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded]);
 
   useEffect(() => {
     if (!loaded) {
@@ -149,6 +156,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     () => ({
       darkModeEnabled,
       keepScreenAwake,
+      allowVibration,
       confirmDeleteEnabled,
       timerCount,
       loaded,
@@ -160,17 +168,20 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setDarkModeEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       toggleKeepScreenAwake: (value?: boolean) =>
         setKeepScreenAwake((current) => (typeof value === 'boolean' ? value : !current)),
+      toggleAllowVibration: (value?: boolean) =>
+        setAllowVibration((current) => (typeof value === 'boolean' ? value : !current)),
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       setTimerCount: (value: number) => setTimerCount(clampTimerCount(value)),
       resetToDefaults: () => {
         setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
         setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
+        setAllowVibration(DEFAULT_SETTINGS.allowVibration);
         setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
         setTimerCount(DEFAULT_SETTINGS.timerCount);
       },
     }),
-    [confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded, isSettingsOpen]
+    [allowVibration, confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded, isSettingsOpen]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

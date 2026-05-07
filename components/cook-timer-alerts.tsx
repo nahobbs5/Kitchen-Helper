@@ -26,7 +26,7 @@ type FinishedTimerAlertCardProps = {
 
 export function CookTimerFinishedAlerts() {
   const { dismissFinishedTimerAlert, finishedTimerAlerts } = useCookTimer();
-  const { palette } = useAppSettings();
+  const { allowVibration, palette } = useAppSettings();
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
   const player = useAudioPlayer(timerBeep);
@@ -57,12 +57,16 @@ export function CookTimerFinishedAlerts() {
       player.play();
     } catch {}
 
-    if (finishedTimerAlerts.length > previousAlertCount) {
+    if (
+      allowVibration &&
+      (Platform.OS === 'ios' || Platform.OS === 'android') &&
+      finishedTimerAlerts.length > previousAlertCount
+    ) {
       Vibration.vibrate([0, 220, 120, 220]);
     }
 
     previousAlertCountRef.current = finishedTimerAlerts.length;
-  }, [finishedTimerAlerts.length, player]);
+  }, [allowVibration, finishedTimerAlerts.length, player]);
 
   useEffect(
     () => () => {

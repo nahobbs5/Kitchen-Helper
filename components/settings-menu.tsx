@@ -1,6 +1,6 @@
 import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
@@ -244,6 +244,7 @@ export function AccountButton() {
 
 export function SettingsMenuModal() {
   const {
+    allowVibration,
     closeSettings,
     confirmDeleteEnabled,
     darkModeEnabled,
@@ -255,6 +256,7 @@ export function SettingsMenuModal() {
     toggleConfirmDelete,
     toggleDarkMode,
     toggleKeepScreenAwake,
+    toggleAllowVibration,
     setTimerCount,
   } = useAppSettings();
   const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
@@ -361,7 +363,7 @@ export function SettingsMenuModal() {
               <View style={styles.settingsCopy}>
                 <Text style={[styles.settingsLabel, { color: palette.text }]}>Dark mode</Text>
                 <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-                  Switch the app to a darker reading palette on web and Android.
+                  Switch the app to a darker reading palette.
                 </Text>
               </View>
               <Pressable
@@ -385,6 +387,36 @@ export function SettingsMenuModal() {
                 </Text>
               </Pressable>
             </View>
+            {(Platform.OS === 'ios' || Platform.OS === 'android') ? (
+              <View style={styles.settingsRow}>
+                <View style={styles.settingsCopy}>
+                  <Text style={[styles.settingsLabel, { color: palette.text }]}>Allow vibration</Text>
+                  <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                    Allow phone vibration when a cook timer ends.
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => toggleAllowVibration()}
+                  style={[
+                    styles.numberButton,
+                    {
+                      minWidth: 72,
+                      backgroundColor: allowVibration ? palette.accentSoft : palette.elevatedAlt,
+                      borderColor: allowVibration ? palette.accentSoft : palette.borderAlt,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.numberButtonText,
+                      { color: allowVibration ? palette.accentContrastText : palette.text },
+                    ]}
+                  >
+                    {allowVibration ? 'On' : 'Off'}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
             <View style={styles.settingsRow}>
               <View style={styles.settingsCopy}>
                 <Text style={[styles.settingsLabel, { color: palette.text }]}>Number of timers</Text>
