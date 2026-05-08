@@ -21,6 +21,7 @@ import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import { shareRecipe, type ExportRecipe } from '../utils/export-recipes';
+import { formatCookTimeTag } from '../utils/recipe-metadata';
 
 const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
 const mobileHiddenAllergenFilters = new Set([
@@ -118,6 +119,9 @@ export default function MyRecipesScreen() {
               category: override.category,
               allergyFriendlyTags: override.allergyFriendlyTags,
               allergenTags: override.allergenTags,
+              prepTime: override.prepTime ?? recipe.prepTime,
+              cookTime: override.cookTime ?? recipe.cookTime,
+              servings: override.servings ?? recipe.servings,
               ingredients: override.ingredients,
               directions: override.directions,
               notes: override.notes,
@@ -1041,7 +1045,7 @@ export default function MyRecipesScreen() {
                         ))}
                       </View>
                     ) : null}
-                    {recipe.prepTime || recipe.cookTime ? (
+                    {recipe.prepTime || recipe.cookTime || recipe.servings ? (
                       <View style={styles.tagRow}>
                         {recipe.prepTime ? (
                           <View style={[styles.tag, { backgroundColor: palette.tag }]}>
@@ -1050,7 +1054,14 @@ export default function MyRecipesScreen() {
                         ) : null}
                         {recipe.cookTime ? (
                           <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>
+                              {formatCookTimeTag(recipe.category, recipe.cookTime)}
+                            </Text>
+                          </View>
+                        ) : null}
+                        {recipe.servings ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
                           </View>
                         ) : null}
                       </View>

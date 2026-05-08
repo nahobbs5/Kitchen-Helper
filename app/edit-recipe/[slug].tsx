@@ -14,6 +14,7 @@ import {
   toggleAllergenSelection,
   toggleFriendlySelection,
 } from '../../utils/allergen-tags';
+import { extractRecipeMetadata, formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const categoryOptions = [
   { label: 'Appetizer', value: 'Appetizers' },
@@ -61,6 +62,9 @@ export default function EditRecipeScreen() {
       category: override?.category ?? obsidianRecipe.category,
       ingredients: override?.ingredients ?? obsidianRecipe.ingredients,
       directions: override?.directions ?? obsidianRecipe.directions,
+      prepTime: override?.prepTime ?? obsidianRecipe.prepTime,
+      cookTime: override?.cookTime ?? obsidianRecipe.cookTime,
+      servings: override?.servings ?? obsidianRecipe.servings,
       notes: override?.notes ?? null,
       cuisineRegion: override?.cuisineRegion ?? null,
       sourceInfo: override?.sourceInfo ?? null,
@@ -71,6 +75,9 @@ export default function EditRecipeScreen() {
   const [recipeName, setRecipeName] = useState(recipe?.title ?? '');
   const [ingredients, setIngredients] = useState(recipe ? sectionText(recipe.ingredients) : '');
   const [directions, setDirections] = useState(recipe ? sectionText(recipe.directions) : '');
+  const [prepTime, setPrepTime] = useState(recipe?.prepTime ?? '');
+  const [cookTime, setCookTime] = useState(recipe?.cookTime ?? '');
+  const [servings, setServings] = useState(recipe?.servings ?? '');
   const [notes, setNotes] = useState(recipe?.notes ?? '');
   const [cuisineRegion, setCuisineRegion] = useState(recipe?.cuisineRegion ?? '');
   const [allergenTags, setAllergenTags] = useState<string[]>(recipe?.allergenTags ?? []);
@@ -97,6 +104,9 @@ export default function EditRecipeScreen() {
     setRecipeName(recipe.title);
     setIngredients(sectionText(recipe.ingredients));
     setDirections(sectionText(recipe.directions));
+    setPrepTime(recipe.prepTime ?? '');
+    setCookTime(recipe.cookTime ?? '');
+    setServings(recipe.servings ?? '');
     setNotes(recipe.notes ?? '');
     setCuisineRegion(recipe.cuisineRegion ?? '');
     setAllergenTags(recipe.allergenTags ?? []);
@@ -127,6 +137,9 @@ export default function EditRecipeScreen() {
       title: recipeName,
       ingredientsText: ingredients,
       directionsText: directions,
+      prepTime,
+      cookTime,
+      servings,
       notes,
       cuisineRegion,
       sourceInfo: recipe?.sourceInfo ?? null,
@@ -175,6 +188,38 @@ export default function EditRecipeScreen() {
   function handleAutoDetectTags() {
     setAllergenTags(detectedTags.allergenTags);
     setAllergyFriendlyTags(detectedTags.allergyFriendlyTags);
+  }
+
+  function applyExtractedMetadata(nextIngredients: string, nextDirections: string, nextNotes = notes) {
+    const extracted = extractRecipeMetadata({
+      ingredientsText: nextIngredients,
+      directionsText: nextDirections,
+      notesText: nextNotes,
+    });
+
+    if (extracted.prepTime && !prepTime.trim()) {
+      setPrepTime(extracted.prepTime);
+    }
+
+    if (extracted.cookTime && !cookTime.trim()) {
+      setCookTime(extracted.cookTime);
+    }
+
+    if (extracted.servings && !servings.trim()) {
+      setServings(extracted.servings);
+    }
+
+    return extracted;
+  }
+
+  function handleIngredientsChange(value: string) {
+    const extracted = applyExtractedMetadata(value, directions);
+    setIngredients(extracted.ingredientsText);
+  }
+
+  function handleDirectionsChange(value: string) {
+    const extracted = applyExtractedMetadata(ingredients, value);
+    setDirections(extracted.directionsText);
   }
 
   if (!loaded) {
@@ -321,7 +366,7 @@ export default function EditRecipeScreen() {
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Ingredients *</Text>
                   <TextInput
                     value={ingredients}
-                    onChangeText={setIngredients}
+                    onChangeText={handleIngredientsChange}
                     placeholderTextColor={palette.searchPlaceholder}
                     multiline
                     style={[
@@ -337,9 +382,12 @@ export default function EditRecipeScreen() {
 
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Directions *</Text>
+                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                    One step per line. Numbers optional.
+                  </Text>
                   <TextInput
                     value={directions}
-                    onChangeText={setDirections}
+                    onChangeText={handleDirectionsChange}
                     placeholderTextColor={palette.searchPlaceholder}
                     multiline
                     style={[
@@ -354,7 +402,54 @@ export default function EditRecipeScreen() {
                 </View>
 
                 <View style={styles.formField}>
+                  <View style={styles.metadataRow}>
+                    <View style={styles.metadataField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Prep time</Text>
+                      <TextInput
+                        value={prepTime}
+                        onChangeText={setPrepTime}
+                        placeholder="15 minutes"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.metadataField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Cook/bake time</Text>
+                      <TextInput
+                        value={cookTime}
+                        onChangeText={setCookTime}
+                        placeholder="30 minutes"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.metadataField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Servings</Text>
+                      <TextInput
+                        value={servings}
+                        onChangeText={setServings}
+                        placeholder="Serves 4"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Notes</Text>
+                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                    Optional notes, tips, serving sizes, etc.
+                  </Text>
                   <TextInput
                     value={notes}
                     onChangeText={setNotes}
@@ -523,6 +618,27 @@ export default function EditRecipeScreen() {
                       ? `${directions.trim().split('\n').filter(Boolean).length} direction line(s) added`
                       : 'No directions entered yet'}
                   </Text>
+                  {prepTime.trim() || cookTime.trim() || servings.trim() ? (
+                    <View style={styles.tagRow}>
+                      {prepTime.trim() ? (
+                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                          <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {prepTime.trim()}</Text>
+                        </View>
+                      ) : null}
+                      {cookTime.trim() ? (
+                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                          <Text style={[styles.tagText, { color: palette.tagText }]}>
+                            {formatCookTimeTag(category, cookTime.trim())}
+                          </Text>
+                        </View>
+                      ) : null}
+                      {servings.trim() ? (
+                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                          <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {servings.trim()}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  ) : null}
                   {cuisineRegion.trim() ? (
                     <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
                       Cuisine region: {cuisineRegion.trim()}

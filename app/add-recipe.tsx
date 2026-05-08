@@ -23,6 +23,7 @@ import {
   toggleFriendlySelection,
 } from '../utils/allergen-tags';
 import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
+import { extractRecipeMetadata, formatCookTimeTag } from '../utils/recipe-metadata';
 import { parseRecipeFromHtml } from '../utils/web-recipe-import';
 
 const categoryOptions = [
@@ -57,6 +58,9 @@ export default function AddRecipeScreen() {
   const [sourceInfo, setSourceInfo] = useState<{ websiteName: string | null; author: string | null; url: string | null } | null>(null);
   const [ingredients, setIngredients] = useState('');
   const [directions, setDirections] = useState('');
+  const [prepTime, setPrepTime] = useState('');
+  const [cookTime, setCookTime] = useState('');
+  const [servings, setServings] = useState('');
   const [notes, setNotes] = useState('');
   const [cuisineRegion, setCuisineRegion] = useState('');
   const [allergenTags, setAllergenTags] = useState<string[]>([]);
@@ -111,6 +115,9 @@ export default function AddRecipeScreen() {
       title: recipeName,
       ingredientsText: ingredients,
       directionsText: directions,
+      prepTime,
+      cookTime,
+      servings,
       notes,
       cuisineRegion,
       sourceInfo,
@@ -159,9 +166,53 @@ export default function AddRecipeScreen() {
       setDirections(parsed.directionsText);
     }
 
+    if (parsed.prepTime) {
+      setPrepTime(parsed.prepTime);
+    }
+
+    if (parsed.cookTime) {
+      setCookTime(parsed.cookTime);
+    }
+
+    if (parsed.servings) {
+      setServings(parsed.servings);
+    }
+
     if (parsed.notesText) {
       setNotes(parsed.notesText);
     }
+  }
+
+  function applyExtractedMetadata(nextIngredients: string, nextDirections: string, nextNotes = notes) {
+    const extracted = extractRecipeMetadata({
+      ingredientsText: nextIngredients,
+      directionsText: nextDirections,
+      notesText: nextNotes,
+    });
+
+    if (extracted.prepTime && !prepTime.trim()) {
+      setPrepTime(extracted.prepTime);
+    }
+
+    if (extracted.cookTime && !cookTime.trim()) {
+      setCookTime(extracted.cookTime);
+    }
+
+    if (extracted.servings && !servings.trim()) {
+      setServings(extracted.servings);
+    }
+
+    return extracted;
+  }
+
+  function handleIngredientsChange(value: string) {
+    const extracted = applyExtractedMetadata(value, directions);
+    setIngredients(extracted.ingredientsText);
+  }
+
+  function handleDirectionsChange(value: string) {
+    const extracted = applyExtractedMetadata(ingredients, value);
+    setDirections(extracted.directionsText);
   }
 
   async function handleImportFromWebsite() {
@@ -200,6 +251,18 @@ export default function AddRecipeScreen() {
 
       if (imported.directionsText) {
         setDirections(imported.directionsText);
+      }
+
+      if (imported.prepTime) {
+        setPrepTime(imported.prepTime);
+      }
+
+      if (imported.cookTime) {
+        setCookTime(imported.cookTime);
+      }
+
+      if (imported.servings) {
+        setServings(imported.servings);
       }
 
       setSourceInfo(imported.source);
@@ -455,9 +518,6 @@ export default function AddRecipeScreen() {
 
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Category *</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    Choose the main shelf this recipe belongs in.
-                  </Text>
                   <View style={styles.servingsRow}>
                     {categoryOptions.map((option) => {
                       const isActive = category === option.value;
@@ -530,7 +590,7 @@ export default function AddRecipeScreen() {
                   </Text>
                   <TextInput
                     value={ingredients}
-                    onChangeText={setIngredients}
+                    onChangeText={handleIngredientsChange}
                     placeholder={'2 cups flour\n1 teaspoon salt\n1/2 cup butter'}
                     placeholderTextColor={palette.searchPlaceholder}
                     multiline
@@ -548,11 +608,11 @@ export default function AddRecipeScreen() {
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Directions *</Text>
                   <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    Step-by-step instructions can be entered as plain text for now.
+                    One step per line. Numbers optional.
                   </Text>
                   <TextInput
                     value={directions}
-                    onChangeText={setDirections}
+                    onChangeText={handleDirectionsChange}
                     placeholder={'1. Preheat the oven.\n2. Mix the ingredients.\n3. Bake until golden.'}
                     placeholderTextColor={palette.searchPlaceholder}
                     multiline
@@ -568,9 +628,53 @@ export default function AddRecipeScreen() {
                 </View>
 
                 <View style={styles.formField}>
+                  <View style={styles.metadataRow}>
+                    <View style={styles.metadataField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Prep time</Text>
+                      <TextInput
+                        value={prepTime}
+                        onChangeText={setPrepTime}
+                        placeholder="15 minutes"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.metadataField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Cook/bake time</Text>
+                      <TextInput
+                        value={cookTime}
+                        onChangeText={setCookTime}
+                        placeholder="30 minutes"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.metadataField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Servings</Text>
+                      <TextInput
+                        value={servings}
+                        onChangeText={setServings}
+                        placeholder="Serves 4"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Notes</Text>
                   <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    Optional notes, tips, serving reminders, or OCR cleanup notes.
+                    Optional notes, tips, serving sizes, etc.
                   </Text>
                   <TextInput
                     value={notes}
@@ -713,6 +817,27 @@ export default function AddRecipeScreen() {
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
                     {directions.trim() ? directions.trim() : 'No directions entered yet'}
                   </Text>
+                  {prepTime.trim() || cookTime.trim() || servings.trim() ? (
+                    <View style={styles.tagRow}>
+                      {prepTime.trim() ? (
+                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                          <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {prepTime.trim()}</Text>
+                        </View>
+                      ) : null}
+                      {cookTime.trim() ? (
+                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                          <Text style={[styles.tagText, { color: palette.tagText }]}>
+                            {formatCookTimeTag(category, cookTime.trim())}
+                          </Text>
+                        </View>
+                      ) : null}
+                      {servings.trim() ? (
+                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                          <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {servings.trim()}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  ) : null}
                   {notes.trim() ? (
                     <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>Notes included</Text>
                   ) : (

@@ -1,4 +1,5 @@
 import { splitDirectionsText } from './scaled-directions';
+import { extractRecipeMetadata, normalizeIsoDuration } from './recipe-metadata';
 
 type ImportedRecipe = {
   title: string;
@@ -9,6 +10,9 @@ type ImportedRecipe = {
   } | null;
   ingredientsText: string;
   directionsText: string;
+  prepTime: string | null;
+  cookTime: string | null;
+  servings: string | null;
   suggestedCategory: string | null;
 };
 
@@ -27,6 +31,22 @@ function stripHtml(value: string) {
 
 function normalizeText(value: unknown) {
   return typeof value === 'string' ? stripHtml(value) : '';
+}
+
+function normalizeYield(value: unknown): string {
+  if (!value) {
+    return '';
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    return normalizeText(String(value));
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeYield(item)).filter(Boolean).join(', ');
+  }
+
+  return '';
 }
 
 function normalizeAuthor(author: unknown): string {
@@ -176,6 +196,10 @@ export function parseRecipeFromHtml(url: string, html: string): ImportedRecipe {
     ? recipeNode.recipeIngredient.map((item: unknown) => normalizeText(item)).filter(Boolean).join('\n')
     : '';
   const directionsText = extractInstructions(recipeNode?.recipeInstructions).join('\n');
+  const extractedMetadata = extractRecipeMetadata({ ingredientsText, directionsText });
+  const prepTime = normalizeIsoDuration(recipeNode?.prepTime) || extractedMetadata.prepTime;
+  const cookTime = normalizeIsoDuration(recipeNode?.cookTime) || extractedMetadata.cookTime;
+  const servings = normalizeYield(recipeNode?.recipeYield) || extractedMetadata.servings;
   const suggestedCategory = mapCategory(normalizeText(recipeNode?.recipeCategory));
 
   return {
@@ -187,8 +211,11 @@ export function parseRecipeFromHtml(url: string, html: string): ImportedRecipe {
           url,
         }
       : null,
-    ingredientsText,
-    directionsText,
+    ingredientsText: extractedMetadata.ingredientsText,
+    directionsText: extractedMetadata.directionsText,
+    prepTime: prepTime || null,
+    cookTime: cookTime || null,
+    servings: servings || null,
     suggestedCategory,
   };
 }

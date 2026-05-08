@@ -10,6 +10,7 @@ import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
 const servingTargets = [2, 4, 8] as const;
@@ -249,6 +250,23 @@ export default function UserRecipeScreen() {
                   <Text style={styles.cuisineTagText}>{recipe.cuisineRegion}</Text>
                 </View>
               ) : null}
+              {recipe.prepTime ? (
+                <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                  <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
+                </View>
+              ) : null}
+              {recipe.cookTime ? (
+                <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                  <Text style={[styles.tagText, { color: palette.tagText }]}>
+                    {formatCookTimeTag(recipe.category, recipe.cookTime)}
+                  </Text>
+                </View>
+              ) : null}
+              {recipe.servings ? (
+                <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                  <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -256,8 +274,9 @@ export default function UserRecipeScreen() {
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Scale ingredients</Text>
             <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Since this form does not ask for servings yet, these buttons act as multipliers for
-              the ingredient list.
+              {recipe.servings
+                ? `Saved serving size: ${recipe.servings}. These buttons scale the ingredient list by multiplier.`
+                : 'No serving size is saved yet, so these buttons act as multipliers for the ingredient list.'}
             </Text>
 
             <View style={styles.servingsRow}>

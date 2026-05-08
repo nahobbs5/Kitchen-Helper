@@ -72,6 +72,9 @@ type NewUserRecipeInput = {
   notes?: string;
   cuisineRegion?: string | null;
   sourceInfo?: RecipeSource;
+  prepTime?: string | null;
+  cookTime?: string | null;
+  servings?: string | null;
   allergyFriendlyTags?: string[];
   allergenTags?: string[];
 };
@@ -96,6 +99,9 @@ export type RecipeOverride = {
   ingredients: RecipeSection[];
   directions: RecipeSection[];
   directionStepOverrides: Record<string, string>;
+  prepTime: string | null;
+  cookTime: string | null;
+  servings: string | null;
   notes: string | null;
   cuisineRegion: string | null;
   sourceInfo: RecipeSource;
@@ -205,6 +211,10 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function normalizeOptionalString(value: string | null | undefined) {
+  return value?.trim() ? value.trim() : null;
+}
+
 function toSection(text: string): RecipeSection[] {
   const items = text
     .split('\n')
@@ -284,6 +294,9 @@ function normalizeRecipeOverride(recipe: unknown): RecipeOverride {
       record.directionStepOverrides && typeof record.directionStepOverrides === 'object'
         ? (record.directionStepOverrides as Record<string, string>)
         : {},
+    prepTime: typeof record.prepTime === 'string' ? record.prepTime : null,
+    cookTime: typeof record.cookTime === 'string' ? record.cookTime : null,
+    servings: typeof record.servings === 'string' ? record.servings : null,
     notes: typeof record.notes === 'string' ? record.notes : null,
     cuisineRegion: typeof record.cuisineRegion === 'string' ? record.cuisineRegion : null,
     sourceInfo: normalizeSource(record.sourceInfo, record),
@@ -333,6 +346,9 @@ function mapSyncedRecipeOverride(record: SyncedRecipeOverrideRecord): RecipeOver
     ingredients: record.ingredients ?? [],
     directions: record.directions ?? [],
     directionStepOverrides: record.direction_step_overrides ?? {},
+    prepTime: record.prep_time,
+    cookTime: record.cook_time,
+    servings: record.servings,
     notes: record.notes,
     cuisineRegion: record.cuisine_region,
     sourceInfo: normalizeSource(record.source_info),
@@ -380,6 +396,9 @@ function toSyncedRecipeOverrideRecord(recipe: RecipeOverride): SyncedRecipeOverr
     ingredients: recipe.ingredients,
     directions: recipe.directions,
     direction_step_overrides: recipe.directionStepOverrides,
+    prep_time: recipe.prepTime,
+    cook_time: recipe.cookTime,
+    servings: recipe.servings,
     notes: recipe.notes,
     cuisine_region: recipe.cuisineRegion,
     source_info: recipe.sourceInfo,
@@ -849,10 +868,10 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             title,
             category: input.category,
             source: 'App Storage',
-            prepTime: null,
-            cookTime: null,
+            prepTime: normalizeOptionalString(input.prepTime),
+            cookTime: normalizeOptionalString(input.cookTime),
             totalTime: null,
-            servings: null,
+            servings: normalizeOptionalString(input.servings),
             allergyFriendlyTags: input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags,
             allergenTags: input.allergenTags ?? inferredTags.allergenTags,
             ingredients: toSection(input.ingredientsText),
@@ -910,6 +929,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               allergyFriendlyTags:
                 existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
               allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
+              prepTime: existingOverride?.prepTime ?? baseRecipe.prepTime,
+              cookTime: existingOverride?.cookTime ?? baseRecipe.cookTime,
+              servings: existingOverride?.servings ?? baseRecipe.servings,
               ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
               directions: existingOverride?.directions ?? baseRecipe.directions,
               directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
@@ -1003,6 +1025,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
                 allergyFriendlyTags:
                   existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
                 allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
+                prepTime: existingOverride?.prepTime ?? baseRecipe.prepTime,
+                cookTime: existingOverride?.cookTime ?? baseRecipe.cookTime,
+                servings: existingOverride?.servings ?? baseRecipe.servings,
                 ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
                 directions: existingOverride?.directions ?? baseRecipe.directions,
                 directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
@@ -1102,6 +1127,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
           const notes = input.notes?.trim() ? input.notes.trim() : null;
           const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
           const sourceInfo = normalizeSource(input.sourceInfo);
+          const prepTime = normalizeOptionalString(input.prepTime);
+          const cookTime = normalizeOptionalString(input.cookTime);
+          const servings = normalizeOptionalString(input.servings);
           const allergyFriendlyTags = input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags;
           const allergenTags = input.allergenTags ?? inferredTags.allergenTags;
 
@@ -1121,6 +1149,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               category: input.category,
               allergyFriendlyTags,
               allergenTags,
+              prepTime,
+              cookTime,
+              servings,
               ingredients: ingredientsSection,
               directionStepOverrides: buildDirectionStepOverrides(
                 currentRecipe.originalDirections,
@@ -1171,6 +1202,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             category: input.category,
             allergyFriendlyTags,
             allergenTags,
+            prepTime,
+            cookTime,
+            servings,
             ingredients: ingredientsSection,
             directions: directionsSection,
             directionStepOverrides: baseRecipe
@@ -1299,6 +1333,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
               category: input.category ?? existingOverride?.category ?? baseRecipe.category,
               allergyFriendlyTags: nextFriendlyTags,
               allergenTags: nextAllergenTags,
+              prepTime: existingOverride?.prepTime ?? baseRecipe.prepTime,
+              cookTime: existingOverride?.cookTime ?? baseRecipe.cookTime,
+              servings: existingOverride?.servings ?? baseRecipe.servings,
               ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
               directions: existingOverride?.directions ?? baseRecipe.directions,
               directionStepOverrides: existingOverride?.directionStepOverrides ?? {},
@@ -1433,6 +1470,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             allergyFriendlyTags:
               existingOverride?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
             allergenTags: existingOverride?.allergenTags ?? baseRecipe.allergenTags,
+            prepTime: existingOverride?.prepTime ?? baseRecipe.prepTime,
+            cookTime: existingOverride?.cookTime ?? baseRecipe.cookTime,
+            servings: existingOverride?.servings ?? baseRecipe.servings,
             ingredients: existingOverride?.ingredients ?? baseRecipe.ingredients,
             directions: nextDirections,
             directionStepOverrides: buildDirectionStepOverrides(baseRecipe.directions, nextDirections),

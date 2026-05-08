@@ -1,8 +1,13 @@
+import { extractRecipeMetadata } from './recipe-metadata';
+
 export type ParsedOcrRecipe = {
   title: string;
   ingredientsText: string;
   directionsText: string;
   notesText: string;
+  prepTime: string | null;
+  cookTime: string | null;
+  servings: string | null;
 };
 
 const ingredientHeadingPattern = /^(ingredients?|ingredient list)$/i;
@@ -96,19 +101,35 @@ export function parseOcrRecipeText(rawText: string): ParsedOcrRecipe {
   if (ingredientLines.length === 0 && directionLines.length === 0) {
     const fallbackIngredients = introLines.filter(isLikelyIngredientLine);
     const fallbackDirections = introLines.filter((line) => !isLikelyIngredientLine(line));
+    const extracted = extractRecipeMetadata({
+      ingredientsText: normalizeBlock(fallbackIngredients),
+      directionsText: normalizeBlock(fallbackDirections),
+    });
 
     return {
       title,
-      ingredientsText: normalizeBlock(fallbackIngredients),
-      directionsText: normalizeBlock(fallbackDirections),
+      ingredientsText: extracted.ingredientsText,
+      directionsText: extracted.directionsText,
       notesText: '',
+      prepTime: extracted.prepTime,
+      cookTime: extracted.cookTime,
+      servings: extracted.servings,
     };
   }
 
-  return {
-    title,
+  const extracted = extractRecipeMetadata({
     ingredientsText: normalizeBlock(ingredientLines),
     directionsText: normalizeBlock(directionLines),
     notesText: normalizeBlock(notesLines),
+  });
+
+  return {
+    title,
+    ingredientsText: extracted.ingredientsText,
+    directionsText: extracted.directionsText,
+    notesText: extracted.notesText,
+    prepTime: extracted.prepTime,
+    cookTime: extracted.cookTime,
+    servings: extracted.servings,
   };
 }

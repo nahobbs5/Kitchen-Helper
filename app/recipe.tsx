@@ -15,6 +15,7 @@ import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
+import { formatCookTimeTag } from '../utils/recipe-metadata';
 
 const sampleRecipeCategories = ['Appetizers', 'Dessert', 'Entree', 'Breakfast'] as const;
 
@@ -258,7 +259,9 @@ export default function SampleRecipesScreen() {
                         ) : null}
                         {recipe.cookTime ? (
                           <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>
+                              {formatCookTimeTag(recipe.category, recipe.cookTime)}
+                            </Text>
                           </View>
                         ) : null}
                         {recipe.servings ? (

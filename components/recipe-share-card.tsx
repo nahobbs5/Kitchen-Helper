@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { type ExportRecipe } from '../utils/export-recipes';
+import { formatCookTimeTag } from '../utils/recipe-metadata';
 
 type Props = {
   recipe: ExportRecipe;
@@ -40,7 +41,7 @@ export function RecipeShareCard({ onLayout, recipe }: Props) {
     recipe.sourceLabel,
     recipe.cuisineRegion ? `Cuisine: ${recipe.cuisineRegion}` : null,
     recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
-    recipe.cookTime ? `Cook: ${recipe.cookTime}` : null,
+    recipe.cookTime ? formatCookTimeTag(recipe.category, recipe.cookTime) : null,
     recipe.totalTime ? `Total: ${recipe.totalTime}` : null,
     recipe.servings,
   ].filter(Boolean) as string[];

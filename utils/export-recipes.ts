@@ -7,6 +7,7 @@ import { captureRef } from 'react-native-view-shot';
 
 import { type RecipeSource, type RecipeOverride, type UserRecipe } from '../contexts/custom-recipes-context';
 import { obsidianRecipes, type ObsidianRecipe, type RecipeSection } from '../data/obsidian-recipes';
+import { formatCookTimeTag } from './recipe-metadata';
 
 export type ExportRecipe = {
   slug: string;
@@ -111,7 +112,7 @@ function renderMetadata(recipe: ExportRecipe) {
     recipe.category,
     recipe.cuisineRegion ? `Cuisine: ${recipe.cuisineRegion}` : null,
     recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
-    recipe.cookTime ? `Cook: ${recipe.cookTime}` : null,
+    recipe.cookTime ? formatCookTimeTag(recipe.category, recipe.cookTime) : null,
     recipe.totalTime ? `Total: ${recipe.totalTime}` : null,
     recipe.servings ? recipe.servings : null,
   ].filter(Boolean) as string[];

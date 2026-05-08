@@ -666,6 +666,16 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 15,
     color: '#2c2219',
   },
+  metadataRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  metadataField: {
+    flexGrow: 1,
+    flexBasis: 150,
+    gap: 8,
+  },
   formTextArea: {
     minHeight: 140,
     textAlignVertical: 'top',

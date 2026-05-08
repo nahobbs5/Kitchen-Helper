@@ -11,6 +11,7 @@ import { useAppSettings } from '../../contexts/settings-context';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
 const servingTargets = [2, 4, 8] as const;
@@ -32,6 +33,9 @@ export default function ObsidianRecipeScreen() {
         category: override?.category ?? baseRecipe.category,
         allergyFriendlyTags: override?.allergyFriendlyTags ?? baseRecipe.allergyFriendlyTags,
         allergenTags: override?.allergenTags ?? baseRecipe.allergenTags,
+        prepTime: override?.prepTime ?? baseRecipe.prepTime,
+        cookTime: override?.cookTime ?? baseRecipe.cookTime,
+        servings: override?.servings ?? baseRecipe.servings,
         ingredients: override?.ingredients ?? baseRecipe.ingredients,
         directions: override?.directions ?? baseRecipe.directions,
         notes: override?.notes ?? null,
@@ -295,7 +299,9 @@ export default function ObsidianRecipeScreen() {
                 ) : null}
                 {recipe.cookTime ? (
                   <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                    <Text style={[styles.tagText, { color: palette.tagText }]}>Cook: {recipe.cookTime}</Text>
+                    <Text style={[styles.tagText, { color: palette.tagText }]}>
+                      {formatCookTimeTag(recipe.category, recipe.cookTime)}
+                    </Text>
                   </View>
                 ) : null}
                 {recipe.totalTime ? (
@@ -438,11 +444,26 @@ export default function ObsidianRecipeScreen() {
                     {recipe.notes ? (
                       <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
                     ) : null}
-                    {recipe.prepTime ? (
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Prep time: {recipe.prepTime}</Text>
-                    ) : null}
-                    {recipe.cookTime ? (
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Cook time: {recipe.cookTime}</Text>
+                    {recipe.prepTime || recipe.cookTime || recipe.servings ? (
+                      <View style={styles.tagRow}>
+                        {recipe.prepTime ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
+                          </View>
+                        ) : null}
+                        {recipe.cookTime ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>
+                              {formatCookTimeTag(recipe.category, recipe.cookTime)}
+                            </Text>
+                          </View>
+                        ) : null}
+                        {recipe.servings ? (
+                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                            <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
+                          </View>
+                        ) : null}
+                      </View>
                     ) : null}
                     {recipe.totalTime ? (
                       <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Total time: {recipe.totalTime}</Text>

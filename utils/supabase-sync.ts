@@ -57,6 +57,9 @@ export type SyncedRecipeOverrideRecord = {
   ingredients: RecipeSection[];
   directions: RecipeSection[];
   direction_step_overrides: Record<string, string>;
+  prep_time: string | null;
+  cook_time: string | null;
+  servings: string | null;
   notes: string | null;
   cuisine_region: string | null;
   source_info: {
