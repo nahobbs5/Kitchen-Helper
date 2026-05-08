@@ -12,12 +12,22 @@ import { deactivateKeepAwake, activateKeepAwakeAsync } from 'expo-keep-awake';
 
 import { AppPalette, darkPalette, lightPalette } from '../components/app-theme';
 
+export const TIMER_SOUND_OPTIONS = [
+  { id: 'beep-beep', label: 'Beep Beep' },
+  { id: 'soft-chime', label: 'Soft Chime' },
+  { id: 'classic-bell', label: 'Classic Bell' },
+  { id: 'urgent-alarm', label: 'Urgent Alarm' },
+] as const;
+
+export type TimerSoundId = (typeof TIMER_SOUND_OPTIONS)[number]['id'];
+
 type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
   allowVibration: boolean;
   confirmDeleteEnabled: boolean;
   timerCount: number;
+  timerSound: TimerSoundId;
   loaded: boolean;
   palette: AppPalette;
   isSettingsOpen: boolean;
@@ -28,6 +38,7 @@ type SettingsContextValue = {
   toggleAllowVibration: (value?: boolean) => void;
   toggleConfirmDelete: (value?: boolean) => void;
   setTimerCount: (value: number) => void;
+  setTimerSound: (value: TimerSoundId) => void;
   resetToDefaults: () => void;
 };
 
@@ -35,16 +46,28 @@ const SETTINGS_KEY = 'kitchen-helper.app-settings';
 export const MIN_TIMER_COUNT = 1;
 export const MAX_TIMER_COUNT = 6;
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: {
+  darkModeEnabled: boolean;
+  keepScreenAwake: boolean;
+  allowVibration: boolean;
+  confirmDeleteEnabled: boolean;
+  timerCount: number;
+  timerSound: TimerSoundId;
+} = {
   darkModeEnabled: false,
   keepScreenAwake: false,
   allowVibration: true,
   confirmDeleteEnabled: true,
   timerCount: 3,
+  timerSound: 'beep-beep',
 };
 
 function clampTimerCount(value: number) {
   return Math.max(MIN_TIMER_COUNT, Math.min(MAX_TIMER_COUNT, value));
+}
+
+function isTimerSoundId(value: unknown): value is TimerSoundId {
+  return TIMER_SOUND_OPTIONS.some((option) => option.id === value);
 }
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -55,6 +78,7 @@ type StoredSettings = {
   allowVibration?: boolean;
   confirmDeleteEnabled?: boolean;
   timerCount?: number;
+  timerSound?: string;
 };
 
 export function SettingsProvider({ children }: PropsWithChildren) {
@@ -63,6 +87,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
   const [allowVibration, setAllowVibration] = useState(DEFAULT_SETTINGS.allowVibration);
   const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(DEFAULT_SETTINGS.confirmDeleteEnabled);
   const [timerCount, setTimerCount] = useState(DEFAULT_SETTINGS.timerCount);
+  const [timerSound, setTimerSound] = useState<TimerSoundId>(DEFAULT_SETTINGS.timerSound);
   const [loaded, setLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const wakeLockActiveRef = useRef(false);
@@ -87,6 +112,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           setKeepScreenAwake(parsed.keepScreenAwake ?? DEFAULT_SETTINGS.keepScreenAwake);
           setAllowVibration(parsed.allowVibration ?? DEFAULT_SETTINGS.allowVibration);
           setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? DEFAULT_SETTINGS.confirmDeleteEnabled);
+          setTimerSound(isTimerSoundId(parsed.timerSound) ? parsed.timerSound : DEFAULT_SETTINGS.timerSound);
           if (typeof parsed.timerCount === 'number' && parsed.timerCount >= MIN_TIMER_COUNT) {
             setTimerCount(clampTimerCount(parsed.timerCount));
           } else {
@@ -120,9 +146,10 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         allowVibration,
         confirmDeleteEnabled,
         timerCount,
+        timerSound,
       } satisfies StoredSettings)
     ).catch(() => {});
-  }, [allowVibration, confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded]);
+  }, [allowVibration, confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, timerSound, loaded]);
 
   useEffect(() => {
     if (!loaded) {
@@ -159,6 +186,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       allowVibration,
       confirmDeleteEnabled,
       timerCount,
+      timerSound,
       loaded,
       palette: darkModeEnabled ? darkPalette : lightPalette,
       isSettingsOpen,
@@ -173,15 +201,26 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       setTimerCount: (value: number) => setTimerCount(clampTimerCount(value)),
+      setTimerSound,
       resetToDefaults: () => {
         setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
         setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
         setAllowVibration(DEFAULT_SETTINGS.allowVibration);
         setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
         setTimerCount(DEFAULT_SETTINGS.timerCount);
+        setTimerSound(DEFAULT_SETTINGS.timerSound);
       },
     }),
-    [allowVibration, confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, loaded, isSettingsOpen]
+    [
+      allowVibration,
+      confirmDeleteEnabled,
+      darkModeEnabled,
+      keepScreenAwake,
+      timerCount,
+      timerSound,
+      loaded,
+      isSettingsOpen,
+    ]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

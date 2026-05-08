@@ -890,6 +890,11 @@ export const kitchenStyles = StyleSheet.create({
     padding: 16,
     gap: 14,
   },
+  settingsSectionDropdownOpen: {
+    zIndex: 1000,
+    elevation: 1000,
+    overflow: 'visible',
+  },
   settingsSectionTitle: {
     fontSize: 16,
     fontWeight: '800',
@@ -912,6 +917,59 @@ export const kitchenStyles = StyleSheet.create({
   settingsHint: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  settingsDropdownRow: {
+    zIndex: 20,
+  },
+  settingsDropdownRowOpen: {
+    zIndex: 200,
+    elevation: 200,
+  },
+  settingsDropdown: {
+    position: 'relative',
+    width: 150,
+    zIndex: 200,
+    elevation: 200,
+  },
+  settingsDropdownButton: {
+    minHeight: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  settingsDropdownText: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  settingsDropdownChevron: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  settingsDropdownMenu: {
+    position: 'absolute',
+    top: 46,
+    right: 0,
+    left: 0,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
+    zIndex: 300,
+    elevation: 300,
+  },
+  settingsDropdownOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  settingsDropdownOptionText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
   timerCountInputError: {
     borderWidth: 2,

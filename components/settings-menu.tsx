@@ -4,7 +4,7 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-na
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
-import { MAX_TIMER_COUNT, MIN_TIMER_COUNT, useAppSettings } from '../contexts/settings-context';
+import { MAX_TIMER_COUNT, MIN_TIMER_COUNT, TIMER_SOUND_OPTIONS, useAppSettings } from '../contexts/settings-context';
 
 const TIMER_COUNT_ERROR_MESSAGE = `Enter a number from ${MIN_TIMER_COUNT} to ${MAX_TIMER_COUNT}.`;
 
@@ -252,7 +252,9 @@ export function SettingsMenuModal() {
     keepScreenAwake,
     palette,
     resetToDefaults,
+    setTimerSound,
     timerCount,
+    timerSound,
     toggleConfirmDelete,
     toggleDarkMode,
     toggleKeepScreenAwake,
@@ -262,6 +264,8 @@ export function SettingsMenuModal() {
   const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
   const [timerCountError, setTimerCountError] = useState('');
   const [resetDefaultsChecked, setResetDefaultsChecked] = useState(false);
+  const [soundDropdownOpen, setSoundDropdownOpen] = useState(false);
+  const selectedTimerSound = TIMER_SOUND_OPTIONS.find((option) => option.id === timerSound) ?? TIMER_SOUND_OPTIONS[0];
 
   useEffect(() => {
     setTimerCountInput(String(timerCount));
@@ -277,6 +281,7 @@ export function SettingsMenuModal() {
     resetToDefaults();
     setTimerCountInput('3');
     setTimerCountError('');
+    setSoundDropdownOpen(false);
     setTimeout(() => {
       setResetDefaultsChecked(false);
     }, 0);
@@ -298,6 +303,11 @@ export function SettingsMenuModal() {
 
     setTimerCountError('');
     setTimerCount(nextTimerCount);
+  }
+
+  function handleTimerSoundSelect(nextTimerSound: typeof TIMER_SOUND_OPTIONS[number]['id']) {
+    setTimerSound(nextTimerSound);
+    setSoundDropdownOpen(false);
   }
 
   return (
@@ -352,6 +362,7 @@ export function SettingsMenuModal() {
           <View
             style={[
               styles.settingsSection,
+              soundDropdownOpen ? styles.settingsSectionDropdownOpen : null,
               {
                 backgroundColor: palette.surface,
                 borderColor: palette.border,
@@ -417,6 +428,80 @@ export function SettingsMenuModal() {
                 </Pressable>
               </View>
             ) : null}
+            <View
+              style={[
+                styles.settingsRow,
+                soundDropdownOpen ? styles.settingsDropdownRowOpen : styles.settingsDropdownRow,
+              ]}
+            >
+              <View style={styles.settingsCopy}>
+                <Text style={[styles.settingsLabel, { color: palette.text }]}>Timer sound</Text>
+                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                  Choose the alert sound for completed cook timers.
+                </Text>
+              </View>
+              <View style={styles.settingsDropdown}>
+                <Pressable
+                  onPress={() => setSoundDropdownOpen((current) => !current)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Choose timer sound"
+                  style={[
+                    styles.settingsDropdownButton,
+                    {
+                      backgroundColor: palette.elevatedAlt,
+                      borderColor: soundDropdownOpen ? palette.accentSoft : palette.borderAlt,
+                    },
+                  ]}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.settingsDropdownText, { color: palette.text }]}
+                  >
+                    {selectedTimerSound.label}
+                  </Text>
+                  <Text style={[styles.settingsDropdownChevron, { color: palette.textMuted }]}>
+                    {soundDropdownOpen ? '⌃' : '⌄'}
+                  </Text>
+                </Pressable>
+                {soundDropdownOpen ? (
+                  <View
+                    style={[
+                      styles.settingsDropdownMenu,
+                      {
+                        backgroundColor: palette.elevated,
+                        borderColor: palette.borderAlt,
+                      },
+                    ]}
+                  >
+                    {TIMER_SOUND_OPTIONS.map((option) => {
+                      const isSelected = option.id === timerSound;
+
+                      return (
+                        <Pressable
+                          key={option.id}
+                          onPress={() => handleTimerSoundSelect(option.id)}
+                          style={[
+                            styles.settingsDropdownOption,
+                            {
+                              backgroundColor: isSelected ? palette.accentSoft : palette.elevated,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.settingsDropdownOptionText,
+                              { color: isSelected ? palette.accentContrastText : palette.text },
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : null}
+              </View>
+            </View>
             <View style={styles.settingsRow}>
               <View style={styles.settingsCopy}>
                 <Text style={[styles.settingsLabel, { color: palette.text }]}>Number of timers</Text>

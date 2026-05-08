@@ -14,9 +14,15 @@ import { useAudioPlayer } from 'expo-audio';
 import { kitchenStyles as styles } from './kitchen-styles';
 import type { CookTimerFinishedAlert } from '../contexts/cook-timer-context';
 import { useCookTimer } from '../contexts/cook-timer-context';
+import type { TimerSoundId } from '../contexts/settings-context';
 import { useAppSettings } from '../contexts/settings-context';
 
-const timerBeep = require('../assets/timer-beep.wav');
+const TIMER_SOUND_ASSETS: Record<TimerSoundId, number> = {
+  'beep-beep': require('../assets/timer-beep-beep.wav'),
+  'soft-chime': require('../assets/timer-soft-chime.wav'),
+  'classic-bell': require('../assets/timer-classic-bell.wav'),
+  'urgent-alarm': require('../assets/timer-urgent-alarm.wav'),
+};
 
 type FinishedTimerAlertCardProps = {
   alert: CookTimerFinishedAlert;
@@ -26,10 +32,10 @@ type FinishedTimerAlertCardProps = {
 
 export function CookTimerFinishedAlerts() {
   const { dismissFinishedTimerAlert, finishedTimerAlerts } = useCookTimer();
-  const { allowVibration, palette } = useAppSettings();
+  const { allowVibration, palette, timerSound } = useAppSettings();
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
-  const player = useAudioPlayer(timerBeep);
+  const player = useAudioPlayer(TIMER_SOUND_ASSETS[timerSound]);
   const previousAlertCountRef = useRef(0);
 
   useEffect(() => {

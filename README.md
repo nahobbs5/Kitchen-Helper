@@ -390,6 +390,7 @@ Current saved settings:
 - `Keep screen awake`
 - `Number of timers`
 - `Allow vibration`
+- `Timer sound`
 - `Confirm delete`
 
 How it works:
@@ -397,11 +398,12 @@ How it works:
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on app launch
 - restore defaults is a real immediate action in settings
-- restore defaults immediately resets dark mode to Off, keep screen awake to Off, vibration to On, confirm delete to On, and timers to 3
+- restore defaults immediately resets dark mode to Off, keep screen awake to Off, vibration to On, timer sound to `Beep Beep`, confirm delete to On, and timers to 3
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
 - number of timers controls how many cook-timer slots are available and is clamped to `1-6`
 - allow vibration controls phone vibration when a cook timer ends; it defaults to On and only appears on iOS/Android
+- timer sound controls the cook-timer completion alert and offers `Beep Beep`, `Soft Chime`, `Classic Bell`, and `Urgent Alarm`
 - confirm delete asks before deleting a saved app recipe and does not apply to bulk deletes
 
 Account page behavior:
@@ -523,7 +525,7 @@ Current timer behavior:
 - custom names
 - whole-minute or `mm:ss` input with numeric/decimal keyboard support (`.` is treated as `:`)
 - shrinking horizontal progress bars
-- beep at zero and optional mobile vibration when `Allow vibration` is enabled
+- selectable completion sound at zero, defaulting to a looping `Beep Beep` pattern, and optional mobile vibration when `Allow vibration` is enabled
 - button labels that correctly distinguish `Start` from `Resume`
 - `Reset` is disabled until a timer has actually been started
 
