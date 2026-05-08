@@ -223,6 +223,17 @@ function collectRecipeText(title, content, parsedRecipe) {
   return parts.join('\n').toLowerCase();
 }
 
+const nonDairyDairyWordMatchers = [
+  /\b(?:coconut|almond|oat|soy|cashew)\s+milk\b/gi,
+  /\b(?:plant(?:[- ]based)?|non[- ]dairy|dairy[- ]free)\s+milk\b/gi,
+  /\b(?:plant(?:[- ]based)?|vegan|non[- ]dairy|dairy[- ]free)\s+butter\b/gi,
+  /\bbutter\s+substitute\b/gi,
+];
+
+function stripNonDairyDairyWords(text) {
+  return nonDairyDairyWordMatchers.reduce((nextText, matcher) => nextText.replace(matcher, ''), text);
+}
+
 function extractAllergyTags(title, content, parsedRecipe) {
   const text = collectRecipeText(title, content, parsedRecipe);
   const allergyFriendlyTags = [];
@@ -280,7 +291,9 @@ function extractAllergyTags(title, content, parsedRecipe) {
       continue;
     }
 
-    if (rule.pattern.test(text)) {
+    const searchableText = rule.label === 'Contains Dairy' ? stripNonDairyDairyWords(text) : text;
+
+    if (rule.pattern.test(searchableText)) {
       allergenTags.push(rule.label);
     }
   }
