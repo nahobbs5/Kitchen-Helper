@@ -336,7 +336,7 @@ export default function EditRecipeScreen() {
                   <TextInput
                     value={recipeName}
                     onChangeText={setRecipeName}
-                    placeholder="Example: Lemon Herb Roast Chicken"
+                    placeholder={isWide ? 'Example: Lemon Herb Roast Chicken' : 'Ex: Lemon Herb Roast Chicken'}
                     placeholderTextColor={palette.searchPlaceholder}
                     style={[
                       styles.formInput,
