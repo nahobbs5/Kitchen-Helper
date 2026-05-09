@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { ClearableSearchInput } from '../components/clearable-search-input';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAppSettings } from '../contexts/settings-context';
 import {
@@ -164,15 +165,17 @@ export default function CookingDictionaryScreen() {
               for.
             </Text>
 
-            <TextInput
+            <ClearableSearchInput
               value={searchText}
               onChangeText={setSearchText}
               placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
               placeholderTextColor={palette.searchPlaceholder}
+              clearTintColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
-                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
               ]}
+              inputStyle={{ color: palette.text }}
             />
 
             <View style={styles.numberGrid}>

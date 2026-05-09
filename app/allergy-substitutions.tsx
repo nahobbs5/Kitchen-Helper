@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
+import { ClearableSearchInput } from '../components/clearable-search-input';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions } from '../components/sample-data';
 import { useAppSettings } from '../contexts/settings-context';
@@ -135,15 +136,17 @@ export default function AllergySubstitutionsScreen() {
               </View>
             ) : null}
 
-            <TextInput
+            <ClearableSearchInput
               value={searchText}
               onChangeText={setSearchText}
               placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
               placeholderTextColor={palette.searchPlaceholder}
+              clearTintColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
-                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
               ]}
+              inputStyle={{ color: palette.text }}
             />
           </View>
         </View>

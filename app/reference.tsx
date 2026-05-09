@@ -5,12 +5,12 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { ClearableSearchInput } from '../components/clearable-search-input';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions, conversionSections } from '../components/sample-data';
 import {
@@ -230,35 +230,41 @@ export default function ReferenceScreen() {
     const inputStyle = [
       styles.searchInput,
       variant === 'sticky' && styles.referenceStickySearchInput,
-      { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+      { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
     ];
 
     return activeTab === 'conversions' ? (
-      <TextInput
+      <ClearableSearchInput
         value={convSearch}
         onChangeText={setConvSearch}
         placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
         placeholderTextColor={palette.searchPlaceholder}
+        clearTintColor={palette.searchPlaceholder}
         onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
         style={inputStyle}
+        inputStyle={{ color: palette.text }}
       />
     ) : activeTab === 'substitutions' ? (
-      <TextInput
+      <ClearableSearchInput
         value={subSearch}
         onChangeText={setSubSearch}
         placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
         placeholderTextColor={palette.searchPlaceholder}
+        clearTintColor={palette.searchPlaceholder}
         onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
         style={inputStyle}
+        inputStyle={{ color: palette.text }}
       />
     ) : (
-      <TextInput
+      <ClearableSearchInput
         value={dictSearch}
         onChangeText={setDictSearch}
         placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
         placeholderTextColor={palette.searchPlaceholder}
+        clearTintColor={palette.searchPlaceholder}
         onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
         style={inputStyle}
+        inputStyle={{ color: palette.text }}
       />
     );
   }

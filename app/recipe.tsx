@@ -6,11 +6,11 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 
+import { ClearableSearchInput } from '../components/clearable-search-input';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
@@ -119,17 +119,19 @@ export default function SampleRecipesScreen() {
 
   function renderRecipeSearchInput(variant: 'inline' | 'sticky') {
     return (
-      <TextInput
+      <ClearableSearchInput
         value={searchText}
         onChangeText={setSearchText}
         placeholder="Search sample recipes"
         placeholderTextColor={palette.searchPlaceholder}
+        clearTintColor={palette.searchPlaceholder}
         onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
         style={[
           styles.searchInput,
           variant === 'sticky' && styles.referenceStickySearchInput,
-          { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+          { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
         ]}
+        inputStyle={{ color: palette.text }}
       />
     );
   }

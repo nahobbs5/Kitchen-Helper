@@ -4,11 +4,11 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 
+import { ClearableSearchInput } from '../components/clearable-search-input';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { conversionSections } from '../components/sample-data';
 import { useAppSettings } from '../contexts/settings-context';
@@ -122,15 +122,17 @@ export default function ConversionsScreen() {
               })}
             </View>
 
-            <TextInput
+            <ClearableSearchInput
               value={searchText}
               onChangeText={setSearchText}
               placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
               placeholderTextColor={palette.searchPlaceholder}
+              clearTintColor={palette.searchPlaceholder}
               style={[
                 styles.searchInput,
-                { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
               ]}
+              inputStyle={{ color: palette.text }}
             />
           </View>
         </View>

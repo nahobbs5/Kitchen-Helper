@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ClearableSearchInput } from '../components/clearable-search-input';
 import { RecipeShareCard, recipeShareCardWidth } from '../components/recipe-share-card';
 import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
@@ -420,17 +421,19 @@ export default function MyRecipesScreen() {
 
   function renderRecipeSearchInput(variant: 'inline' | 'sticky') {
     return (
-      <TextInput
+      <ClearableSearchInput
         value={searchText}
         onChangeText={setSearchText}
         placeholder={isWide ? "Search recipes, categories, or tags" : "Search recipes…"}
         placeholderTextColor={palette.searchPlaceholder}
+        clearTintColor={palette.searchPlaceholder}
         onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
         style={[
           styles.searchInput,
           variant === 'sticky' && styles.referenceStickySearchInput,
-          { backgroundColor: palette.elevated, borderColor: palette.borderAlt, color: palette.text },
+          { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
         ]}
+        inputStyle={{ color: palette.text }}
       />
     );
   }
