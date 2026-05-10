@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
+  PanResponder,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -53,6 +54,41 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
 const allergyTags = Array.from(new Set(allergySubstitutions.map((item) => item.allergy))).sort();
 const letterOptions = ['All', ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
 const convOptions = ['All', ...conversionSections.map((s) => s.title)];
+const OVEN_TEMPERATURE_SECTION = 'Oven temperatures';
+const OVEN_TEMP_MIN = 200;
+const OVEN_TEMP_MAX = 550;
+const OVEN_TEMP_SEARCH_INTERVAL = 25;
+const OVEN_TEMP_PRESETS = [300, 325, 350, 375, 400, 425, 450];
+
+function fahrenheitToCelsius(fahrenheit: number) {
+  return Math.round((fahrenheit - 32) * 5 / 9);
+}
+
+function buildOvenTemperatureSearchText() {
+  const values: string[] = [
+    OVEN_TEMPERATURE_SECTION,
+    'oven',
+    'temperature',
+    'temperatures',
+    'fahrenheit',
+    'farenheit',
+    'celsius',
+    'celcius',
+    'degrees',
+    'bake',
+    'roast',
+  ];
+
+  for (let value = OVEN_TEMP_MIN; value <= OVEN_TEMP_MAX; value += OVEN_TEMP_SEARCH_INTERVAL) {
+    values.push(`${value}`, `${value}f`, `${value} fahrenheit`);
+    const celsius = fahrenheitToCelsius(value);
+    values.push(`${celsius}`, `${celsius}c`, `${celsius} celsius`);
+  }
+
+  return values.join(' ').toLowerCase();
+}
+
+const ovenTemperatureSearchText = buildOvenTemperatureSearchText();
 
 export default function ReferenceScreen() {
   const { palette } = useAppSettings();
@@ -60,9 +96,11 @@ export default function ReferenceScreen() {
   const isWide = width >= 960;
   const isMobile = width < 768;
   const scrollRef = useRef<ScrollView>(null);
+  const ovenSliderRef = useRef<View>(null);
   const scrollOffsetRef = useRef(0);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
+  const ovenSliderPageXRef = useRef(0);
 
   const [activeTab, setActiveTab] = useState<MainTab>('conversions');
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -72,6 +110,8 @@ export default function ReferenceScreen() {
   // Conversions state
   const [convSection, setConvSection] = useState('All');
   const [convSearch, setConvSearch] = useState('');
+  const [ovenFahrenheit, setOvenFahrenheit] = useState(350);
+  const [ovenSliderWidth, setOvenSliderWidth] = useState(0);
 
   // Substitutions state
   const [subSection, setSubSection] = useState<SubSection>('all');
@@ -107,14 +147,20 @@ export default function ReferenceScreen() {
             ? !convNormalized || tableSearchText.includes(convNormalized)
             : false;
 
+          const ovenSectionMatchesSearch =
+            s.title === OVEN_TEMPERATURE_SECTION &&
+            (!convNormalized || ovenTemperatureSearchText.includes(convNormalized));
+
           return {
             ...s,
             entries: convNormalized
-              ? s.entries.filter((e) =>
-                  `${s.title} ${s.description} ${e.from} ${e.result}`
-                    .toLowerCase()
-                    .includes(convNormalized)
-                )
+              ? ovenSectionMatchesSearch
+                ? s.entries
+                : s.entries.filter((e) =>
+                    `${s.title} ${s.description} ${e.from} ${e.result}`
+                      .toLowerCase()
+                      .includes(convNormalized)
+                  )
               : s.entries,
             table: tableMatchesSearch ? s.table : undefined,
           };
@@ -126,6 +172,44 @@ export default function ReferenceScreen() {
             (!convNormalized && (convSection === 'All' || s.title === convSection))
         ),
     [convSection, convNormalized]
+  );
+
+  const ovenProgress = (ovenFahrenheit - OVEN_TEMP_MIN) / (OVEN_TEMP_MAX - OVEN_TEMP_MIN);
+  const ovenProgressWidth = ovenSliderWidth * ovenProgress;
+  const ovenCelsius = fahrenheitToCelsius(ovenFahrenheit);
+  const measureOvenSlider = useCallback(() => {
+    ovenSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      ovenSliderPageXRef.current = x;
+      setOvenSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setOvenTemperatureFromPageX = useCallback(
+    (pageX: number) => {
+      if (ovenSliderWidth <= 0) {
+        return;
+      }
+
+      const boundedX = Math.max(0, Math.min(pageX - ovenSliderPageXRef.current, ovenSliderWidth));
+      const rawValue = OVEN_TEMP_MIN + (boundedX / ovenSliderWidth) * (OVEN_TEMP_MAX - OVEN_TEMP_MIN);
+      setOvenFahrenheit(Math.max(OVEN_TEMP_MIN, Math.min(Math.round(rawValue), OVEN_TEMP_MAX)));
+    },
+    [ovenSliderWidth]
+  );
+  const ovenSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureOvenSlider();
+          setOvenTemperatureFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setOvenTemperatureFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureOvenSlider, setOvenTemperatureFromPageX]
   );
 
   // Substitutions filtering
@@ -266,6 +350,77 @@ export default function ReferenceScreen() {
         style={inputStyle}
         inputStyle={{ color: palette.text }}
       />
+    );
+  }
+
+  function renderOvenTemperatureConverter() {
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Fahrenheit</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ovenFahrenheit}F</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Celsius</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ovenCelsius}C</Text>
+          </View>
+        </View>
+
+        <View
+          ref={ovenSliderRef}
+          onLayout={(event) => {
+            setOvenSliderWidth(event.nativeEvent.layout.width);
+            measureOvenSlider();
+          }}
+          style={styles.ovenSliderHitArea}
+          {...ovenSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View
+              style={[
+                styles.ovenSliderFill,
+                { backgroundColor: palette.accentSoft, width: ovenProgressWidth },
+              ]}
+            />
+            <View
+              style={[
+                styles.ovenSliderThumb,
+                {
+                  backgroundColor: palette.accent,
+                  borderColor: palette.surface,
+                  left: ovenProgressWidth,
+                },
+              ]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OVEN_TEMP_MIN}F</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OVEN_TEMP_MAX}F</Text>
+        </View>
+
+        <View style={styles.ovenPresetRow}>
+          {OVEN_TEMP_PRESETS.map((preset) => {
+            const isActive = preset === ovenFahrenheit;
+
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setOvenFahrenheit(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset}F</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
     );
   }
 
@@ -533,15 +688,20 @@ export default function ReferenceScreen() {
                       </Text>
                     </View>
                   ) : null}
-                  {section.entries.map((entry) => (
-                    <View
-                      key={`${section.title}-${entry.from}-${entry.result}`}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
-                    </View>
-                  ))}
+                  {section.title === OVEN_TEMPERATURE_SECTION
+                    ? renderOvenTemperatureConverter()
+                    : section.entries.map((entry) => (
+                        <View
+                          key={`${section.title}-${entry.from}-${entry.result}`}
+                          style={[
+                            styles.detailCard,
+                            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                          ]}
+                        >
+                          <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
+                          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
+                        </View>
+                      ))}
                 </View>
               ))}
               {visibleConvSections.length === 0 ? (
