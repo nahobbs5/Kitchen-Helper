@@ -37,8 +37,6 @@ function Chip({ children, variant = 'meta' }: { children: string; variant?: 'met
 
 export function RecipeShareCard({ onLayout, recipe }: Props) {
   const metadata = [
-    recipe.category,
-    recipe.sourceLabel,
     recipe.cuisineRegion ? `Cuisine: ${recipe.cuisineRegion}` : null,
     recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
     recipe.cookTime ? formatCookTimeTag(recipe.category, recipe.cookTime) : null,
