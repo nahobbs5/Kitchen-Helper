@@ -39,6 +39,13 @@
         {
           "photosPermission": "Kitchen Helper uses your photo library so you can import a recipe from an image."
         }
+      ],
+      [
+        "react-native-share",
+        {
+          "ios": [],
+          "android": []
+        }
       ]
     ],
     "web": {

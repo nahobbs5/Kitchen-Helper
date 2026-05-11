@@ -21,7 +21,7 @@ import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
-import { shareRecipe, type ExportRecipe } from '../utils/export-recipes';
+import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 
 const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
@@ -92,8 +92,9 @@ export default function MyRecipesScreen() {
   const [bulkAllergenTagsToAdd, setBulkAllergenTagsToAdd] = useState<string[]>([]);
   const [bulkFriendlyTagsToAdd, setBulkFriendlyTagsToAdd] = useState<string[]>([]);
   const [dismissProgress, setDismissProgress] = useState(0);
-  const [recipePendingShare, setRecipePendingShare] = useState<ExportRecipe | null>(null);
-  const shareCardRef = useRef<View>(null);
+  const [recipesPendingShare, setRecipesPendingShare] = useState<ExportRecipe[]>([]);
+  const [sharingSelectedRecipes, setSharingSelectedRecipes] = useState(false);
+  const shareCardRefs = useRef<Record<string, View | null>>({});
   const {
     bulkUpdateRecipeMetadata,
     clearDeletedRecipes,
@@ -217,6 +218,10 @@ export default function MyRecipesScreen() {
             : true
         ),
     [activeAllergenTags, activeCategoryFilters, activeCuisineFilters, allRecipes, favoriteSlugs, normalizedSearch]
+  );
+  const recipeBySlug = useMemo(
+    () => new Map(allRecipes.map((recipe) => [recipe.slug, recipe])),
+    [allRecipes]
   );
 
   function toggleCategoryFilter(tag: string) {
@@ -367,13 +372,42 @@ export default function MyRecipesScreen() {
   async function handleShareRecipe(recipe: LibraryRecipe) {
     const exportRecipe = toExportRecipe(recipe, recipeOverrideMap);
 
-    setRecipePendingShare(exportRecipe);
+    setRecipesPendingShare([exportRecipe]);
 
     try {
       await waitForHiddenShareCard();
-      await shareRecipe(exportRecipe, shareCardRef);
+      await shareRecipe(exportRecipe, { current: shareCardRefs.current[exportRecipe.slug] });
     } finally {
-      setRecipePendingShare(null);
+      setRecipesPendingShare([]);
+    }
+  }
+
+  async function handleShareSelectedRecipes() {
+    if (selectedRecipeSlugs.length === 0 || sharingSelectedRecipes) {
+      return;
+    }
+
+    const exportRecipes = selectedRecipeSlugs
+      .map((slug) => recipeBySlug.get(slug))
+      .filter((recipe): recipe is LibraryRecipe => Boolean(recipe))
+      .map((recipe) => toExportRecipe(recipe, recipeOverrideMap));
+
+    if (exportRecipes.length === 0) {
+      return;
+    }
+
+    setSharingSelectedRecipes(true);
+    setRecipesPendingShare(exportRecipes);
+
+    try {
+      await waitForHiddenShareCard();
+      await shareRecipes(
+        exportRecipes,
+        exportRecipes.map((recipe) => ({ current: shareCardRefs.current[recipe.slug] }))
+      );
+    } finally {
+      setRecipesPendingShare([]);
+      setSharingSelectedRecipes(false);
     }
   }
 
@@ -440,7 +474,7 @@ export default function MyRecipesScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      {recipePendingShare ? (
+      {recipesPendingShare.length > 0 ? (
         <View
           pointerEvents="none"
           style={{
@@ -450,9 +484,17 @@ export default function MyRecipesScreen() {
             width: recipeShareCardWidth,
           }}
         >
-          <View ref={shareCardRef} collapsable={false}>
-            <RecipeShareCard recipe={recipePendingShare} />
-          </View>
+          {recipesPendingShare.map((recipe) => (
+            <View
+              key={recipe.slug}
+              ref={(view) => {
+                shareCardRefs.current[recipe.slug] = view;
+              }}
+              collapsable={false}
+            >
+              <RecipeShareCard recipe={recipe} />
+            </View>
+          ))}
         </View>
       ) : null}
       <ScrollView
@@ -581,6 +623,23 @@ export default function MyRecipesScreen() {
                     style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
                     <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Favorite Selected</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      void handleShareSelectedRecipes();
+                    }}
+                    style={[
+                      styles.secondaryButton,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      (selectedRecipeSlugs.length === 0 || sharingSelectedRecipes) && { backgroundColor: palette.borderAlt },
+                    ]}
+                  >
+                    <View style={{ alignItems: 'center', flexDirection: 'row', gap: 8 }}>
+                      <ShareIcon color={palette.accentText} size={18} />
+                      <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                        {sharingSelectedRecipes ? 'Sharing Selected' : 'Share Selected'}
+                      </Text>
+                    </View>
                   </Pressable>
                   <Pressable
                     onPress={() => setShowBulkMetadataEditor((current) => !current)}

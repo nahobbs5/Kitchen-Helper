@@ -1,5 +1,5 @@
 import { type RefObject } from 'react';
-import { Platform, type View } from 'react-native';
+import { Alert, Platform, type View } from 'react-native';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -46,6 +46,15 @@ function nextRecipeShareFilename(recipe: ExportRecipe) {
   const timestamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+$/, '');
   const slug = recipe.slug.replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'recipe';
   return `kitchen-helper-${slug}-${timestamp}.jpg`;
+}
+
+function nextRecipeShareFilenames(recipes: ExportRecipe[]) {
+  const timestamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+$/, '');
+
+  return recipes.map((recipe) => {
+    const slug = recipe.slug.replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'recipe';
+    return `kitchen-helper-${slug}-${timestamp}.jpg`;
+  });
 }
 
 function compareRecipes(left: ExportRecipe, right: ExportRecipe) {
@@ -600,8 +609,7 @@ async function shareRecipeImageWeb(recipe: ExportRecipe, cardRef: RefObject<View
   downloadImage();
 }
 
-async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
-  const filename = nextRecipeShareFilename(recipe);
+async function captureRecipeShareUriNative(filename: string, cardRef: RefObject<View | null>) {
   const capturedUri = await captureRecipeCardNative(cardRef);
   const shareUri = LegacyFileSystem.cacheDirectory
     ? `${LegacyFileSystem.cacheDirectory}${filename}`
@@ -618,6 +626,13 @@ async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<V
     throw new Error('File sharing is unavailable on this device.');
   }
 
+  return shareUri;
+}
+
+async function shareRecipeImageNative(recipe: ExportRecipe, cardRef: RefObject<View | null>) {
+  const filename = nextRecipeShareFilename(recipe);
+  const shareUri = await captureRecipeShareUriNative(filename, cardRef);
+
   await Sharing.shareAsync(shareUri, {
     mimeType: 'image/jpeg',
     dialogTitle: `Share ${recipe.title}`,
@@ -632,6 +647,113 @@ export async function shareRecipe(recipe: ExportRecipe, cardRef: RefObject<View 
   }
 
   await shareRecipeImageNative(recipe, cardRef);
+}
+
+async function shareRecipeImagesWeb(recipes: ExportRecipe[], cardRefs: RefObject<View | null>[]) {
+  if (typeof document === 'undefined') {
+    throw new Error('Recipe image sharing is unavailable in this environment.');
+  }
+
+  const filenames = nextRecipeShareFilenames(recipes);
+  const files = await Promise.all(
+    recipes.map(async (recipe, index) => {
+      const dataUri = await captureRecipeCardWeb(cardRefs[index]);
+      const blob = await fetch(dataUri).then((response) => response.blob());
+
+      return new File([blob], filenames[index], { type: 'image/jpeg' });
+    })
+  );
+  const nav = navigator as Navigator & {
+    canShare?: (data: ShareData) => boolean;
+    share?: (data: ShareData) => Promise<void>;
+  };
+  const shareData = {
+    files,
+    title: recipes.length === 1 ? recipes[0].title : `${recipes.length} Kitchen Helper recipes`,
+  } as ShareData;
+
+  function downloadImages() {
+    files.forEach((file) => {
+      const url = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      link.rel = 'noopener';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    });
+  }
+
+  if (nav.share && (!nav.canShare || nav.canShare(shareData))) {
+    try {
+      await nav.share(shareData);
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
+    }
+  }
+
+  downloadImages();
+}
+
+async function shareRecipeImagesNative(recipes: ExportRecipe[], cardRefs: RefObject<View | null>[]) {
+  const filenames = nextRecipeShareFilenames(recipes);
+  const shareUris = await Promise.all(
+    recipes.map((_recipe, index) => captureRecipeShareUriNative(filenames[index], cardRefs[index]))
+  );
+
+  try {
+    const ReactNativeShare = (await import('react-native-share')).default;
+
+    await ReactNativeShare.open({
+      failOnCancel: false,
+      filenames,
+      title: recipes.length === 1 ? recipes[0].title : `${recipes.length} Kitchen Helper recipes`,
+      type: 'image/jpeg',
+      urls: shareUris,
+      useInternalStorage: true,
+    });
+    return;
+  } catch {
+    // Expo Go does not include RNShare. Fall back to the existing Expo share sheet.
+  }
+
+  for (const [index, recipe] of recipes.entries()) {
+    await Sharing.shareAsync(shareUris[index], {
+      mimeType: 'image/jpeg',
+      dialogTitle: `Share ${index + 1} of ${recipes.length}: ${recipe.title}`,
+      UTI: 'public.jpeg',
+    });
+
+    if (index < recipes.length - 1) {
+      await new Promise<void>((resolve) => {
+        Alert.alert('Share next recipe', `${recipes.length - index - 1} recipe image${recipes.length - index - 1 === 1 ? '' : 's'} left to share.`, [
+          { text: 'Continue', onPress: () => resolve() },
+        ]);
+      });
+    }
+  }
+}
+
+export async function shareRecipes(recipes: ExportRecipe[], cardRefs: RefObject<View | null>[]) {
+  if (recipes.length === 0) {
+    throw new Error('There are no selected recipes to share.');
+  }
+
+  if (recipes.length !== cardRefs.length) {
+    throw new Error('Recipe share cards are not ready yet.');
+  }
+
+  if (Platform.OS === 'web') {
+    await shareRecipeImagesWeb(recipes, cardRefs);
+    return;
+  }
+
+  await shareRecipeImagesNative(recipes, cardRefs);
 }
 
 export async function exportRecipesToPdf(recipes: ExportRecipe[]) {
