@@ -134,6 +134,45 @@ export function formatCookTimeTag(category: string | null | undefined, cookTime:
   return `${category === 'Dessert' ? 'Bake' : 'Cook'}: ${cookTime}`;
 }
 
+export function parseRecipeTimeMinutes(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value
+    .toLowerCase()
+    .replace(/[–—]/g, '-')
+    .replace(/\b(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*(days?|d|hours?|hrs?|hr|h|minutes?|mins?|min|m)\b/g, '$2 $3')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const matches = [...normalized.matchAll(/\b(\d+(?:\.\d+)?)\s*(days?|d|hours?|hrs?|hr|h|minutes?|mins?|min|m)\b/g)];
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const totalMinutes = matches.reduce((total, match) => {
+    const amount = Number(match[1]);
+    const unit = match[2];
+
+    if (!Number.isFinite(amount)) {
+      return total;
+    }
+
+    if (unit.startsWith('d')) {
+      return total + amount * 24 * 60;
+    }
+
+    if (unit.startsWith('h')) {
+      return total + amount * 60;
+    }
+
+    return total + amount;
+  }, 0);
+
+  return totalMinutes > 0 ? totalMinutes : null;
+}
+
 export function normalizeIsoDuration(value: unknown) {
   if (typeof value !== 'string') {
     return '';

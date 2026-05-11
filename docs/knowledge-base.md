@@ -605,12 +605,13 @@ This was a useful architecture milestone because it introduced real app-wide per
 
 ## PDF Export
 
-The app now supports exporting the full recipe library to a single PDF from the Account screen.
+The app supports exporting the full recipe library or a filtered recipe subset to a single PDF from the Account screen.
 
 Important files:
 
 - [`app/account.tsx`](app/account.tsx)
 - [`utils/export-recipes.ts`](utils/export-recipes.ts)
+- [`utils/recipe-metadata.ts`](utils/recipe-metadata.ts)
 - [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
 
 Current behavior:
@@ -619,6 +620,9 @@ Current behavior:
 - app-created recipes are included
 - Obsidian recipes are included
 - local overrides are treated as canonical for export
+- the Account screen can filter selected exports by recipe type, allergy-friendly tags, allergen tags, cook time, and prep time
+- selected export filters use AND logic across filter groups and OR logic within a group
+- time thresholds parse human-readable metadata, use the upper bound for ranges, and exclude missing or unparseable times when active
 - the PDF includes metadata, tags, ingredients, directions, notes, and source attribution when present
 - web downloads the PDF
 - Android tries to save the PDF into a folder selected by the user and falls back to the share sheet if that step is skipped
@@ -626,6 +630,7 @@ Current behavior:
 Implementation notes:
 
 - the export pipeline first builds a normalized `ExportRecipe[]` list
+- filtered exports pass a filtered `ExportRecipe[]` list into the same PDF pipeline as the full export
 - it then renders cookbook-style HTML
 - native uses `expo-print`
 - web uses `html2pdf.js`

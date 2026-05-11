@@ -561,14 +561,18 @@ This is a good reminder that Expo package version alignment matters a lot, espec
 
 ## PDF Export
 
-The Account page now includes a one-shot export action:
+The Account page includes PDF export actions:
 
 - `Export all recipes to PDF`
+- `Export selected recipes to PDF`
 
 Current behavior:
 
 - exports the full recipe library, not the currently filtered `My Recipes` view
 - includes app-created recipes plus Obsidian-backed recipes with local overrides applied
+- supports selected exports filtered by recipe type, allergy-friendly tags, allergen tags, cook time, and prep time
+- selected export filters combine with AND logic across filter groups and OR logic within a group
+- time filters use the upper bound for ranges such as `30-40 minutes`, and omit recipes with missing or unparseable time when a time filter is active
 - includes title, category, cuisine region, time fields, tags, ingredients, directions, notes, and source attribution when present
 - produces a single cookbook-style PDF
 
