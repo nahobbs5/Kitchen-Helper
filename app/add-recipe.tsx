@@ -37,6 +37,10 @@ const categoryOptions = [
 type EntryMode = 'manual' | 'photo' | 'website';
 type OcrState = 'idle' | 'recognizing' | 'done' | 'error';
 type WebsiteImportState = 'idle' | 'loading' | 'done' | 'error';
+type SelectedRecipePhoto = {
+  uri: string;
+  ocrText: string;
+};
 
 export default function AddRecipeScreen() {
   const router = useRouter();
@@ -49,7 +53,7 @@ export default function AddRecipeScreen() {
   const [ocrState, setOcrState] = useState<OcrState>('idle');
   const [ocrError, setOcrError] = useState('');
   const [ocrRawText, setOcrRawText] = useState('');
-  const [selectedImageUris, setSelectedImageUris] = useState<string[]>([]);
+  const [selectedRecipePhotos, setSelectedRecipePhotos] = useState<SelectedRecipePhoto[]>([]);
   const [websiteImportState, setWebsiteImportState] = useState<WebsiteImportState>('idle');
   const [websiteImportError, setWebsiteImportError] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
@@ -183,6 +187,19 @@ export default function AddRecipeScreen() {
     }
   }
 
+  function buildOcrRawText(photos: SelectedRecipePhoto[]) {
+    return photos
+      .map((photo, index) => {
+        if (!photo.ocrText) {
+          return '';
+        }
+
+        return index === 0 ? photo.ocrText : `--- Photo ${index + 1} ---\n${photo.ocrText}`;
+      })
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
   function applyExtractedMetadata(nextIngredients: string, nextDirections: string, nextNotes = notes) {
     const extracted = extractRecipeMetadata({
       ingredientsText: nextIngredients,
@@ -307,27 +324,28 @@ export default function AddRecipeScreen() {
       return;
     }
 
-    const imageUris = selection.assets.map((asset) => asset.uri).filter(Boolean).slice(0, 2);
-    setSelectedImageUris(imageUris);
+    const pickedImageUris = selection.assets.map((asset) => asset.uri).filter(Boolean);
+    const existingPhotos = selectedRecipePhotos.length >= 2 ? [] : selectedRecipePhotos;
+    const newPhotos = pickedImageUris
+      .slice(0, 2 - existingPhotos.length)
+      .map((uri) => ({ uri, ocrText: '' }));
+    const nextPhotos = [...existingPhotos, ...newPhotos];
+
+    setSelectedRecipePhotos(nextPhotos);
     setOcrState('recognizing');
-    setOcrRawText('');
+    setOcrRawText(buildOcrRawText(existingPhotos));
 
     try {
       const { recognizeText } = await import('@infinitered/react-native-mlkit-text-recognition');
-      const recognizedTexts: string[] = [];
+      const recognizedPhotos = [...nextPhotos];
 
-      for (const imageUri of imageUris) {
-        const result = await recognizeText(imageUri);
+      for (let index = existingPhotos.length; index < nextPhotos.length; index += 1) {
+        const result = await recognizeText(nextPhotos[index].uri);
         const recognizedText = result.text?.trim() ?? '';
-
-        if (recognizedText) {
-          recognizedTexts.push(recognizedText);
-        }
+        recognizedPhotos[index] = { ...recognizedPhotos[index], ocrText: recognizedText };
       }
 
-      const recognizedText = recognizedTexts
-        .map((text, index) => (index === 0 ? text : `--- Photo ${index + 1} ---\n${text}`))
-        .join('\n\n');
+      const recognizedText = buildOcrRawText(recognizedPhotos);
 
       if (!recognizedText) {
         setOcrState('error');
@@ -335,6 +353,7 @@ export default function AddRecipeScreen() {
         return;
       }
 
+      setSelectedRecipePhotos(recognizedPhotos);
       setOcrRawText(recognizedText);
       applyOcrResult(recognizedText);
       setOcrState('done');
@@ -449,13 +468,13 @@ export default function AddRecipeScreen() {
                     {ocrError ? (
                       <Text style={[styles.formHint, { color: palette.accent }]}>{ocrError}</Text>
                     ) : null}
-                    {selectedImageUris.length > 0 ? (
+                    {selectedRecipePhotos.length > 0 ? (
                       <View style={styles.formStack}>
-                        {selectedImageUris.map((imageUri, index) => (
-                          <View key={`${imageUri}-${index}`} style={styles.formField}>
+                        {selectedRecipePhotos.map((photo, index) => (
+                          <View key={`${photo.uri}-${index}`} style={styles.formField}>
                             <Text style={[styles.formHint, { color: palette.accentText }]}>Photo {index + 1}</Text>
                             <Image
-                              source={{ uri: imageUri }}
+                              source={{ uri: photo.uri }}
                               style={{
                                 width: '100%',
                                 height: 220,
