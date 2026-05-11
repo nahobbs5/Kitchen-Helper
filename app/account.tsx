@@ -27,6 +27,8 @@ export default function AccountScreen() {
   const [selectedPrepThresholds, setSelectedPrepThresholds] = useState<number[]>([]);
   const [customCookThreshold, setCustomCookThreshold] = useState('');
   const [customPrepThreshold, setCustomPrepThreshold] = useState('');
+  const [useCustomCookThreshold, setUseCustomCookThreshold] = useState(false);
+  const [useCustomPrepThreshold, setUseCustomPrepThreshold] = useState(false);
   const {
     authError,
     authMessage,
@@ -70,17 +72,17 @@ export default function AccountScreen() {
   const parsedCustomPrepThreshold = parseCustomThreshold(customPrepThreshold);
   const activeCookThresholds = useMemo(
     () =>
-      parsedCustomCookThreshold === null
+      parsedCustomCookThreshold === null || !useCustomCookThreshold
         ? selectedCookThresholds
         : [...selectedCookThresholds, parsedCustomCookThreshold],
-    [parsedCustomCookThreshold, selectedCookThresholds]
+    [parsedCustomCookThreshold, selectedCookThresholds, useCustomCookThreshold]
   );
   const activePrepThresholds = useMemo(
     () =>
-      parsedCustomPrepThreshold === null
+      parsedCustomPrepThreshold === null || !useCustomPrepThreshold
         ? selectedPrepThresholds
         : [...selectedPrepThresholds, parsedCustomPrepThreshold],
-    [parsedCustomPrepThreshold, selectedPrepThresholds]
+    [parsedCustomPrepThreshold, selectedPrepThresholds, useCustomPrepThreshold]
   );
   const filteredExportRecipes = useMemo(
     () =>
@@ -575,11 +577,22 @@ export default function AccountScreen() {
                 () => toggleSelectedThreshold(threshold, setSelectedCookThresholds)
               )
             )}
+            {parsedCustomCookThreshold === null ? null : renderCheckboxRow(
+              `Under ${parsedCustomCookThreshold} minutes`,
+              countRecipesUnderThreshold(exportRecipes, 'cookTime', parsedCustomCookThreshold),
+              useCustomCookThreshold,
+              () => setUseCustomCookThreshold((current) => !current)
+            )}
             <TextInput
               value={customCookThreshold}
-              onChangeText={setCustomCookThreshold}
+              onChangeText={(value) => {
+                setCustomCookThreshold(value);
+                if (parseCustomThreshold(value) === null) {
+                  setUseCustomCookThreshold(false);
+                }
+              }}
               keyboardType="number-pad"
-              placeholder="Custom cook time under minutes"
+              placeholder="Custom cook time"
               placeholderTextColor={palette.textMuted}
               style={[
                 styles.formInput,
@@ -602,11 +615,22 @@ export default function AccountScreen() {
                 () => toggleSelectedThreshold(threshold, setSelectedPrepThresholds)
               )
             )}
+            {parsedCustomPrepThreshold === null ? null : renderCheckboxRow(
+              `Under ${parsedCustomPrepThreshold} minutes`,
+              countRecipesUnderThreshold(exportRecipes, 'prepTime', parsedCustomPrepThreshold),
+              useCustomPrepThreshold,
+              () => setUseCustomPrepThreshold((current) => !current)
+            )}
             <TextInput
               value={customPrepThreshold}
-              onChangeText={setCustomPrepThreshold}
+              onChangeText={(value) => {
+                setCustomPrepThreshold(value);
+                if (parseCustomThreshold(value) === null) {
+                  setUseCustomPrepThreshold(false);
+                }
+              }}
               keyboardType="number-pad"
-              placeholder="Custom prep time under minutes"
+              placeholder="Custom prep time"
               placeholderTextColor={palette.textMuted}
               style={[
                 styles.formInput,
