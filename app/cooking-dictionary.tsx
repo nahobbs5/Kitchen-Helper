@@ -7,6 +7,7 @@ import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAppSettings } from '../contexts/settings-context';
 import {
   alcoholDictionaryEntries,
+  cheesesDictionaryEntries,
   cookingDictionaryEntries,
   generalDictionaryEntries,
   instrumentsDictionaryEntries,
@@ -14,7 +15,7 @@ import {
   spicesDictionaryEntries,
 } from '../data/cooking-dictionary';
 
-type TabKey = 'all' | 'general' | 'spices' | 'oils' | 'alcohol' | 'instruments';
+type TabKey = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'alcohol' | 'instruments';
 
 const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
@@ -23,6 +24,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'general', label: 'General' },
   { key: 'spices', label: 'Spices' },
   { key: 'oils', label: 'Oils' },
+  { key: 'cheeses', label: 'Cheeses' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -32,6 +34,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   general: 'General cooking terms',
   spices: 'Spices and seasonings',
   oils: 'Cooking oils and fats',
+  cheeses: 'Cheeses',
   alcohol: 'Alcohol and mixed drinks',
   instruments: 'Cooking instruments and utensils',
 };
@@ -52,6 +55,7 @@ export default function CookingDictionaryScreen() {
       case 'general': return generalDictionaryEntries;
       case 'spices': return spicesDictionaryEntries;
       case 'oils': return oilsDictionaryEntries;
+      case 'cheeses': return cheesesDictionaryEntries;
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
       default: return cookingDictionaryEntries;

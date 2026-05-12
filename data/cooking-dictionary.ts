@@ -2013,6 +2013,414 @@ export const oilsDictionaryEntries: DictionaryEntry[] = [
   }
 ];
 
+export const cheesesDictionaryEntries: DictionaryEntry[] = [
+  {
+    "term": "Abondance",
+    "letter": "A",
+    "definition": "France | Cow: Semi-hard Alpine cheese with fruity, nutty notes and a supple texture."
+  },
+  {
+    "term": "Aged Gouda",
+    "letter": "A",
+    "definition": "Netherlands | Cow: Hard, caramel-sweet Dutch cheese with crunchy tyrosine crystals."
+  },
+  {
+    "term": "Appenzeller",
+    "letter": "A",
+    "definition": "Switzerland | Cow: Spicy, pungent washed-rind cheese rubbed with herbal brine."
+  },
+  {
+    "term": "Asiago",
+    "letter": "A",
+    "definition": "Italy | Cow: Ranges from mild and milky when fresh to sharp and crumbly when aged."
+  },
+  {
+    "term": "Beaufort",
+    "letter": "B",
+    "definition": "France | Cow: Silky Alpine gruyère-style cheese with concave rind and buttery depth."
+  },
+  {
+    "term": "Brie",
+    "letter": "B",
+    "definition": "France | Cow: Soft white-rind cheese with a creamy interior and earthy, mushroomy flavour."
+  },
+  {
+    "term": "Brin d'Amour",
+    "letter": "B",
+    "definition": "France — Corsica | Sheep: Herbed Corsican cheese rolled in wild rosemary, savory, and juniper berries."
+  },
+  {
+    "term": "Burrata",
+    "letter": "B",
+    "definition": "Italy | Cow: Fresh mozzarella shell encasing a lush, creamy stracciatella centre."
+  },
+  {
+    "term": "Cabrales",
+    "letter": "C",
+    "definition": "Spain | Mixed: Intense, pungent blue cheese from Asturias, wrapped in sycamore leaves."
+  },
+  {
+    "term": "Camembert",
+    "letter": "C",
+    "definition": "France | Cow: Soft-ripened Norman cheese with bloomy rind and rich, buttery paste."
+  },
+  {
+    "term": "Cheddar",
+    "letter": "C",
+    "definition": "England | Cow: From mild and springy to sharp and crystalline, the world's most popular cheese."
+  },
+  {
+    "term": "Chèvre",
+    "letter": "C",
+    "definition": "France | Goat: Fresh goat's milk cheese; tangy, bright, and spreadably soft."
+  },
+  {
+    "term": "Comté",
+    "letter": "C",
+    "definition": "France | Cow: Nutty, complex French gruyère aged 4–36 months in mountain cellars."
+  },
+  {
+    "term": "Cotija",
+    "letter": "C",
+    "definition": "Mexico | Cow: Firm, salty Mexican crumbling cheese often used as a finishing garnish."
+  },
+  {
+    "term": "Danablu",
+    "letter": "D",
+    "definition": "Denmark | Cow: Creamy Danish blue with a sharp, salty punch and soft, spreadable body."
+  },
+  {
+    "term": "Délice de Bourgogne",
+    "letter": "D",
+    "definition": "France | Cow: Triple-cream cheese enriched with fresh cream; ultra-rich and velvety."
+  },
+  {
+    "term": "Derby",
+    "letter": "D",
+    "definition": "England | Cow: Mild, buttery English cheese; the sage-infused variant is a classic."
+  },
+  {
+    "term": "Dunlop",
+    "letter": "D",
+    "definition": "Scotland | Cow: Mild, moist Scottish cheese similar to Cheddar but sweeter and softer."
+  },
+  {
+    "term": "Edam",
+    "letter": "E",
+    "definition": "Netherlands | Cow: Semi-hard Dutch sphere with a red wax rind and mild, slightly salty flavour."
+  },
+  {
+    "term": "Emmental",
+    "letter": "E",
+    "definition": "Switzerland | Cow: Classic holey Swiss cheese with a mild, sweet, slightly nutty taste."
+  },
+  {
+    "term": "Époisses",
+    "letter": "E",
+    "definition": "France | Cow: Pungent washed-rind Burgundy cheese with an orange crust and custardy interior."
+  },
+  {
+    "term": "Explorateur",
+    "letter": "E",
+    "definition": "France | Cow: Rich triple-cream cheese with 75% fat content and a downy white rind."
+  },
+  {
+    "term": "Feta",
+    "letter": "F",
+    "definition": "Greece | Sheep: Brined white PDO cheese, crumbly and tangy, made from sheep's (or mixed) milk."
+  },
+  {
+    "term": "Fontina",
+    "letter": "F",
+    "definition": "Italy | Cow: Semi-firm Valle d'Aosta cheese with earthy, nutty depth and excellent melt."
+  },
+  {
+    "term": "Fourme d'Ambert",
+    "letter": "F",
+    "definition": "France | Cow: One of France's oldest blue cheeses; mild and creamy with gentle blue veining."
+  },
+  {
+    "term": "Fromage Blanc",
+    "letter": "F",
+    "definition": "France | Cow: Smooth, fresh white cheese similar to yoghurt; mild and lightly tangy."
+  },
+  {
+    "term": "Gorgonzola",
+    "letter": "G",
+    "definition": "Italy | Cow: Comes in dolce (creamy, mild) and piccante (firm, sharp) blue styles."
+  },
+  {
+    "term": "Gouda",
+    "letter": "G",
+    "definition": "Netherlands | Cow: Semi-hard Dutch classic ranging from young and buttery to aged and crystalline."
+  },
+  {
+    "term": "Gruyère",
+    "letter": "G",
+    "definition": "Switzerland | Cow: Firm Alpine cheese with small holes, sweet-nutty flavour, and excellent melt."
+  },
+  {
+    "term": "Halloumi",
+    "letter": "H",
+    "definition": "Cyprus | Mixed: Brined semi-hard cheese that squeaks and grills without melting."
+  },
+  {
+    "term": "Havarti",
+    "letter": "H",
+    "definition": "Denmark | Cow: Semi-soft Danish cheese; buttery and mild with a slightly springy texture."
+  },
+  {
+    "term": "Herve",
+    "letter": "H",
+    "definition": "Belgium | Cow: Pungent, washed-rind Liège cheese with a strong aroma and soft, gooey interior."
+  },
+  {
+    "term": "Idiazabal",
+    "letter": "I",
+    "definition": "Spain | Sheep: Smoked Basque sheep's milk cheese; firm, waxy, and subtly smoky."
+  },
+  {
+    "term": "Jarlsberg",
+    "letter": "J",
+    "definition": "Norway | Cow: Norwegian Swiss-style cheese with large holes and a mild, buttery-sweet taste."
+  },
+  {
+    "term": "Kasseri",
+    "letter": "K",
+    "definition": "Greece | Sheep: Semi-hard Greek pasta filata cheese; mild and slightly tangy."
+  },
+  {
+    "term": "Kefalotiri",
+    "letter": "K",
+    "definition": "Greece | Sheep: Hard, salty Greek grating cheese with a sharp, full flavour."
+  },
+  {
+    "term": "Lancashire",
+    "letter": "L",
+    "definition": "England | Cow: Crumbly, buttery, and mild — toastie Lancashire is a northern classic."
+  },
+  {
+    "term": "Langres",
+    "letter": "L",
+    "definition": "France | Cow: Washed-rind cheese from Burgundy with a sunken crown perfect for filling with wine."
+  },
+  {
+    "term": "Leicester",
+    "letter": "L",
+    "definition": "England | Cow: Mellow, rich-flavoured English cheese with a distinctive deep orange colour."
+  },
+  {
+    "term": "Limburger",
+    "letter": "L",
+    "definition": "Belgium/Germany | Cow: Notoriously pungent washed-rind cheese with a surprisingly mild, buttery taste."
+  },
+  {
+    "term": "Manchego",
+    "letter": "M",
+    "definition": "Spain | Sheep: Spain's most famous cheese; firm, rich, and slightly salty with a herringbone rind."
+  },
+  {
+    "term": "Mascarpone",
+    "letter": "M",
+    "definition": "Italy | Cow: Ultra-rich, smooth Italian cream cheese used in tiramisù and desserts."
+  },
+  {
+    "term": "Montasio",
+    "letter": "M",
+    "definition": "Italy | Cow: Friulian semi-hard cheese used fresh or aged; grassy and clean."
+  },
+  {
+    "term": "Mozzarella",
+    "letter": "M",
+    "definition": "Italy | Cow: Fresh, mild, elastic Italian cheese; supreme on pizza and in caprese."
+  },
+  {
+    "term": "Mozzarella di Bufala",
+    "letter": "M",
+    "definition": "Italy | Buffalo: DOP fresh cheese from buffalo milk; richer and tangier than cow's mozzarella."
+  },
+  {
+    "term": "Munster",
+    "letter": "M",
+    "definition": "France | Cow: Soft washed-rind Alsatian cheese with pungent aroma and mild, creamy taste."
+  },
+  {
+    "term": "Neufchâtel",
+    "letter": "N",
+    "definition": "France | Cow: One of France's oldest soft cheeses; heart-shaped, fluffy, and lightly tangy."
+  },
+  {
+    "term": "Ossau-Iraty",
+    "letter": "O",
+    "definition": "France | Sheep: Basque Pyrenean cheese; firm, ivory paste with hazelnut and olive notes."
+  },
+  {
+    "term": "Parmigiano-Reggiano",
+    "letter": "P",
+    "definition": "Italy | Cow: The 'King of Cheeses' — granular, deeply savoury, and aged 12–36+ months."
+  },
+  {
+    "term": "Pecorino Romano",
+    "letter": "P",
+    "definition": "Italy | Sheep: Hard, salty sheep's milk cheese essential to cacio e pepe and carbonara."
+  },
+  {
+    "term": "Pecorino Sardo",
+    "letter": "P",
+    "definition": "Italy | Sheep: Sardinian sheep's milk cheese; mild when young, pungent when aged."
+  },
+  {
+    "term": "Pecorino Toscano",
+    "letter": "P",
+    "definition": "Italy | Sheep: Lighter and less salty than Romano; sweet and grassy when young."
+  },
+  {
+    "term": "Port Salut",
+    "letter": "P",
+    "definition": "France | Cow: Semi-soft washed-rind cheese with mild flavour and orange rind."
+  },
+  {
+    "term": "Provolone",
+    "letter": "P",
+    "definition": "Italy | Cow: Stretched-curd cheese ranging from sweet (dolce) to sharp (piccante)."
+  },
+  {
+    "term": "Quark",
+    "letter": "Q",
+    "definition": "Germany | Cow: Soft, unaged fresh cheese between yoghurt and cream cheese; used in baking."
+  },
+  {
+    "term": "Raclette",
+    "letter": "R",
+    "definition": "Switzerland | Cow: Semi-hard Alpine cheese designed to be melted and scraped over potatoes."
+  },
+  {
+    "term": "Reblochon",
+    "letter": "R",
+    "definition": "France | Cow: Soft washed-rind Savoyard cheese with a nutty, creamy, woodsy character."
+  },
+  {
+    "term": "Ricotta",
+    "letter": "R",
+    "definition": "Italy | Cow: Light, fresh whey cheese with a grainy texture; sweet and versatile."
+  },
+  {
+    "term": "Ricotta Salata",
+    "letter": "R",
+    "definition": "Italy | Sheep: Pressed, salted, and dried ricotta; firm and salty for grating."
+  },
+  {
+    "term": "Roquefort",
+    "letter": "R",
+    "definition": "France | Sheep: AOC blue cheese from Aveyron caves; creamy, moist, and intensely tangy."
+  },
+  {
+    "term": "Saint-Nectaire",
+    "letter": "S",
+    "definition": "France | Cow: Semi-soft Auvergne cheese aged on rye straw with earthy, mushroomy notes."
+  },
+  {
+    "term": "Sainte-Maure de Touraine",
+    "letter": "S",
+    "definition": "France | Goat: Log-shaped Loire goat's cheese with a straw running through its centre."
+  },
+  {
+    "term": "Scamorza",
+    "letter": "S",
+    "definition": "Italy | Cow: Pear-shaped pulled-curd cheese, sold plain or smoked; firmer than mozzarella."
+  },
+  {
+    "term": "Stilton",
+    "letter": "S",
+    "definition": "England | Cow: PDO blue cheese with crumbly texture, rich flavour, and port-friendly character."
+  },
+  {
+    "term": "Stracchino",
+    "letter": "S",
+    "definition": "Italy | Cow: Soft, spreadably creamy Lombardian cheese with a pleasantly mild acidity."
+  },
+  {
+    "term": "Taleggio",
+    "letter": "T",
+    "definition": "Italy | Cow: Washed-rind Lombardian cheese with a strong aroma and mild, fruity interior."
+  },
+  {
+    "term": "Tilsit",
+    "letter": "T",
+    "definition": "Germany | Cow: Semi-hard Baltic cheese with small holes and a tangy, herbal flavour."
+  },
+  {
+    "term": "Toma Piemontese",
+    "letter": "T",
+    "definition": "Italy | Cow: Mild, semi-hard Piedmontese table cheese with a smooth, supple paste."
+  },
+  {
+    "term": "Tomme de Savoie",
+    "letter": "T",
+    "definition": "France | Cow: Rustic Alpine semi-hard cheese with a thick grey rind and earthy, grassy notes."
+  },
+  {
+    "term": "Ubriaco",
+    "letter": "U",
+    "definition": "Italy | Cow: Venetian 'drunken cheese' aged in grape pomace, must, or wine."
+  },
+  {
+    "term": "Vacherin Fribourgeois",
+    "letter": "V",
+    "definition": "Switzerland | Cow: Semi-soft Alpine cheese used in authentic Swiss fondue alongside Gruyère."
+  },
+  {
+    "term": "Vacherin Mont d'Or",
+    "letter": "V",
+    "definition": "France/Switzerland | Cow: Seasonal soft spruce-bark-wrapped cheese, baked and scooped like fondue."
+  },
+  {
+    "term": "Valençay",
+    "letter": "V",
+    "definition": "France | Goat: Truncated pyramid goat's cheese dusted in charcoal ash; lemony and fresh."
+  },
+  {
+    "term": "Västerbotten",
+    "letter": "V",
+    "definition": "Sweden | Cow: Sweden's most beloved hard cheese; granular, salty, and intensely umami."
+  },
+  {
+    "term": "Wensleydale",
+    "letter": "W",
+    "definition": "England | Cow: Crumbly, moist Yorkshire cheese with a honeyed, milky flavour; pairs with fruit."
+  },
+  {
+    "term": "Winnimere",
+    "letter": "W",
+    "definition": "USA | Cow: American washed-rind cheese wrapped in spruce bark; rich and bacon-y."
+  },
+  {
+    "term": "Xynotyri",
+    "letter": "X",
+    "definition": "Greece | Sheep: Ancient Greek dried sour cheese; crumbly and sharp, traditionally sun-dried."
+  },
+  {
+    "term": "Yellow Wax Gouda",
+    "letter": "Y",
+    "definition": "Netherlands | Cow: Young Gouda in its signature yellow wax coat; mild, creamy, and slightly sweet."
+  },
+  {
+    "term": "Yorkshire Blue",
+    "letter": "Y",
+    "definition": "England | Cow: Creamy, mellow English blue cheese with a softer character than Stilton."
+  },
+  {
+    "term": "Zamorano",
+    "letter": "Z",
+    "definition": "Spain | Sheep: Firm Castilian sheep's milk cheese similar to Manchego; rich and buttery."
+  },
+  {
+    "term": "Zmaj",
+    "letter": "Z",
+    "definition": "Serbia | Cow: Traditional Serbian semi-hard mountain cheese with a robust, tangy flavour."
+  }
+];
+
 export const alcoholDictionaryEntries: DictionaryEntry[] = [
   {
     "term": "Absinthe",
@@ -3886,6 +4294,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Served with ice cream (US); or in a particular style (French)."
   },
   {
+    "term": "Abondance",
+    "letter": "A",
+    "definition": "France | Cow: Semi-hard Alpine cheese with fruity, nutty notes and a supple texture."
+  },
+  {
     "term": "Absinthe",
     "letter": "A",
     "definition": "High-proof anise-flavored spirit made with wormwood; nicknamed \"the green fairy.\""
@@ -3904,6 +4317,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Aerate",
     "letter": "A",
     "definition": "To incorporate air into a mixture, often by sifting or whisking."
+  },
+  {
+    "term": "Aged Gouda",
+    "letter": "A",
+    "definition": "Netherlands | Cow: Hard, caramel-sweet Dutch cheese with crunchy tyrosine crystals."
   },
   {
     "term": "Aged rum",
@@ -4061,6 +4479,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A prepared mixture used as a base in cooking."
   },
   {
+    "term": "Appenzeller",
+    "letter": "A",
+    "definition": "Switzerland | Cow: Spicy, pungent washed-rind cheese rubbed with herbal brine."
+  },
+  {
     "term": "Apple corer",
     "letter": "A",
     "definition": "A cylindrical tool for removing the core from apples and pears."
@@ -4099,6 +4522,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Asafoetida",
     "letter": "A",
     "definition": "Pungent resin powder used in Indian cooking; smells sharp but mellows when cooked."
+  },
+  {
+    "term": "Asiago",
+    "letter": "A",
+    "definition": "Italy | Cow: Ranges from mild and milky when fresh to sharp and crumbly when aged."
   },
   {
     "term": "Aspic",
@@ -4259,6 +4687,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Beat",
     "letter": "B",
     "definition": "To mix rapidly with a spoon, whisk, or mixer to add air."
+  },
+  {
+    "term": "Beaufort",
+    "letter": "B",
+    "definition": "France | Cow: Silky Alpine gruyère-style cheese with concave rind and buttery depth."
   },
   {
     "term": "Béchamel",
@@ -4456,6 +4889,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A rectangular pan used for baking sandwich and quick breads."
   },
   {
+    "term": "Brie",
+    "letter": "B",
+    "definition": "France | Cow: Soft white-rind cheese with a creamy interior and earthy, mushroomy flavour."
+  },
+  {
+    "term": "Brin d'Amour",
+    "letter": "B",
+    "definition": "France — Corsica | Sheep: Herbed Corsican cheese rolled in wild rosemary, savory, and juniper berries."
+  },
+  {
     "term": "Brine",
     "letter": "B",
     "definition": "A salt-water solution used to preserve or season food."
@@ -4496,6 +4939,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A ring-shaped fluted cake pan."
   },
   {
+    "term": "Burrata",
+    "letter": "B",
+    "definition": "Italy | Cow: Fresh mozzarella shell encasing a lush, creamy stracciatella centre."
+  },
+  {
     "term": "Butcher block",
     "letter": "B",
     "definition": "A thick wooden cutting board or countertop surface used for chopping."
@@ -4519,6 +4967,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Butterfly",
     "letter": "B",
     "definition": "To split food almost in two and open it flat."
+  },
+  {
+    "term": "Cabrales",
+    "letter": "C",
+    "definition": "Spain | Mixed: Intense, pungent blue cheese from Asturias, wrapped in sycamore leaves."
   },
   {
     "term": "Cachaça",
@@ -4549,6 +5002,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Calvados",
     "letter": "C",
     "definition": "French apple brandy from Normandy, aged in oak."
+  },
+  {
+    "term": "Camembert",
+    "letter": "C",
+    "definition": "France | Cow: Soft-ripened Norman cheese with bloomy rind and rich, buttery paste."
   },
   {
     "term": "Campari",
@@ -4651,6 +5109,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "French herbal liqueur made by monks; available in green (stronger) and yellow (sweeter)."
   },
   {
+    "term": "Cheddar",
+    "letter": "C",
+    "definition": "England | Cow: From mild and springy to sharp and crystalline, the world's most popular cheese."
+  },
+  {
     "term": "Cheese grater",
     "letter": "C",
     "definition": "A tool with sharp perforations used to grate cheese."
@@ -4679,6 +5142,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Chervil",
     "letter": "C",
     "definition": "Delicate herb with a mild anise flavor; one of the classic French fines herbes."
+  },
+  {
+    "term": "Chèvre",
+    "letter": "C",
+    "definition": "France | Goat: Fresh goat's milk cheese; tangy, bright, and spreadably soft."
   },
   {
     "term": "Chiffonade",
@@ -4826,6 +5294,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Fresh or dried fruit cooked in sugar syrup."
   },
   {
+    "term": "Comté",
+    "letter": "C",
+    "definition": "France | Cow: Nutty, complex French gruyère aged 4–36 months in mountain cellars."
+  },
+  {
     "term": "Concassé",
     "letter": "C",
     "definition": "Peeled, seeded, and roughly chopped tomatoes."
@@ -4889,6 +5362,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Cosmopolitan",
     "letter": "C",
     "definition": "Vodka, triple sec, cranberry juice, and lime juice; popularized in the 1990s."
+  },
+  {
+    "term": "Cotija",
+    "letter": "C",
+    "definition": "Mexico | Cow: Firm, salty Mexican crumbling cheese often used as a finishing garnish."
   },
   {
     "term": "Cottonseed oil",
@@ -5006,6 +5484,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "White rum, lime juice, and sugar; one of the great classic cocktails."
   },
   {
+    "term": "Danablu",
+    "letter": "D",
+    "definition": "Denmark | Cow: Creamy Danish blue with a sharp, salty punch and soft, spreadable body."
+  },
+  {
     "term": "Dark and Stormy",
     "letter": "D",
     "definition": "Dark rum and ginger beer served over ice."
@@ -5051,6 +5534,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To remove fat from the surface of a stock, sauce, or broth."
   },
   {
+    "term": "Délice de Bourgogne",
+    "letter": "D",
+    "definition": "France | Cow: Triple-cream cheese enriched with fresh cream; ultra-rich and velvety."
+  },
+  {
     "term": "Demi-glace",
     "letter": "D",
     "definition": "A rich, gelatinous sauce made by reducing brown stock."
@@ -5059,6 +5547,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Denaturation",
     "letter": "D",
     "definition": "When proteins unfold and change structure due to heat or acid."
+  },
+  {
+    "term": "Derby",
+    "letter": "D",
+    "definition": "England | Cow: Mild, buttery English cheese; the sage-infused variant is a classic."
   },
   {
     "term": "Devein",
@@ -5181,6 +5674,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Egyptian spice and nut blend of hazelnuts, coriander, cumin, and sesame."
   },
   {
+    "term": "Dunlop",
+    "letter": "D",
+    "definition": "Scotland | Cow: Mild, moist Scottish cheese similar to Cheddar but sweeter and softer."
+  },
+  {
     "term": "Dust",
     "letter": "D",
     "definition": "To sprinkle lightly with a powdered ingredient like flour or sugar."
@@ -5194,6 +5692,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Eau de vie",
     "letter": "E",
     "definition": "French for \"water of life\"; a clear fruit brandy."
+  },
+  {
+    "term": "Edam",
+    "letter": "E",
+    "definition": "Netherlands | Cow: Semi-hard Dutch sphere with a red wax rind and mild, slightly salty flavour."
   },
   {
     "term": "Egg poacher",
@@ -5221,6 +5724,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Sweet, aromatic syrup from elderflower blossoms; used in cocktails."
   },
   {
+    "term": "Emmental",
+    "letter": "E",
+    "definition": "Switzerland | Cow: Classic holey Swiss cheese with a mild, sweet, slightly nutty taste."
+  },
+  {
     "term": "Emulsify",
     "letter": "E",
     "definition": "To combine two unmixable liquids into a stable mixture."
@@ -5239,6 +5747,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Epazote",
     "letter": "E",
     "definition": "Pungent Mexican herb used in black bean dishes and quesadillas."
+  },
+  {
+    "term": "Époisses",
+    "letter": "E",
+    "definition": "France | Cow: Pungent washed-rind Burgundy cheese with an orange crust and custardy interior."
   },
   {
     "term": "Escabeche",
@@ -5276,6 +5789,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To remove liquid from a dish by gentle heating."
   },
   {
+    "term": "Explorateur",
+    "letter": "E",
+    "definition": "France | Cow: Rich triple-cream cheese with 75% fat content and a downy white rind."
+  },
+  {
     "term": "Extrude",
     "letter": "E",
     "definition": "To force dough or paste through a shaped die to create pasta."
@@ -5309,6 +5827,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Fermentation",
     "letter": "F",
     "definition": "The process by which yeast converts sugars into alcohol and CO₂."
+  },
+  {
+    "term": "Feta",
+    "letter": "F",
+    "definition": "Greece | Sheep: Brined white PDO cheese, crumbly and tangy, made from sheep's (or mixed) milk."
   },
   {
     "term": "File powder",
@@ -5411,6 +5934,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A pot with a heat source and long forks for communal fondue dining."
   },
   {
+    "term": "Fontina",
+    "letter": "F",
+    "definition": "Italy | Cow: Semi-firm Valle d'Aosta cheese with earthy, nutty depth and excellent melt."
+  },
+  {
     "term": "Food mill",
     "letter": "F",
     "definition": "A hand-cranked device for straining and pureeing soft foods."
@@ -5429,6 +5957,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Fortified wine",
     "letter": "F",
     "definition": "Wine with added spirits (brandy); includes Port, Sherry, and Madeira."
+  },
+  {
+    "term": "Fourme d'Ambert",
+    "letter": "F",
+    "definition": "France | Cow: One of France's oldest blue cheeses; mild and creamy with gentle blue veining."
   },
   {
     "term": "Frangelico",
@@ -5459,6 +5992,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Frittata",
     "letter": "F",
     "definition": "Italian open-faced omelette cooked on the stovetop and broiled."
+  },
+  {
+    "term": "Fromage Blanc",
+    "letter": "F",
+    "definition": "France | Cow: Smooth, fresh white cheese similar to yoghurt; mild and lightly tangy."
   },
   {
     "term": "Frosé",
@@ -5581,6 +6119,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Scotch whisky and amaretto over ice."
   },
   {
+    "term": "Gorgonzola",
+    "letter": "G",
+    "definition": "Italy | Cow: Comes in dolce (creamy, mild) and piccante (firm, sharp) blue styles."
+  },
+  {
+    "term": "Gouda",
+    "letter": "G",
+    "definition": "Netherlands | Cow: Semi-hard Dutch classic ranging from young and buttery to aged and crystalline."
+  },
+  {
     "term": "Grains of paradise",
     "letter": "G",
     "definition": "West African spice with peppery, citrus notes; related to cardamom."
@@ -5666,6 +6214,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Originally watered-down rum; now refers to a warm rum drink."
   },
   {
+    "term": "Gruyère",
+    "letter": "G",
+    "definition": "Switzerland | Cow: Firm Alpine cheese with small holes, sweet-nutty flavour, and excellent melt."
+  },
+  {
     "term": "Guinness",
     "letter": "G",
     "definition": "Famous Irish dry stout; dark, creamy, and roasted."
@@ -5679,6 +6232,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Habanero",
     "letter": "H",
     "definition": "Very hot, fruity chili pepper; used in hot sauces and Caribbean cooking."
+  },
+  {
+    "term": "Halloumi",
+    "letter": "H",
+    "definition": "Cyprus | Mixed: Brined semi-hard cheese that squeaks and grills without melting."
   },
   {
     "term": "Hard cider",
@@ -5706,6 +6264,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "The style of elaborate, refined French restaurant cooking."
   },
   {
+    "term": "Havarti",
+    "letter": "H",
+    "definition": "Denmark | Cow: Semi-soft Danish cheese; buttery and mild with a slightly springy texture."
+  },
+  {
     "term": "Hazelnut oil",
     "letter": "H",
     "definition": "Nut: Cold-pressed from hazelnuts. Rich, roasted, nutty flavour. Best used as a finishing oil or in desserts and vinaigrettes. Medium heat."
@@ -5729,6 +6292,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Herbs de Provence",
     "letter": "H",
     "definition": "Dried French herb blend of thyme, rosemary, oregano, lavender, and savory."
+  },
+  {
+    "term": "Herve",
+    "letter": "H",
+    "definition": "Belgium | Cow: Pungent, washed-rind Liège cheese with a strong aroma and soft, gooey interior."
   },
   {
     "term": "Highball",
@@ -5796,6 +6364,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A sweet coating applied to baked goods; also called frosting."
   },
   {
+    "term": "Idiazabal",
+    "letter": "I",
+    "definition": "Spain | Sheep: Smoked Basque sheep's milk cheese; firm, waxy, and subtly smoky."
+  },
+  {
     "term": "Immersion blender",
     "letter": "I",
     "definition": "A handheld stick blender for pureeing soups and sauces directly in the pot."
@@ -5849,6 +6422,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Japanese mandoline",
     "letter": "J",
     "definition": "A precise, adjustable slicer favored for its razor-sharp blade."
+  },
+  {
+    "term": "Jarlsberg",
+    "letter": "J",
+    "definition": "Norway | Cow: Norwegian Swiss-style cheese with large holes and a mild, buttery-sweet taste."
   },
   {
     "term": "Jigger",
@@ -5909,6 +6487,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Kashmiri chili",
     "letter": "K",
     "definition": "Mild Indian chili prized for its bright red color rather than heat."
+  },
+  {
+    "term": "Kasseri",
+    "letter": "K",
+    "definition": "Greece | Sheep: Semi-hard Greek pasta filata cheese; mild and slightly tangy."
+  },
+  {
+    "term": "Kefalotiri",
+    "letter": "K",
+    "definition": "Greece | Sheep: Hard, salty Greek grating cheese with a sharp, full flavour."
   },
   {
     "term": "Kir",
@@ -5991,6 +6579,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A naturally fermented Belgian sour beer."
   },
   {
+    "term": "Lancashire",
+    "letter": "L",
+    "definition": "England | Cow: Crumbly, buttery, and mild — toastie Lancashire is a northern classic."
+  },
+  {
+    "term": "Langres",
+    "letter": "L",
+    "definition": "France | Cow: Washed-rind cheese from Burgundy with a sunken crown perfect for filling with wine."
+  },
+  {
     "term": "Lard",
     "letter": "L",
     "definition": "Rendered pig fat used as cooking fat; also to insert fat into meat."
@@ -6026,6 +6624,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "An agent that causes dough or batter to rise (yeast, baking powder)."
   },
   {
+    "term": "Leicester",
+    "letter": "L",
+    "definition": "England | Cow: Mellow, rich-flavoured English cheese with a distinctive deep orange colour."
+  },
+  {
     "term": "Lemon balm",
     "letter": "L",
     "definition": "Mild, citrus-scented herb; used in teas, salads, and desserts."
@@ -6059,6 +6662,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Lightly floured",
     "letter": "L",
     "definition": "Dusted with just enough flour to prevent sticking."
+  },
+  {
+    "term": "Limburger",
+    "letter": "L",
+    "definition": "Belgium/Germany | Cow: Notoriously pungent washed-rind cheese with a surprisingly mild, buttery taste."
   },
   {
     "term": "Limoncello",
@@ -6131,6 +6739,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "The chemical browning of proteins and sugars under dry heat."
   },
   {
+    "term": "Manchego",
+    "letter": "M",
+    "definition": "Spain | Sheep: Spain's most famous cheese; firm, rich, and slightly salty with a herringbone rind."
+  },
+  {
     "term": "Mandoline",
     "letter": "M",
     "definition": "A slicing tool with adjustable blades for thin, uniform cuts."
@@ -6169,6 +6782,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Martini",
     "letter": "M",
     "definition": "The classic cocktail of gin (or vodka) and vermouth; stirred or shaken."
+  },
+  {
+    "term": "Mascarpone",
+    "letter": "M",
+    "definition": "Italy | Cow: Ultra-rich, smooth Italian cream cheese used in tiramisù and desserts."
   },
   {
     "term": "Mask",
@@ -6261,6 +6879,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "White rum, mint, lime, sugar, and soda water; a Cuban classic."
   },
   {
+    "term": "Montasio",
+    "letter": "M",
+    "definition": "Italy | Cow: Friulian semi-hard cheese used fresh or aged; grassy and clean."
+  },
+  {
     "term": "Monter au beurre",
     "letter": "M",
     "definition": "To finish a sauce by whisking in cold butter for richness."
@@ -6286,6 +6909,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A light, airy dish made with whipped cream or egg whites."
   },
   {
+    "term": "Mozzarella",
+    "letter": "M",
+    "definition": "Italy | Cow: Fresh, mild, elastic Italian cheese; supreme on pizza and in caprese."
+  },
+  {
+    "term": "Mozzarella di Bufala",
+    "letter": "M",
+    "definition": "Italy | Buffalo: DOP fresh cheese from buffalo milk; richer and tangier than cow's mozzarella."
+  },
+  {
     "term": "Muddler",
     "letter": "M",
     "definition": "A bartending pestle used to crush herbs, fruits, and sugar in cocktails."
@@ -6309,6 +6942,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Mulled wine",
     "letter": "M",
     "definition": "Red wine heated with spices such as cinnamon, cloves, and orange peel."
+  },
+  {
+    "term": "Munster",
+    "letter": "M",
+    "definition": "France | Cow: Soft washed-rind Alsatian cheese with pungent aroma and mild, creamy taste."
   },
   {
     "term": "Mustard oil",
@@ -6339,6 +6977,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Negroni",
     "letter": "N",
     "definition": "Equal parts gin, sweet vermouth, and Campari; stirred and served over ice."
+  },
+  {
+    "term": "Neufchâtel",
+    "letter": "N",
+    "definition": "France | Cow: One of France's oldest soft cheeses; heart-shaped, fluffy, and lightly tangy."
   },
   {
     "term": "Nigella",
@@ -6431,6 +7074,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Robust, peppery herb essential in Italian, Greek, and Mexican cooking."
   },
   {
+    "term": "Ossau-Iraty",
+    "letter": "O",
+    "definition": "France | Sheep: Basque Pyrenean cheese; firm, ivory paste with hazelnut and olive notes."
+  },
+  {
     "term": "Ouzo",
     "letter": "O",
     "definition": "Greek anise-flavored spirit; turns cloudy white when mixed with water."
@@ -6506,6 +7154,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A small knife used for peeling, trimming, and detailed cutting work."
   },
   {
+    "term": "Parmigiano-Reggiano",
+    "letter": "P",
+    "definition": "Italy | Cow: The 'King of Cheeses' — granular, deeply savoury, and aged 12–36+ months."
+  },
+  {
     "term": "Pasta machine",
     "letter": "P",
     "definition": "A hand-cranked or electric machine for rolling and cutting fresh pasta."
@@ -6569,6 +7222,21 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Pearling",
     "letter": "P",
     "definition": "Removing the outer bran layer of grains through abrasion."
+  },
+  {
+    "term": "Pecorino Romano",
+    "letter": "P",
+    "definition": "Italy | Sheep: Hard, salty sheep's milk cheese essential to cacio e pepe and carbonara."
+  },
+  {
+    "term": "Pecorino Sardo",
+    "letter": "P",
+    "definition": "Italy | Sheep: Sardinian sheep's milk cheese; mild when young, pungent when aged."
+  },
+  {
+    "term": "Pecorino Toscano",
+    "letter": "P",
+    "definition": "Italy | Sheep: Lighter and less salty than Romano; sweet and grassy when young."
   },
   {
     "term": "Peeler",
@@ -6696,6 +7364,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Fortified Portuguese wine; available in ruby, tawny, and vintage styles."
   },
   {
+    "term": "Port Salut",
+    "letter": "P",
+    "definition": "France | Cow: Semi-soft washed-rind cheese with mild flavour and orange rind."
+  },
+  {
     "term": "Porter",
     "letter": "P",
     "definition": "A dark, malt-forward ale with chocolate and coffee notes."
@@ -6721,6 +7394,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Italian sparkling wine made in the Veneto region; used in Aperol Spritzes."
   },
   {
+    "term": "Provolone",
+    "letter": "P",
+    "definition": "Italy | Cow: Stretched-curd cheese ranging from sweet (dolce) to sharp (piccante)."
+  },
+  {
     "term": "Pumpkin seed oil",
     "letter": "P",
     "definition": "Seed: Dark, intensely flavoured oil from roasted pumpkin seeds. Common in Central European cuisine as a finishing oil over salads and soups. Low/no heat."
@@ -6729,6 +7407,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Purée",
     "letter": "P",
     "definition": "To process food until completely smooth using a blender or food mill."
+  },
+  {
+    "term": "Quark",
+    "letter": "Q",
+    "definition": "Germany | Cow: Soft, unaged fresh cheese between yoghurt and cream cheese; used in baking."
   },
   {
     "term": "Quatre épices",
@@ -6759,6 +7442,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Rack",
     "letter": "R",
     "definition": "To transfer a fermenting liquid off its sediment during the brewing process."
+  },
+  {
+    "term": "Raclette",
+    "letter": "R",
+    "definition": "Switzerland | Cow: Semi-hard Alpine cheese designed to be melted and scraped over potatoes."
   },
   {
     "term": "Ragu",
@@ -6794,6 +7482,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Ratatouille",
     "letter": "R",
     "definition": "Provençal vegetable stew of eggplant, zucchini, peppers, and tomatoes."
+  },
+  {
+    "term": "Reblochon",
+    "letter": "R",
+    "definition": "France | Cow: Soft washed-rind Savoyard cheese with a nutty, creamy, woodsy character."
   },
   {
     "term": "Red pepper flakes",
@@ -6836,6 +7529,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Grain: Extracted from the outer bran of rice. Light, neutral flavour with a very high smoke point. Popular in Asian cooking and considered heart-healthy. High heat."
   },
   {
+    "term": "Ricotta",
+    "letter": "R",
+    "definition": "Italy | Cow: Light, fresh whey cheese with a grainy texture; sweet and versatile."
+  },
+  {
+    "term": "Ricotta Salata",
+    "letter": "R",
+    "definition": "Italy | Sheep: Pressed, salted, and dried ricotta; firm and salty for grating."
+  },
+  {
     "term": "Roast",
     "letter": "R",
     "definition": "To cook uncovered in an oven using dry heat."
@@ -6864,6 +7567,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Rondelle",
     "letter": "R",
     "definition": "Round slices cut from cylindrical vegetables."
+  },
+  {
+    "term": "Roquefort",
+    "letter": "R",
+    "definition": "France | Sheep: AOC blue cheese from Aveyron caves; creamy, moist, and intensely tangy."
   },
   {
     "term": "Rosé",
@@ -6919,6 +7627,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Sage",
     "letter": "S",
     "definition": "Strong, earthy herb used with pork, poultry, and in stuffings."
+  },
+  {
+    "term": "Saint-Nectaire",
+    "letter": "S",
+    "definition": "France | Cow: Semi-soft Auvergne cheese aged on rye straw with earthy, mushroomy notes."
+  },
+  {
+    "term": "Sainte-Maure de Touraine",
+    "letter": "S",
+    "definition": "France | Goat: Log-shaped Loire goat's cheese with a straw running through its centre."
   },
   {
     "term": "Sake",
@@ -6979,6 +7697,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Scald",
     "letter": "S",
     "definition": "To heat milk just below boiling; also to blanch briefly."
+  },
+  {
+    "term": "Scamorza",
+    "letter": "S",
+    "definition": "Italy | Cow: Pear-shaped pulled-curd cheese, sold plain or smoked; firmer than mozzarella."
   },
   {
     "term": "Schnapps",
@@ -7231,6 +7954,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To cook food slowly in a liquid, fully submerged."
   },
   {
+    "term": "Stilton",
+    "letter": "S",
+    "definition": "England | Cow: PDO blue cheese with crumbly texture, rich flavour, and port-friendly character."
+  },
+  {
     "term": "Stir-fry",
     "letter": "S",
     "definition": "To cook quickly in a small amount of oil over very high heat."
@@ -7244,6 +7972,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Stout",
     "letter": "S",
     "definition": "A dark, roasted style of ale; includes dry stout, milk stout, and imperial stout."
+  },
+  {
+    "term": "Stracchino",
+    "letter": "S",
+    "definition": "Italy | Cow: Soft, spreadably creamy Lombardian cheese with a pleasantly mild acidity."
   },
   {
     "term": "Straight up",
@@ -7301,6 +8034,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A sweet liquid base used to sweeten cocktails."
   },
   {
+    "term": "Taleggio",
+    "letter": "T",
+    "definition": "Italy | Cow: Washed-rind Lombardian cheese with a strong aroma and mild, fruity interior."
+  },
+  {
     "term": "Tallow",
     "letter": "T",
     "definition": "Animal: Rendered beef or mutton fat. Rich, beefy flavour. High smoke point; historically used for deep-frying and experiencing a culinary revival. High heat."
@@ -7356,6 +8094,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Earthy, floral herb used in stocks, stews, meats, and roasted vegetables."
   },
   {
+    "term": "Tilsit",
+    "letter": "T",
+    "definition": "Germany | Cow: Semi-hard Baltic cheese with small holes and a tangy, herbal flavour."
+  },
+  {
     "term": "Toast",
     "letter": "T",
     "definition": "To brown the surface of bread, nuts, or spices with dry heat."
@@ -7364,6 +8107,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Tom Collins",
     "letter": "T",
     "definition": "Gin, lemon juice, sugar, and soda water; tall and refreshing."
+  },
+  {
+    "term": "Toma Piemontese",
+    "letter": "T",
+    "definition": "Italy | Cow: Mild, semi-hard Piedmontese table cheese with a smooth, supple paste."
+  },
+  {
+    "term": "Tomme de Savoie",
+    "letter": "T",
+    "definition": "France | Cow: Rustic Alpine semi-hard cheese with a thick grey rind and earthy, grassy notes."
   },
   {
     "term": "Tongs",
@@ -7426,6 +8179,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A rotating cake stand used for even icing and decorating."
   },
   {
+    "term": "Ubriaco",
+    "letter": "U",
+    "definition": "Italy | Cow: Venetian 'drunken cheese' aged in grape pomace, must, or wine."
+  },
+  {
     "term": "Uisce beatha",
     "letter": "U",
     "definition": "Gaelic for \"water of life\"; the origin of the word \"whiskey.\""
@@ -7456,9 +8214,24 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A mid-sized knife suited for tasks between a chef's knife and a paring knife."
   },
   {
+    "term": "Vacherin Fribourgeois",
+    "letter": "V",
+    "definition": "Switzerland | Cow: Semi-soft Alpine cheese used in authentic Swiss fondue alongside Gruyère."
+  },
+  {
+    "term": "Vacherin Mont d'Or",
+    "letter": "V",
+    "definition": "France/Switzerland | Cow: Seasonal soft spruce-bark-wrapped cheese, baked and scooped like fondue."
+  },
+  {
     "term": "Vacuum sealer",
     "letter": "V",
     "definition": "A machine that removes air from bags before sealing; used for sous vide and storage."
+  },
+  {
+    "term": "Valençay",
+    "letter": "V",
+    "definition": "France | Goat: Truncated pyramid goat's cheese dusted in charcoal ash; lemony and fresh."
   },
   {
     "term": "Vandyke",
@@ -7469,6 +8242,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Vanilla",
     "letter": "V",
     "definition": "Sweet, floral extract from vanilla bean orchid; used in baking and desserts."
+  },
+  {
+    "term": "Västerbotten",
+    "letter": "V",
+    "definition": "Sweden | Cow: Sweden's most beloved hard cheese; granular, salty, and intensely umami."
   },
   {
     "term": "Vegetable oil",
@@ -7541,6 +8319,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Japanese rhizome with sharp, nasal heat; used with sushi and noodles."
   },
   {
+    "term": "Wensleydale",
+    "letter": "W",
+    "definition": "England | Cow: Crumbly, moist Yorkshire cheese with a honeyed, milky flavour; pairs with fruit."
+  },
+  {
     "term": "Wheat germ oil",
     "letter": "W",
     "definition": "Grain: Extracted from wheat kernels. Nutty, rich flavour, extremely high in vitamin E. Primarily used as a nutritional supplement or cold in dressings. Low/no heat."
@@ -7596,6 +8379,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To soften greens by applying gentle heat."
   },
   {
+    "term": "Winnimere",
+    "letter": "W",
+    "definition": "USA | Cow: American washed-rind cheese wrapped in spruce bark; rich and bacon-y."
+  },
+  {
     "term": "Wire whisk",
     "letter": "W",
     "definition": "A looped wire tool for beating, whisking, and incorporating air."
@@ -7646,6 +8434,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Australian slang for Queensland's iconic lager."
   },
   {
+    "term": "Xynotyri",
+    "letter": "X",
+    "definition": "Greece | Sheep: Ancient Greek dried sour cheese; crumbly and sharp, traditionally sun-dried."
+  },
+  {
     "term": "Yeast",
     "letter": "Y",
     "definition": "A leavening agent that ferments sugars to produce CO₂ and alcohol."
@@ -7656,6 +8449,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Microorganisms that ferment sugars into alcohol during brewing and winemaking."
   },
   {
+    "term": "Yellow Wax Gouda",
+    "letter": "Y",
+    "definition": "Netherlands | Cow: Young Gouda in its signature yellow wax coat; mild, creamy, and slightly sweet."
+  },
+  {
     "term": "Yield",
     "letter": "Y",
     "definition": "The amount of usable product after preparation or cooking."
@@ -7664,6 +8462,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Yogurt maker",
     "letter": "Y",
     "definition": "A small appliance that maintains a gentle warm temperature for culturing yogurt."
+  },
+  {
+    "term": "Yorkshire Blue",
+    "letter": "Y",
+    "definition": "England | Cow: Creamy, mellow English blue cheese with a softer character than Stilton."
   },
   {
     "term": "Yuzu",
@@ -7679,6 +8482,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Za'atar",
     "letter": "Z",
     "definition": "Middle Eastern herb blend of thyme, sumac, sesame seeds, and salt."
+  },
+  {
+    "term": "Zamorano",
+    "letter": "Z",
+    "definition": "Spain | Sheep: Firm Castilian sheep's milk cheese similar to Manchego; rich and buttery."
   },
   {
     "term": "Zedoary",
@@ -7699,6 +8507,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Zester",
     "letter": "Z",
     "definition": "A small tool with tiny sharp perforations for removing zest from citrus peel."
+  },
+  {
+    "term": "Zmaj",
+    "letter": "Z",
+    "definition": "Serbia | Cow: Traditional Serbian semi-hard mountain cheese with a robust, tangy flavour."
   },
   {
     "term": "Zombie",

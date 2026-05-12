@@ -1153,3 +1153,166 @@ Here are all three — each is a long response so I'll deliver them one after an
 
 - **Walnut oil** _(Nut)_ — Cold-pressed from walnuts. Rich, complex nutty flavour with a slightly bitter finish. Excellent in dressings and pasta. Best used cold. Low/no heat.
 - **Wheat germ oil** _(Grain)_ — Extracted from wheat kernels. Nutty, rich flavour, extremely high in vitamin E. Primarily used as a nutritional supplement or cold in dressings. Low/no heat.
+
+
+## Cheese
+
+---
+## A
+
+- **Abondance** _(France | Cow)_ — Semi-hard Alpine cheese with fruity, nutty notes and a supple texture.
+- **Aged Gouda** _(Netherlands | Cow)_ — Hard, caramel-sweet Dutch cheese with crunchy tyrosine crystals.
+- **Appenzeller** _(Switzerland | Cow)_ — Spicy, pungent washed-rind cheese rubbed with herbal brine.
+- **Asiago** _(Italy | Cow)_ — Ranges from mild and milky when fresh to sharp and crumbly when aged.
+
+## B
+
+- **Beaufort** _(France | Cow)_ — Silky Alpine gruyère-style cheese with concave rind and buttery depth.
+- **Brie** _(France | Cow)_ — Soft white-rind cheese with a creamy interior and earthy, mushroomy flavour.
+- **Brin d'Amour** _(France — Corsica | Sheep)_ — Herbed Corsican cheese rolled in wild rosemary, savory, and juniper berries.
+- **Burrata** _(Italy | Cow)_ — Fresh mozzarella shell encasing a lush, creamy stracciatella centre.
+
+## C
+
+- **Cabrales** _(Spain | Mixed)_ — Intense, pungent blue cheese from Asturias, wrapped in sycamore leaves.
+- **Camembert** _(France | Cow)_ — Soft-ripened Norman cheese with bloomy rind and rich, buttery paste.
+- **Cheddar** _(England | Cow)_ — From mild and springy to sharp and crystalline, the world's most popular cheese.
+- **Chèvre** _(France | Goat)_ — Fresh goat's milk cheese; tangy, bright, and spreadably soft.
+- **Comté** _(France | Cow)_ — Nutty, complex French gruyère aged 4–36 months in mountain cellars.
+- **Cotija** _(Mexico | Cow)_ — Firm, salty Mexican crumbling cheese often used as a finishing garnish.
+
+## D
+
+- **Danablu** _(Denmark | Cow)_ — Creamy Danish blue with a sharp, salty punch and soft, spreadable body.
+- **Délice de Bourgogne** _(France | Cow)_ — Triple-cream cheese enriched with fresh cream; ultra-rich and velvety.
+- **Derby** _(England | Cow)_ — Mild, buttery English cheese; the sage-infused variant is a classic.
+- **Dunlop** _(Scotland | Cow)_ — Mild, moist Scottish cheese similar to Cheddar but sweeter and softer.
+
+## E
+
+- **Edam** _(Netherlands | Cow)_ — Semi-hard Dutch sphere with a red wax rind and mild, slightly salty flavour.
+- **Emmental** _(Switzerland | Cow)_ — Classic holey Swiss cheese with a mild, sweet, slightly nutty taste.
+- **Époisses** _(France | Cow)_ — Pungent washed-rind Burgundy cheese with an orange crust and custardy interior.
+- **Explorateur** _(France | Cow)_ — Rich triple-cream cheese with 75% fat content and a downy white rind.
+
+## F
+
+- **Feta** _(Greece | Sheep)_ — Brined white PDO cheese, crumbly and tangy, made from sheep's (or mixed) milk.
+- **Fontina** _(Italy | Cow)_ — Semi-firm Valle d'Aosta cheese with earthy, nutty depth and excellent melt.
+- **Fourme d'Ambert** _(France | Cow)_ — One of France's oldest blue cheeses; mild and creamy with gentle blue veining.
+- **Fromage Blanc** _(France | Cow)_ — Smooth, fresh white cheese similar to yoghurt; mild and lightly tangy.
+
+## G
+
+- **Gorgonzola** _(Italy | Cow)_ — Comes in dolce (creamy, mild) and piccante (firm, sharp) blue styles.
+- **Gouda** _(Netherlands | Cow)_ — Semi-hard Dutch classic ranging from young and buttery to aged and crystalline.
+- **Gruyère** _(Switzerland | Cow)_ — Firm Alpine cheese with small holes, sweet-nutty flavour, and excellent melt.
+
+## H
+
+- **Halloumi** _(Cyprus | Mixed)_ — Brined semi-hard cheese that squeaks and grills without melting.
+- **Havarti** _(Denmark | Cow)_ — Semi-soft Danish cheese; buttery and mild with a slightly springy texture.
+- **Herve** _(Belgium | Cow)_ — Pungent, washed-rind Liège cheese with a strong aroma and soft, gooey interior.
+
+## I
+
+- **Idiazabal** _(Spain | Sheep)_ — Smoked Basque sheep's milk cheese; firm, waxy, and subtly smoky.
+
+## J
+
+- **Jarlsberg** _(Norway | Cow)_ — Norwegian Swiss-style cheese with large holes and a mild, buttery-sweet taste.
+
+## K
+
+- **Kasseri** _(Greece | Sheep)_ — Semi-hard Greek pasta filata cheese; mild and slightly tangy.
+- **Kefalotiri** _(Greece | Sheep)_ — Hard, salty Greek grating cheese with a sharp, full flavour.
+
+## L
+
+- **Langres** _(France | Cow)_ — Washed-rind cheese from Burgundy with a sunken crown perfect for filling with wine.
+- **Lancashire** _(England | Cow)_ — Crumbly, buttery, and mild — toastie Lancashire is a northern classic.
+- **Leicester** _(England | Cow)_ — Mellow, rich-flavoured English cheese with a distinctive deep orange colour.
+- **Limburger** _(Belgium/Germany | Cow)_ — Notoriously pungent washed-rind cheese with a surprisingly mild, buttery taste.
+
+## M
+
+- **Manchego** _(Spain | Sheep)_ — Spain's most famous cheese; firm, rich, and slightly salty with a herringbone rind.
+- **Mascarpone** _(Italy | Cow)_ — Ultra-rich, smooth Italian cream cheese used in tiramisù and desserts.
+- **Montasio** _(Italy | Cow)_ — Friulian semi-hard cheese used fresh or aged; grassy and clean.
+- **Mozzarella** _(Italy | Cow)_ — Fresh, mild, elastic Italian cheese; supreme on pizza and in caprese.
+- **Mozzarella di Bufala** _(Italy | Buffalo)_ — DOP fresh cheese from buffalo milk; richer and tangier than cow's mozzarella.
+- **Munster** _(France | Cow)_ — Soft washed-rind Alsatian cheese with pungent aroma and mild, creamy taste.
+
+## N
+
+- **Neufchâtel** _(France | Cow)_ — One of France's oldest soft cheeses; heart-shaped, fluffy, and lightly tangy.
+
+## O
+
+- **Ossau-Iraty** _(France | Sheep)_ — Basque Pyrenean cheese; firm, ivory paste with hazelnut and olive notes.
+
+## P
+
+- **Parmigiano-Reggiano** _(Italy | Cow)_ — The 'King of Cheeses' — granular, deeply savoury, and aged 12–36+ months.
+- **Pecorino Romano** _(Italy | Sheep)_ — Hard, salty sheep's milk cheese essential to cacio e pepe and carbonara.
+- **Pecorino Sardo** _(Italy | Sheep)_ — Sardinian sheep's milk cheese; mild when young, pungent when aged.
+- **Pecorino Toscano** _(Italy | Sheep)_ — Lighter and less salty than Romano; sweet and grassy when young.
+- **Port Salut** _(France | Cow)_ — Semi-soft washed-rind cheese with mild flavour and orange rind.
+- **Provolone** _(Italy | Cow)_ — Stretched-curd cheese ranging from sweet (dolce) to sharp (piccante).
+
+## Q
+
+- **Quark** _(Germany | Cow)_ — Soft, unaged fresh cheese between yoghurt and cream cheese; used in baking.
+
+## R
+
+- **Raclette** _(Switzerland | Cow)_ — Semi-hard Alpine cheese designed to be melted and scraped over potatoes.
+- **Reblochon** _(France | Cow)_ — Soft washed-rind Savoyard cheese with a nutty, creamy, woodsy character.
+- **Ricotta** _(Italy | Cow)_ — Light, fresh whey cheese with a grainy texture; sweet and versatile.
+- **Ricotta Salata** _(Italy | Sheep)_ — Pressed, salted, and dried ricotta; firm and salty for grating.
+- **Roquefort** _(France | Sheep)_ — AOC blue cheese from Aveyron caves; creamy, moist, and intensely tangy.
+
+## S
+
+- **Saint-Nectaire** _(France | Cow)_ — Semi-soft Auvergne cheese aged on rye straw with earthy, mushroomy notes.
+- **Sainte-Maure de Touraine** _(France | Goat)_ — Log-shaped Loire goat's cheese with a straw running through its centre.
+- **Scamorza** _(Italy | Cow)_ — Pear-shaped pulled-curd cheese, sold plain or smoked; firmer than mozzarella.
+- **Stilton** _(England | Cow)_ — PDO blue cheese with crumbly texture, rich flavour, and port-friendly character.
+- **Stracchino** _(Italy | Cow)_ — Soft, spreadably creamy Lombardian cheese with a pleasantly mild acidity.
+
+## T
+
+- **Taleggio** _(Italy | Cow)_ — Washed-rind Lombardian cheese with a strong aroma and mild, fruity interior.
+- **Tilsit** _(Germany | Cow)_ — Semi-hard Baltic cheese with small holes and a tangy, herbal flavour.
+- **Toma Piemontese** _(Italy | Cow)_ — Mild, semi-hard Piedmontese table cheese with a smooth, supple paste.
+- **Tomme de Savoie** _(France | Cow)_ — Rustic Alpine semi-hard cheese with a thick grey rind and earthy, grassy notes.
+
+## U
+
+- **Ubriaco** _(Italy | Cow)_ — Venetian 'drunken cheese' aged in grape pomace, must, or wine.
+
+## V
+
+- **Vacherin Fribourgeois** _(Switzerland | Cow)_ — Semi-soft Alpine cheese used in authentic Swiss fondue alongside Gruyère.
+- **Vacherin Mont d'Or** _(France/Switzerland | Cow)_ — Seasonal soft spruce-bark-wrapped cheese, baked and scooped like fondue.
+- **Valençay** _(France | Goat)_ — Truncated pyramid goat's cheese dusted in charcoal ash; lemony and fresh.
+- **Västerbotten** _(Sweden | Cow)_ — Sweden's most beloved hard cheese; granular, salty, and intensely umami.
+
+## W
+
+- **Wensleydale** _(England | Cow)_ — Crumbly, moist Yorkshire cheese with a honeyed, milky flavour; pairs with fruit.
+- **Winnimere** _(USA | Cow)_ — American washed-rind cheese wrapped in spruce bark; rich and bacon-y.
+
+## X
+
+- **Xynotyri** _(Greece | Sheep)_ — Ancient Greek dried sour cheese; crumbly and sharp, traditionally sun-dried.
+
+## Y
+
+- **Yellow Wax Gouda** _(Netherlands | Cow)_ — Young Gouda in its signature yellow wax coat; mild, creamy, and slightly sweet.
+- **Yorkshire Blue** _(England | Cow)_ — Creamy, mellow English blue cheese with a softer character than Stilton.
+
+## Z
+
+- **Zamorano** _(Spain | Sheep)_ — Firm Castilian sheep's milk cheese similar to Manchego; rich and buttery.
+- **Zmaj** _(Serbia | Cow)_ — Traditional Serbian semi-hard mountain cheese with a robust, tangy flavour.

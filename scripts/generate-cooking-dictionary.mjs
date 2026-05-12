@@ -65,7 +65,7 @@ function parseEntries(markdown) {
 
 function splitIntoSections(markdown) {
   const lines = markdown.split(/\r?\n/);
-  const sections = { general: [], spices: [], oils: [], alcohol: [], instruments: [] };
+  const sections = { general: [], spices: [], oils: [], cheeses: [], alcohol: [], instruments: [] };
   let currentSection = 'general';
 
   for (const rawLine of lines) {
@@ -73,6 +73,11 @@ function splitIntoSections(markdown) {
 
     if (/^##\s+Oils$/i.test(line)) {
       currentSection = 'oils';
+      continue;
+    }
+
+    if (/^##\s+Cheeses?$/i.test(line)) {
+      currentSection = 'cheeses';
       continue;
     }
 
@@ -101,6 +106,7 @@ async function main() {
   const generalEntries = parseEntries(sections.general.join('\n'));
   const spicesEntries = parseEntries(sections.spices.join('\n'));
   const oilsEntries = parseEntries(sections.oils.join('\n'));
+  const cheesesEntries = parseEntries(sections.cheeses.join('\n'));
   const alcoholEntries = parseEntries(sections.alcohol.join('\n'));
   const instrumentsEntries = parseEntries(sections.instruments.join('\n'));
 
@@ -108,6 +114,7 @@ async function main() {
     ...generalEntries,
     ...spicesEntries,
     ...oilsEntries,
+    ...cheesesEntries,
     ...alcoholEntries,
     ...instrumentsEntries,
   ].sort((left, right) => {
@@ -130,6 +137,8 @@ export const spicesDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(spice
 
 export const oilsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(oilsEntries, null, 2)};
 
+export const cheesesDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(cheesesEntries, null, 2)};
+
 export const alcoholDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(alcoholEntries, null, 2)};
 
 export const instrumentsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(instrumentsEntries, null, 2)};
@@ -141,6 +150,7 @@ export const cookingDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(allE
   console.log(`  General:     ${generalEntries.length}`);
   console.log(`  Spices:      ${spicesEntries.length}`);
   console.log(`  Oils:        ${oilsEntries.length}`);
+  console.log(`  Cheeses:     ${cheesesEntries.length}`);
   console.log(`  Alcohol:     ${alcoholEntries.length}`);
   console.log(`  Instruments: ${instrumentsEntries.length}`);
   console.log(`  All:         ${allEntries.length}`);

@@ -16,6 +16,7 @@ import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions, conversionSections } from '../components/sample-data';
 import {
   alcoholDictionaryEntries,
+  cheesesDictionaryEntries,
   cookingDictionaryEntries,
   generalDictionaryEntries,
   instrumentsDictionaryEntries,
@@ -26,7 +27,7 @@ import { useAppSettings } from '../contexts/settings-context';
 
 type MainTab = 'conversions' | 'substitutions' | 'dictionary';
 type SubSection = 'all' | 'allergy' | 'pantry';
-type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'alcohol' | 'instruments';
+type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'alcohol' | 'instruments';
 
 const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
@@ -47,6 +48,7 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
   { key: 'general', label: 'General' },
   { key: 'spices', label: 'Spices' },
   { key: 'oils', label: 'Oils' },
+  { key: 'cheeses', label: 'Cheeses' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -250,6 +252,7 @@ export default function ReferenceScreen() {
       case 'general': return generalDictionaryEntries;
       case 'spices': return spicesDictionaryEntries;
       case 'oils': return oilsDictionaryEntries;
+      case 'cheeses': return cheesesDictionaryEntries;
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
       default: return cookingDictionaryEntries;
