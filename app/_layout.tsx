@@ -81,9 +81,10 @@ type HeaderBrandProps = {
   compact: boolean;
   palette: AppPalette;
   title: string;
+  titleMaxWidth: number;
 };
 
-function HeaderBrand({ compact, palette, title }: HeaderBrandProps) {
+function HeaderBrand({ compact, palette, title, titleMaxWidth }: HeaderBrandProps) {
   const showRouteTitle = title && title !== 'Kitchen Helper';
 
   if (compact) {
@@ -95,12 +96,19 @@ function HeaderBrand({ compact, palette, title }: HeaderBrandProps) {
   }
 
   return (
-    <View style={{ alignItems: 'center', flexDirection: 'row', gap: 12 }}>
-      <Image source={headerLogo} style={{ height: 44, width: 44 }} resizeMode="contain" />
+    <View style={{ alignItems: 'center', flexDirection: 'row', gap: 12, minWidth: 0 }}>
+      <Image source={headerLogo} style={{ flexShrink: 0, height: 44, width: 44 }} resizeMode="contain" />
       {showRouteTitle ? (
         <Text
           numberOfLines={1}
-          style={{ color: palette.textMuted, fontSize: 15, fontWeight: '700', maxWidth: 180 }}
+          style={{
+            color: palette.textMuted,
+            flexShrink: 1,
+            fontSize: 15,
+            fontWeight: '700',
+            maxWidth: titleMaxWidth,
+            minWidth: 0,
+          }}
         >
           {title}
         </Text>
@@ -113,6 +121,7 @@ function RootNavigator() {
   const { palette } = useAppSettings();
   const { width } = useWindowDimensions();
   const isCompact = width < 768;
+  const desktopTitleMaxWidth = Math.max(180, width - 430);
 
   return (
     <Stack
@@ -129,6 +138,7 @@ function RootNavigator() {
             compact={isCompact}
             palette={palette}
             title={typeof children === 'string' ? children : 'Kitchen Helper'}
+            titleMaxWidth={desktopTitleMaxWidth}
           />
         ),
         headerTitleAlign: isCompact ? 'center' : 'left',
