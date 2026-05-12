@@ -22,17 +22,19 @@ The app currently includes:
 
 - a routed home screen that acts like a kitchen tools hub
 - home menu cards for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
+- an Add Recipe shortcut on the home screen, with a floating mobile action button on compact screens
 - shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH` on smaller screens
 - a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
-- a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and an interactive oven temperature slider
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
-- sticky search bars on recipe and reference browsing screens
+- sticky search bars on recipe and reference browsing screens, with clear buttons when search text is entered
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
 - cloud-synced user recipes and recipe overrides backed by Supabase-compatible auth and database APIs
 - clickable recipe detail pages generated from Markdown
 - editable recipe detail pages for both local recipes and Obsidian-backed recipes through local overrides
 - ingredient scaling controls on recipe pages
+- single-recipe share cards and bulk `Share Selected` from `My Recipes`
 - favorites saved locally
 - category, cuisine-region, allergen, and favorites filtering
 - bulk recipe selection, bulk favorites, bulk metadata editing, and bulk delete
@@ -178,9 +180,12 @@ Important routed files:
 Important shared files:
 
 - [`components/cook-timer-modal.tsx`]
+- [`components/clearable-search-input.tsx`]
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
+- [`components/recipe-share-card.tsx`]
 - [`components/scaled-directions-list.tsx`]
+- [`components/share-icon.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
 - [`contexts/auth-context.tsx`]
@@ -209,6 +214,8 @@ The app parses those Markdown notes into structured recipe data including:
 - servings
 - prep/cook/total time when available
 - allergen and allergy-friendly tags
+
+The generator recognizes common serving metadata labels such as `servings`, `serves`, `yield`, and `makes`. It also omits empty notes sections and keeps parsed serving/time metadata out of notes so recipe pages do not show duplicate cleanup text.
 
 ### Synced User Recipes And Overrides
 
@@ -249,6 +256,8 @@ The cooking dictionary page is generated from:
 - [`Cooking/Resources/New Custom Cooking Dictionary.md`]
 
 The dictionary generator parses that glossary format into searchable app data in [`data/cooking-dictionary.ts`].
+
+The current reference UI includes dictionary category tabs for general terms, spices, oils, `Cheeses`, `Breads`, alcohol, and instruments. The `Oven temperatures` conversion replaces the old static list with an interactive Fahrenheit slider from `200F` to `550F` plus common preset buttons.
 
 ## Scripts
 
@@ -491,9 +500,12 @@ On web, this importer is less reliable because many recipe sites block browser f
 - `Select All`
 - bulk delete
 - bulk favorite
+- bulk share through `Share Selected`
 - bulk metadata editing
 
 Bulk delete always asks for confirmation, regardless of the normal delete-confirm setting.
+
+Single recipe cards can also be shared as rendered recipe cards from list/detail surfaces. This is separate from Account-page PDF export: sharing is for recipe cards from `My Recipes`, while PDF export builds a cookbook-style PDF from the Account screen.
 
 ## Scaled Directions
 
@@ -570,7 +582,7 @@ Current behavior:
 
 - exports the full recipe library, not the currently filtered `My Recipes` view
 - includes app-created recipes plus Obsidian-backed recipes with local overrides applied
-- supports selected exports filtered by recipe type, allergy-friendly tags, allergen tags, cook time, and prep time
+- supports all-recipe export and filtered selected exports by recipe type, allergy-friendly tags, allergen tags, cook time, and prep time
 - selected export filters combine with AND logic across filter groups and OR logic within a group
 - time filters use the upper bound for ranges such as `30-40 minutes`, and omit recipes with missing or unparseable time when a time filter is active
 - includes title, category, cuisine region, time fields, tags, ingredients, directions, notes, and source attribution when present

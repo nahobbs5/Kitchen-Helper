@@ -24,7 +24,7 @@ Current core areas:
 - bulk recipe management
 - cook timers
 - app-wide settings
-- full-library PDF export
+- PDF export and recipe-card sharing
 
 The app currently runs on:
 
@@ -108,7 +108,8 @@ This keeps navigation easier to follow as the app grows.
 The app now uses a two-layer navigation model:
 
 - the home hub at `/` is the primary menu and links to `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
-- the shared header stays visible across screens and exposes shortcut buttons for Home, My Recipes, Kitchen Guides, the cook timer, and settings
+- the home hub also exposes an Add Recipe shortcut; on mobile this becomes a floating/sticky action button
+- the shared header stays visible across screens and exposes shortcut buttons for Home, My Recipes, Kitchen Guides, the cook timer, settings, and account
 
 On compact/mobile widths, the header title collapses to `KH` so the shortcut row still fits cleanly.
 
@@ -345,9 +346,12 @@ Reusable UI pieces live in [`components/`](components).
 Important files:
 
 - [`components/cook-timer-modal.tsx`]
+- [`components/clearable-search-input.tsx`]
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
+- [`components/recipe-share-card.tsx`]
 - [`components/scaled-directions-list.tsx`]
+- [`components/share-icon.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
 - [`app/account.tsx`]
@@ -359,6 +363,8 @@ What this layer does:
 - provides the shared settings gear and overlay
 - provides the shared header actions for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - provides the shared cook timer popup
+- provides clearable search fields for recipe and reference browsing
+- provides recipe-card rendering used by single and selected recipe sharing
 - provides the delete notice pie-timer UI
 - keeps route files focused on screen behavior instead of duplicated UI plumbing
 
@@ -393,12 +399,13 @@ Current capabilities:
 
 - a home screen that acts as a kitchen tools hub
 - home menu cards for `My Recipes`, `Sample Recipes`, and `Kitchen Guides`
+- an Add Recipe shortcut on the home screen, including a floating/sticky mobile action button
 - shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH`
 - a `Sample Recipes` screen for imported-only browsing of the sample Obsidian recipe set
-- a consolidated `Kitchen Reference` screen with conversions, substitutions, and dictionary tabs
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and an interactive oven temperature slider
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
-- sticky search bars on recipe and reference browsing screens
+- sticky search bars on recipe and reference browsing screens, with clear buttons when search text is entered
 - a `My Recipes` page backed by real Obsidian recipe notes
 - account-backed recipe sync across devices
 - recipe creation in a shared synced library
@@ -415,6 +422,7 @@ Current capabilities:
 - desktop shift-click range selection
 - bulk metadata editing
 - bulk favorites
+- single-recipe share cards and bulk `Share Selected` from `My Recipes`
 - bulk delete with confirmation
 - delete undo notices with a 10-second visual timer
 - clickable recipe detail pages generated from Markdown
@@ -428,7 +436,7 @@ Current capabilities:
 - a shared settings menu from the header gear
 - dark mode
 - keep-screen-awake cook mode
-- a full-library PDF export from the Account screen
+- all-recipes and filtered PDF export from the Account screen
 - a global shared cook timer popup/modal with a configurable number of timer slots
 - responsive layouts for both Android and web
 
@@ -456,12 +464,16 @@ The recipe generator currently tries to extract:
 - allergen tags
 - allergy-friendly tags
 
+The servings parser recognizes common labels such as `servings`, `serving size`, `serves`, `yield`, and `makes`. Those metadata lines are skipped while collecting ingredients, directions, and notes, so serving metadata does not reappear as body content.
+
 A practical rule we settled on:
 
 - `prep time` should only come from explicit metadata or clearly reliable note content
 - `cook time` can be inferred more safely from clear phrases such as bake or simmer durations
 
 That keeps recipe timing more trustworthy.
+
+Notes are only emitted when the source note has actual note content. Empty note headings are ignored, and time/serving metadata stays in structured fields instead of being duplicated into the notes panel.
 
 Imported recipes are still editable in the app because synced overrides are stored separately from the original Markdown notes.
 
@@ -544,10 +556,15 @@ Recent cleanup details that mattered here:
 - the page now uses a full `A-Z` selector
 - letters with no entries are visibly disabled
 - sorting was adjusted to behave more like a real glossary
+- dictionary tabs now include focused views for `Cheeses` and `Breads` in addition to the existing general, spice, oil, alcohol, and instrument groups
+
+The Kitchen Reference conversions tab also includes an interactive `Oven temperatures` converter. It uses a Fahrenheit slider from `200F` to `550F`, shows the rounded Celsius equivalent, and provides common preset buttons for values like `325F`, `350F`, and `400F`.
 
 ## Sticky Search
 
 Sticky search uses paired inline and overlay search inputs tied to scroll position on the main recipe and reference browsing surfaces, so search remains reachable after users scroll past the original search field.
+
+Search inputs use the shared [`components/clearable-search-input.tsx`](components/clearable-search-input.tsx) component. When the field has text, it shows a clear button that resets the value without requiring users to manually delete the query.
 
 ## Settings System
 
@@ -592,7 +609,7 @@ The dedicated Account screen now owns account-facing actions:
 - `Account Sync` helper copy that says `Sign in to sync recipes across devices.`
 - signed-out password reset from the `Forgot password` action
 - sync status and sign out
-- full-library PDF export
+- PDF export
 - importer guidance and compatibility notes
 
 The restore-defaults flow is deliberately immediate:
@@ -606,6 +623,8 @@ This was a useful architecture milestone because it introduced real app-wide per
 ## PDF Export
 
 The app supports exporting the full recipe library or a filtered recipe subset to a single PDF from the Account screen.
+
+The export builds a single cookbook-style PDF from the merged recipe library, using local overrides as the effective source of truth for exported content.
 
 Important files:
 
@@ -635,6 +654,8 @@ Implementation notes:
 - native uses `expo-print`
 - web uses `html2pdf.js`
 - Android file saving uses `expo-file-system`
+
+PDF export is distinct from recipe-card sharing. The Account screen owns cookbook-style PDFs, while `My Recipes` owns single-recipe sharing and selected-recipe sharing from the current library selection.
 
 ## Account And Recipe Sync
 
@@ -763,6 +784,7 @@ Current bulk behaviors include:
 - `Select All`
 - desktop `Shift+click` range selection
 - bulk favorite
+- `Share Selected` for selected recipe cards
 - bulk metadata editing
 - bulk delete with required confirmation
 
@@ -771,6 +793,8 @@ One important product decision here:
 - bulk delete applies to the full visible library
 - imported recipes are hidden locally through recipe overrides instead of deleting the source Markdown files
 - app-saved recipes still use the undo banner because they are removed from app storage
+
+Sharing selected recipes builds hidden recipe-card views first, then hands those cards to the platform share flow. This keeps selected sharing separate from the Account screen's PDF export workflow.
 
 ## Allergen And Metadata Tagging
 
@@ -1007,12 +1031,19 @@ High-level sequence of what has happened:
 30. added website-based recipe import with dedicated source attribution
 31. replaced the old glossary source with a custom cooking dictionary and updated the parser
 32. added a scaled-directions pipeline with per-step analysis, highlights, and local step overrides
-33. added full-library PDF export for web and Android
+33. added all-recipes PDF export for web and Android
 34. replaced the old `/recipe` prototype with the imported-only `Sample Recipes` library
 35. added Supabase-backed account auth and cross-device recipe sync
 36. improved the settings modal with a scrollable mobile-friendly in-app sheet
 37. added Android immersive system navigation with swipe reveal, resume re-hide, and tap re-hide behavior
 38. resolved duplicate React key warnings for dictionary and allergy substitution cards
+39. added a home-screen Add Recipe shortcut, including the floating/sticky mobile action button
+40. added clear buttons to shared recipe and reference search fields
+41. added single-recipe share cards and `Share Selected` for bulk-selected recipes
+42. replaced the static oven temperature reference with an interactive slider and preset buttons
+43. added cheese and bread dictionary categories and cleaned up sample recipe data
+44. normalized Obsidian servings import and omitted empty or metadata-only note content
+45. scaled the Android app logo assets to fit better
 
 ## How To Grow This File
 
