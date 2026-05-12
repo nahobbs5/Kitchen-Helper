@@ -44,6 +44,16 @@ function isNoteHeading(line) {
   return /^(notes?|tips?(?:\b.*)?|serving notes?|cook'?s? notes?)$/i.test(text);
 }
 
+function parseServingsMetadata(line) {
+  const cleaned = stripMarkdown(line);
+  const match = cleaned.match(/^(servings?|serving size|serves|yield|makes)\s*:\s*(.+)$/i);
+  return match ? match[2].trim() : null;
+}
+
+function isServingsMetadata(line) {
+  return parseServingsMetadata(line) !== null;
+}
+
 function isHeading(line) {
   return /^\s*#{1,6}\s+/.test(line);
 }
@@ -145,10 +155,7 @@ function extractMetadata(content) {
     }
 
     if (!servings) {
-      const servingsMatch = cleaned.match(/^(servings?|serves|yield)\s*:\s*(.+)$/i);
-      if (servingsMatch) {
-        servings = `${servingsMatch[1]}: ${servingsMatch[2]}`;
-      }
+      servings = parseServingsMetadata(cleaned);
     }
   }
 
@@ -344,6 +351,10 @@ function parseRecipe(content) {
     if (isHeading(line)) {
       const text = headingText(line);
 
+      if (isServingsMetadata(text)) {
+        continue;
+      }
+
       if (isIngredientHeading(text)) {
         mode = 'ingredients';
         ingredients.push({ title: null, items: [] });
@@ -378,6 +389,10 @@ function parseRecipe(content) {
     }
 
     if (!mode) {
+      if (isServingsMetadata(line)) {
+        continue;
+      }
+
       if (isIngredientHeading(line)) {
         mode = 'ingredients';
         ingredients.push({ title: null, items: [] });
@@ -397,6 +412,10 @@ function parseRecipe(content) {
     }
 
     if (mode === 'ingredients') {
+      if (isServingsMetadata(cleaned)) {
+        continue;
+      }
+
       if (isDirectionHeading(cleaned)) {
         mode = 'directions';
         directions.push({ title: null, items: [] });
@@ -425,6 +444,10 @@ function parseRecipe(content) {
     }
 
     if (mode === 'directions') {
+      if (isServingsMetadata(cleaned)) {
+        continue;
+      }
+
       if (isIngredientHeading(cleaned)) {
         mode = 'ingredients';
         ingredients.push({ title: null, items: [] });
@@ -451,6 +474,10 @@ function parseRecipe(content) {
     }
 
     if (mode === 'notes') {
+      if (isServingsMetadata(cleaned)) {
+        continue;
+      }
+
       if (isIngredientHeading(cleaned)) {
         mode = 'ingredients';
         ingredients.push({ title: null, items: [] });

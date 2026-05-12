@@ -1,7 +1,8 @@
-🧁 Mini Blackberry Swirl Tartlets (Allergy-Free)
+
 Free from: gluten, dairy, eggs, oats, nuts
-Makes: 12–14 mini tartlets (standard muffin tin)
-Each tartlet ends up with ~1 teaspoon blackberry or less.
+
+## Servings: 12–14 mini tartlets (standard muffin tin)
+
 ## 🥧 Crust (Press-In, No Rolling)
 Ingredients
 - 1½ cups gluten-free all-purpose flour (no oat flour)
@@ -50,3 +51,5 @@ Ingredients
 ## Notes
 Keeps 3 days refrigerated
 Can be made a day ahead
+
+Each tartlet ends up with ~1 teaspoon blackberry or less.

@@ -1,9 +1,4 @@
 
-
----
-
-## 🍪 Dairy-Free, Egg-Free, Wheat-Free Blondies
-
 ## **Ingredients**
 
 - 1 ⅓ cups **King Arthur Gluten-Free Measure for Measure Flour**

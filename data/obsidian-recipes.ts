@@ -68,7 +68,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "15 minutes",
     "totalTime": null,
-    "servings": "Servings: 12 Sliders",
+    "servings": "12 Sliders",
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",
@@ -192,7 +192,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "10-12 minutes",
     "totalTime": null,
-    "servings": "Servings: Makes about 15-20 cups",
+    "servings": "Makes about 15-20 cups",
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",
@@ -387,7 +387,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": "10 mins",
     "cookTime": "40 mins",
     "totalTime": "50 mins",
-    "servings": "Servings: 6",
+    "servings": "6",
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",
@@ -417,14 +417,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       },
       {
         "title": "Total Time: 50 mins",
-        "items": []
-      },
-      {
-        "title": "Servings: 6",
-        "items": []
-      },
-      {
-        "title": "Yield: 1 8x11-inch dish",
         "items": []
       },
       {
@@ -555,8 +547,34 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Nut Free"
     ],
     "allergenTags": [],
-    "notes": null,
+    "notes": "Streusel-Style (Flour-Based):\nIf you want a more traditional crumb topping without oats:",
     "ingredients": [
+      {
+        "title": "Base",
+        "items": [
+          "3 cups cooked mashed sweet potatoes",
+          "1/2 cup sugar",
+          "2 flax eggs (2 tbsp ground flaxseed + 6 tbsp warm water, let sit 5 min to gel)"
+        ]
+      },
+      {
+        "title": "or substitute 1/2 cup unsweetened applesauce if preferred",
+        "items": [
+          "1/4 cup dairy-free butter substitute - vegetable oil? (e.g., Earth Balance, Miyoko’s, or plant-based margarine)",
+          "1 1/2 tsp vanilla extract",
+          "1/2 tsp salt (to taste)",
+          "1/2 cup unsweetened non-dairy milk (Planet Oat oat milk for creaminess, almond or coconut also work)"
+        ]
+      },
+      {
+        "title": "Topping",
+        "items": [
+          "1/2 cup brown sugar",
+          "1 cup chopped pecans or walnuts (optional — omit or replace with gluten-free oats for nut-free version)",
+          "1/3 cup gluten-free all-purpose flour blend (Bob’s Red Mill 1-to-1, King Arthur Measure for Measure, etc.)",
+          "3 tbsp melted dairy-free butter substitute"
+        ]
+      },
       {
         "title": null,
         "items": [
@@ -582,21 +600,21 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     ]
   },
   {
-    "slug": "allergy-free-brownies",
-    "title": "Allergy free brownies",
+    "slug": "allergy-free-blondies",
+    "title": "Allergy free Blondies",
     "category": "Dessert",
-    "source": "Cooking/Dessert/Allergy free brownies",
+    "source": "Cooking/Dessert/Allergy free Blondies",
     "prepTime": null,
     "cookTime": "25–30 minutes",
     "totalTime": null,
     "servings": null,
     "allergyFriendlyTags": [
       "Dairy Free",
-      "Egg Free",
-      "Gluten Free",
-      "Wheat Free"
+      "Gluten Free"
     ],
-    "allergenTags": [],
+    "allergenTags": [
+      "Contains Eggs"
+    ],
     "notes": null,
     "ingredients": [
       {
@@ -692,7 +710,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "12–15 min",
     "totalTime": null,
-    "servings": null,
+    "servings": "12–14 mini tartlets (standard muffin tin)",
     "allergyFriendlyTags": [
       "Gluten Free"
     ],
@@ -701,7 +719,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Eggs",
       "Contains Nuts"
     ],
-    "notes": "Keeps 3 days refrigerated\nCan be made a day ahead",
+    "notes": "Keeps 3 days refrigerated\nCan be made a day ahead\nEach tartlet ends up with ~1 teaspoon blackberry or less.",
     "ingredients": [
       {
         "title": null,
@@ -880,7 +898,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "18–22 minutes",
     "totalTime": null,
-    "servings": null,
+    "servings": "~12 muffins",
     "allergyFriendlyTags": [
       "Egg Free",
       "Gluten Free"
@@ -955,7 +973,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "8–10 min",
     "totalTime": null,
-    "servings": null,
+    "servings": "~12 5 oz cups",
     "allergyFriendlyTags": [],
     "allergenTags": [],
     "notes": null,
@@ -996,7 +1014,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "10–12 minutes",
     "totalTime": null,
-    "servings": "Servings: Makes about a dozen cookies",
+    "servings": "Makes about a dozen cookies",
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",
@@ -1141,7 +1159,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "10–15 minutes",
     "totalTime": "25–30 minutes:",
-    "servings": "Servings: 2–3",
+    "servings": "2–3",
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",

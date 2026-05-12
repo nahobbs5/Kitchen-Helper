@@ -1,7 +1,7 @@
  **gluten-free, dairy-free, and egg-free**
 
 ---
-
+## Ingredients
 ### Base
 
 - 3 cups cooked mashed sweet potatoes
@@ -19,16 +19,7 @@
 - 1 cup chopped pecans or walnuts _(optional — omit or replace with gluten-free oats for nut-free version)_
 - 1/3 cup gluten-free all-purpose flour blend (Bob’s Red Mill 1-to-1, King Arthur Measure for Measure, etc.)
 - 3 tbsp melted dairy-free butter substitute
-#### 🧁 Streusel-Style (Flour-Based)**
 
-If you want a more traditional crumb topping without oats:
-
-**Ingredients:**
-
-- ½ cup gluten-free flour
-- ⅓ cup brown sugar
-- ¼ tsp cinnamon
-- ¼ cup melted butter or coconut oil
 
 ---
 
@@ -40,3 +31,15 @@ If you want a more traditional crumb topping without oats:
 4. Spread mixture evenly into a greased 9x13-inch baking dish.
 5. In a small bowl, combine brown sugar, nuts (or oats), gluten-free flour, and melted dairy-free butter. Sprinkle over the sweet potato mixture.
 6. Bake uncovered for **30–35 minutes**, until topping is golden and slightly crisp.
+
+## Notes
+### Streusel-Style (Flour-Based)**
+
+If you want a more traditional crumb topping without oats:
+
+**Ingredients:**
+
+- ½ cup gluten-free flour
+- ⅓ cup brown sugar
+- ¼ tsp cinnamon
+- ¼ cup melted butter or coconut oil
