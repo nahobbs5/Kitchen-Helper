@@ -42,7 +42,9 @@ Bake 40–45 minutes until deep golden.
 Pour the cool syrup over the hot baklava immediately after baking.
 7. Rest
 Let sit 4–6 hours before serving.
-## 💡 Flavor ideas instead of cinnamon
+
+## Notes
+### Flavor ideas instead of cinnamon
 Lemon zest (very Greek)
 Orange zest
 Vanilla

@@ -380,7 +380,7 @@ export function buildExportRecipes({ customRecipes, recipeOverrideMap }: ExportB
       allergenTags: override?.allergenTags ?? recipe.allergenTags,
       ingredients: override?.ingredients ?? recipe.ingredients,
       directions: override?.directions ?? recipe.directions,
-      notes: override?.notes ?? null,
+      notes: override ? override.notes : recipe.notes,
       sourceInfo: override?.sourceInfo ?? null,
     };
   });

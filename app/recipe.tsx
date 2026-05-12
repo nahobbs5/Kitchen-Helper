@@ -57,7 +57,7 @@ export default function SampleRecipesScreen() {
             : {
                 ...recipe,
                 cuisineRegion: null,
-                notes: null,
+                notes: recipe.notes,
                 sourceInfo: null,
               };
         })

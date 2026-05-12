@@ -5,7 +5,7 @@ aliases:
 ## **Spinach and Feta Stuffed Phyllo Cups**
 savory, flaky, and easy to make.
 
-**Makes about 15-20 cups**
+## Servings: **Makes about 15-20 cups**
 
 ---
 
@@ -43,7 +43,7 @@ savory, flaky, and easy to make.
     - Serve warm!
 
 ---
-
+## Notes
 These can be prepped ahead and baked just before your friends arrive. 
 
 For Spinach and Feta Stuffed Phyllo Cups, the best salt options are:
@@ -53,7 +53,7 @@ For Spinach and Feta Stuffed Phyllo Cups, the best salt options are:
 
 Since feta cheese is already salty, start with just a small pinch of salt in the spinach mixture and adjust to taste. You can also skip added salt if your feta is extra salty!
 
-#### Alternatives to Garlic
+### Alternatives to Garlic
 The Spinach and Feta Stuffed Phyllo Cups will still taste great without garlic! The feta and onion provide plenty of flavor. If you want to add a little depth in place of garlic, here are some options:
 
 - A pinch of smoked paprika – Adds a subtle warmth.
@@ -63,6 +63,6 @@ The Spinach and Feta Stuffed Phyllo Cups will still taste great without garlic! 
 
 If you're serving the Spinach and Feta Stuffed Phyllo Cups within a couple of hours, they don’t need refrigeration. However, if you have leftovers, refrigerate them in an airtight container for up to 2-3 days.
 
-#### Reheating Tips:
+### Reheating Tips:
 - Reheat in a 350°F oven for 5-7 minutes to keep them crispy.
 - Avoid the microwave—it can make the phyllo soggy.

@@ -1,8 +1,4 @@
-Despite the name **“Caramel Squares”**, there’s no actual caramel in the recipe. The “caramel” flavor comes from the **brown sugar** combined with shortening and vanilla, which bakes up into a chewy, caramel like bar
-
-Here’s the **halved recipe** (makes about a 9×9 pan instead of 9×13):
-
-###  **Ingredients:**
+##  **Ingredients:**
 
 - 1 ⅓ cups flour
 - 1 ¼ teaspoons baking powder
@@ -14,7 +10,7 @@ Here’s the **halved recipe** (makes about a 9×9 pan instead of 9×13):
 - ¼ cup chopped nuts (optional)
 - 3 oz chocolate chips (half of a 6 oz bag, ~½ cup)
 
-### **Directions:**
+## **Directions:**
 
 1. Sift together flour, baking powder, and salt; set aside.
 2. Melt butter, stir in brown sugar, and let cool slightly.
@@ -23,3 +19,8 @@ Here’s the **halved recipe** (makes about a 9×9 pan instead of 9×13):
 5. Spread into a greased and floured **9×9 inch pan**.
 6. Bake at 350°F for 25–30 minutes.
 7. Cool, then cut into squares.
+
+## Notes
+Despite the name **“Caramel Squares”**, there’s no actual caramel in the recipe. The “caramel” flavor comes from the **brown sugar** combined with shortening and vanilla, which bakes up into a chewy, caramel like bar
+
+Makes about a 9×9 pan:

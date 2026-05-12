@@ -65,7 +65,7 @@ export default function EditRecipeScreen() {
       prepTime: override?.prepTime ?? obsidianRecipe.prepTime,
       cookTime: override?.cookTime ?? obsidianRecipe.cookTime,
       servings: override?.servings ?? obsidianRecipe.servings,
-      notes: override?.notes ?? null,
+      notes: override ? override.notes : obsidianRecipe.notes,
       cuisineRegion: override?.cuisineRegion ?? null,
       sourceInfo: override?.sourceInfo ?? null,
     };

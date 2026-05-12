@@ -1,5 +1,6 @@
-Not good 👎
-## Ingredients (serves ~12 small cups)
+
+## Serving Size: ~12 5 oz cups
+## Ingredients
 - 6 cups chopped peaches
 - ½ cup sugar
 - 2 cans coconut milk
@@ -7,7 +8,7 @@ Not good 👎
 - Pinch salt
 - Optional: ¼ cup small tapioca pearls
 - Optional: mint garnish
-## Steps
+## Directions
 1. Simmer peaches + sugar until soft.
 2. Add coconut milk + salt.
 3. Slowly whisk in cornmeal.

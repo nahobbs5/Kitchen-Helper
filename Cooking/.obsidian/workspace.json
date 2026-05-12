@@ -11,10 +11,14 @@
             "id": "692e5b79c7e7a0dc",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Dessert/Allergen Free Sweet Potato Casserole.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Allergen Free Sweet Potato Casserole"
             }
           }
         ]
@@ -193,17 +197,18 @@
       "bases:Create new base": false
     }
   },
-  "active": "d715b8aaffbbfd97",
+  "active": "692e5b79c7e7a0dc",
   "lastOpenFiles": [
-    "Resources/Weight Chart.md",
-    "Resources/Cleaning Rust.md",
-    "Resources/2026 Bible Reading.md",
-    "Resources",
-    "Entree/Southwest Steak.md",
-    "Entree/Shepherd's Pie.md",
-    "Entree/Shakshuka.md",
-    "Entree/Burger.md",
-    "Entree",
+    "Dessert/1 Person Chocolate Chip Cookie.md",
+    "Breakfast/Granola Bars.md",
+    "Breakfast/Breakfast Casserole.md",
+    "Breakfast/Breakfast Burritos.md",
+    "Appetizers/Taco Casserole.md",
+    "Appetizers/Roasted Veggie Platter with Tahini Dip.md",
+    "Appetizers/Phyllo Cups.md",
+    "Appetizers/Irish Soda Bread.md",
+    "Appetizers/Ham & Cheese Melt Sliders.md",
+    "Appetizers/Everything Bagel Pretzels.md",
     "Dessert/Snickerdoodles.md",
     "Dessert/Peach Tapioca Pudding.md",
     "Dessert/Lemon Blueberry Muffins.md",
@@ -213,18 +218,17 @@
     "Dessert/Baklava.md",
     "Dessert/Allergy free brownies.md",
     "Dessert/Allergen Free Sweet Potato Casserole.md",
-    "Dessert/1 Person Chocolate Chip Cookie.md",
+    "Resources/Weight Chart.md",
+    "Resources/Cleaning Rust.md",
+    "Resources/2026 Bible Reading.md",
+    "Resources",
+    "Entree/Southwest Steak.md",
+    "Entree/Shepherd's Pie.md",
+    "Entree/Shakshuka.md",
+    "Entree/Burger.md",
+    "Entree",
     "Dessert",
-    "Breakfast/Granola Bars.md",
-    "Breakfast/Breakfast Casserole.md",
-    "Breakfast/Breakfast Burritos.md",
     "Breakfast",
-    "Appetizers/Taco Casserole.md",
-    "Appetizers/Sliders.md",
-    "Appetizers/Roasted Veggie Platter.md",
-    "Appetizers/Phyllo Cups.md",
-    "Appetizers/Irish Soda Bread.md",
-    "Appetizers/Everything Bagel Pretzels.md",
     "Appetizers",
     "Templates"
   ]

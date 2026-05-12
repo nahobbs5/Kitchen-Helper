@@ -39,6 +39,11 @@ function isDirectionHeading(line) {
   return /(directions|instructions)/i.test(stripMarkdown(line));
 }
 
+function isNoteHeading(line) {
+  const text = cleanSectionTitle(line);
+  return /^(notes?|tips?(?:\b.*)?|serving notes?|cook'?s? notes?)$/i.test(text);
+}
+
 function isHeading(line) {
   return /^\s*#{1,6}\s+/.test(line);
 }
@@ -90,6 +95,22 @@ function appendToLastDirection(sections, line) {
 
   const lastIndex = currentSection.items.length - 1;
   currentSection.items[lastIndex] = `${currentSection.items[lastIndex]} ${item}`.trim();
+}
+
+function appendNoteLine(notes, line) {
+  const item = normalizeItem(line);
+
+  if (item) {
+    notes.push(item);
+  }
+}
+
+function appendNoteHeading(notes, line) {
+  const title = cleanSectionTitle(line);
+
+  if (title) {
+    notes.push(`${title}:`);
+  }
 }
 
 function extractMetadata(content) {
@@ -220,6 +241,10 @@ function collectRecipeText(title, content, parsedRecipe) {
     }
   }
 
+  if (parsedRecipe.notes) {
+    parts.push(parsedRecipe.notes);
+  }
+
   return parts.join('\n').toLowerCase();
 }
 
@@ -305,6 +330,7 @@ function parseRecipe(content) {
   const lines = content.split(/\r?\n/);
   const ingredients = [];
   const directions = [];
+  const notes = [];
   let mode = null;
 
   for (const rawLine of lines) {
@@ -330,6 +356,11 @@ function parseRecipe(content) {
         continue;
       }
 
+      if (isNoteHeading(text)) {
+        mode = 'notes';
+        continue;
+      }
+
       if (mode === 'ingredients') {
         ingredients.push({ title: text, items: [] });
         continue;
@@ -337,6 +368,11 @@ function parseRecipe(content) {
 
       if (mode === 'directions') {
         directions.push({ title: text, items: [] });
+        continue;
+      }
+
+      if (mode === 'notes') {
+        appendNoteHeading(notes, text);
         continue;
       }
     }
@@ -353,12 +389,22 @@ function parseRecipe(content) {
         directions.push({ title: null, items: [] });
         continue;
       }
+
+      if (isNoteHeading(line)) {
+        mode = 'notes';
+        continue;
+      }
     }
 
     if (mode === 'ingredients') {
       if (isDirectionHeading(cleaned)) {
         mode = 'directions';
         directions.push({ title: null, items: [] });
+        continue;
+      }
+
+      if (isNoteHeading(cleaned)) {
+        mode = 'notes';
         continue;
       }
 
@@ -385,6 +431,11 @@ function parseRecipe(content) {
         continue;
       }
 
+      if (isNoteHeading(cleaned)) {
+        mode = 'notes';
+        continue;
+      }
+
       if (/^\s*\d+[.)]\s+/.test(line)) {
         appendToLastSection(directions, line);
         continue;
@@ -396,6 +447,23 @@ function parseRecipe(content) {
       }
 
       appendToLastDirection(directions, line);
+      continue;
+    }
+
+    if (mode === 'notes') {
+      if (isIngredientHeading(cleaned)) {
+        mode = 'ingredients';
+        ingredients.push({ title: null, items: [] });
+        continue;
+      }
+
+      if (isDirectionHeading(cleaned)) {
+        mode = 'directions';
+        directions.push({ title: null, items: [] });
+        continue;
+      }
+
+      appendNoteLine(notes, line);
     }
   }
 
@@ -409,6 +477,7 @@ function parseRecipe(content) {
   return {
     ingredients: normalizedIngredients,
     directions: normalizedDirections,
+    notes: notes.length > 0 ? notes.join('\n') : null,
   };
 }
 
@@ -460,6 +529,7 @@ const recipes = markdownFiles
       servings: metadata.servings,
       allergyFriendlyTags: allergyTags.allergyFriendlyTags,
       allergenTags: allergyTags.allergenTags,
+      notes: parsed.notes,
       ...parsed,
     };
   })
@@ -487,6 +557,7 @@ export type ObsidianRecipe = {
   servings: string | null;
   allergyFriendlyTags: string[];
   allergenTags: string[];
+  notes: string | null;
   ingredients: RecipeSection[];
   directions: RecipeSection[];
 };

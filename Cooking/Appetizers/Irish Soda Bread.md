@@ -6,7 +6,7 @@
 - 1 tbsp caraway seeds (optional)
 - 1 cup raisins (optional)
 - 1¾ cups buttermilk
-Instructions
+## Instructions
 1. Preheat oven to 425°F (218°C).
 2. In a large bowl, whisk together:
 	- flour
@@ -20,7 +20,7 @@ Instructions
 7. Place on a baking sheet or cast-iron skillet.
 8. Cut a deep cross on top with a sharp knife.
 9. Bake 30–40 minutes until golden and hollow-sounding when tapped.
-## Tips
+## Notes
 - The cross helps the center cook and is also an old Irish tradition.
 - Best eaten warm with butter.
 - If you don’t have buttermilk:

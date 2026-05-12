@@ -1,10 +1,5 @@
-Ham and cheese melt sliders are a picnic classic because they’re easy to make in batches, travel well, and taste good warm or at room temp. Here’s a simple recipe:
-
----
-
-## 🥪 Ham & Cheese Melt Sliders
-
-### Ingredients (12 sliders)
+## Servings: 12 Sliders
+## Ingredients (12 sliders)
 
 1 pack of 12 Hawaiian rolls (or any soft dinner rolls)
 12 slices deli ham (thin but not paper-thin)
@@ -39,6 +34,9 @@ Pinch of salt & pepper
 8. Slice and serve warm, or let cool and pack for a picnic — they hold together well!
 
 ---
+## Notes: 
+Tip: You can make these the night before, refrigerate, and then bake right before leaving for a picnic. They’re still tasty at room temp if you can’t keep them hot.
 
-✨ Tip: You can make these the night before, refrigerate, and then bake right before leaving for a picnic. They’re still tasty at room temp if you can’t keep them hot.
+Ham and cheese melt sliders are a picnic classic because they’re easy to make in batches, travel well, and taste good warm or at room temp.
+
 

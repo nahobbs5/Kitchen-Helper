@@ -27,8 +27,6 @@ Servings: 6
 Yield: 1 8x11-inch dish
 ## Ingredients
 
-Original recipe (1X) yields 6 servings
-
 - cooking spray
 - 3 cups frozen Southern-style hash browns
 - 4 eggs, lightly beaten

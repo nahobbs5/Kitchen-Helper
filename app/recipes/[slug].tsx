@@ -38,7 +38,7 @@ export default function ObsidianRecipeScreen() {
         servings: override?.servings ?? baseRecipe.servings,
         ingredients: override?.ingredients ?? baseRecipe.ingredients,
         directions: override?.directions ?? baseRecipe.directions,
-        notes: override?.notes ?? null,
+        notes: override ? override.notes : baseRecipe.notes,
         cuisineRegion: override?.cuisineRegion ?? null,
         sourceInfo: override?.sourceInfo ?? null,
       }

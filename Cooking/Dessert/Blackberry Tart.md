@@ -47,6 +47,6 @@ Ingredients
 1. Remove gently with a butter knife
 2. Serve chilled
 
-
+## Notes
 Keeps 3 days refrigerated
 Can be made a day ahead

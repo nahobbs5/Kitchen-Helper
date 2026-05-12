@@ -28,14 +28,3 @@
 6. Spread the batter evenly into the prepared pan.
 7. Bake for **25–30 minutes**, or until the edges are golden and a toothpick inserted in the center comes out clean (a few moist crumbs are okay).
 8. Cool in the pan before cutting into squares.
-
----
-
-✅ This version is:
-
-- **Cow’s milk free**
-- **Egg free**
-- **Wheat free**
-- **Nut free** (since we skipped them)
-
-Would you like me to give you a **texture comparison** (how these blondies will differ from the original ones)?

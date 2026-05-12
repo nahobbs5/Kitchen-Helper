@@ -14,6 +14,7 @@ export type ObsidianRecipe = {
   servings: string | null;
   allergyFriendlyTags: string[];
   allergenTags: string[];
+  notes: string | null;
   ingredients: RecipeSection[];
   directions: RecipeSection[];
 };
@@ -33,6 +34,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Dairy",
       "Contains Gluten"
     ],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -59,157 +61,21 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     ]
   },
   {
-    "slug": "irish-soda-bread",
-    "title": "Irish Soda Bread",
+    "slug": "ham-cheese-melt-sliders",
+    "title": "Ham & Cheese Melt Sliders",
     "category": "Appetizers",
-    "source": "Cooking/Appetizers/Irish Soda Bread",
-    "prepTime": null,
-    "cookTime": "30–40 minutes",
-    "totalTime": null,
-    "servings": null,
-    "allergyFriendlyTags": [],
-    "allergenTags": [
-      "Contains Dairy",
-      "Contains Gluten"
-    ],
-    "ingredients": [
-      {
-        "title": null,
-        "items": [
-          "4 cups all-purpose flour",
-          "1 tbsp sugar (optional)",
-          "1 tsp baking soda",
-          "1 tsp salt",
-          "1 tbsp caraway seeds (optional)",
-          "1 cup raisins (optional)",
-          "1¾ cups buttermilk"
-        ]
-      }
-    ],
-    "directions": [
-      {
-        "title": null,
-        "items": [
-          "Preheat oven to 425°F (218°C).",
-          "In a large bowl, whisk together: flour sugar baking soda salt",
-          "Stir in caraway seeds and raisins if using.",
-          "Add buttermilk and mix just until a shaggy dough forms.",
-          "Turn dough onto a lightly floured surface and knead gently 8–10 times (just enough to bring it together).",
-          "Shape into a round loaf about 1½–2 inches thick.",
-          "Place on a baking sheet or cast-iron skillet.",
-          "Cut a deep cross on top with a sharp knife.",
-          "Bake 30–40 minutes until golden and hollow-sounding when tapped."
-        ]
-      },
-      {
-        "title": "Tips",
-        "items": [
-          "The cross helps the center cook and is also an old Irish tradition. Best eaten warm with butter. If you don’t have buttermilk: Mix 1¾ cups milk + 1½ tbsp lemon juice or vinegar and let sit 5 minutes."
-        ]
-      },
-      {
-        "title": "Easy Variation",
-        "items": [
-          "Brush the loaf with melted butter when it comes out of the oven."
-        ]
-      }
-    ]
-  },
-  {
-    "slug": "phyllo-cups",
-    "title": "Phyllo Cups",
-    "category": "Appetizers",
-    "source": "Cooking/Appetizers/Phyllo Cups",
-    "prepTime": null,
-    "cookTime": "10-12 minutes",
-    "totalTime": null,
-    "servings": null,
-    "allergyFriendlyTags": [],
-    "allergenTags": [
-      "Contains Dairy",
-      "Contains Gluten"
-    ],
-    "ingredients": [
-      {
-        "title": null,
-        "items": [
-          "1 package of mini phyllo cups (usually found in the freezer section)",
-          "1 cup fresh spinach, chopped (or 1/2 cup frozen spinach, thawed and drained)",
-          "1/2 cup crumbled feta cheese",
-          "1/4 cup cream cheese, softened",
-          "1 small onion, finely chopped",
-          "2 cloves garlic, minced",
-          "1 tablespoon olive oil",
-          "Salt and pepper, to taste",
-          "Optional: a pinch of red pepper flakes for some heat"
-        ]
-      }
-    ],
-    "directions": [
-      {
-        "title": null,
-        "items": [
-          "Prep and Sauté: Preheat your oven to 350°F. In a skillet, heat olive oil over medium heat. Sauté onions until soft, about 3-4 minutes. Add garlic and chopped spinach. Cook until spinach is wilted (or warmed through if using frozen spinach). Season with salt, pepper, and red pepper flakes if using. Remove from heat.",
-          "Make the Filling: In a bowl, combine the spinach mixture with feta and cream cheese. Mix until smooth and creamy. Adjust seasoning if needed.",
-          "Assemble the Cups: Arrange phyllo cups on a baking sheet. Spoon the spinach and feta mixture into each cup, filling generously.",
-          "Bake: Bake at 350°F for 10-12 minutes, or until the cups are golden and the filling is warmed through.",
-          "Serve: Garnish with a sprinkle of extra feta or fresh parsley if desired. Serve warm! These can be prepped ahead and baked just before your friends arrive. For Spinach and Feta Stuffed Phyllo Cups, the best salt options are: Kosher salt – Best for balancing flavors without being too salty. Sea salt – A good option for a slightly more complex flavor. Table salt – Works fine but use slightly less, as it's more concentrated. Since feta cheese is already salty, start with just a small pinch of salt in the spinach mixture and adjust to taste. You can also skip added salt if your feta is extra salty!"
-        ]
-      },
-      {
-        "title": "Alternatives to Garlic",
-        "items": [
-          "The Spinach and Feta Stuffed Phyllo Cups will still taste great without garlic! The feta and onion provide plenty of flavor. If you want to add a little depth in place of garlic, here are some options: A pinch of smoked paprika – Adds a subtle warmth. A dash of lemon zest – Brightens up the filling. A tiny bit of nutmeg – A classic pairing with spinach and feta. Extra black pepper or red pepper flakes – If you like a bit of spice. If you're serving the Spinach and Feta Stuffed Phyllo Cups within a couple of hours, they don’t need refrigeration. However, if you have leftovers, refrigerate them in an airtight container for up to 2-3 days."
-        ]
-      },
-      {
-        "title": "Reheating Tips",
-        "items": [
-          "Reheat in a 350°F oven for 5-7 minutes to keep them crispy. Avoid the microwave—it can make the phyllo soggy."
-        ]
-      }
-    ]
-  },
-  {
-    "slug": "roasted-veggie-platter",
-    "title": "Roasted Veggie Platter",
-    "category": "Appetizers",
-    "source": "Cooking/Appetizers/Roasted Veggie Platter",
-    "prepTime": null,
-    "cookTime": "20–25 minutes",
-    "totalTime": null,
-    "servings": null,
-    "allergyFriendlyTags": [],
-    "allergenTags": [],
-    "ingredients": [],
-    "directions": [
-      {
-        "title": null,
-        "items": [
-          "Preheat oven to 400°F (200°C).",
-          "Toss chopped veggies with olive oil, salt, pepper, and herbs. Spread on baking sheets (don’t overcrowd).",
-          "Roast 20–25 minutes, stirring halfway, until golden and tender.",
-          "While roasting, whisk together the tahini dip.",
-          "Arrange roasted veggies on a platter with the dip in a bowl in the center. 🌟 Serving idea: Sprinkle platter with fresh parsley or toasted pumpkin seeds for color and crunch."
-        ]
-      }
-    ]
-  },
-  {
-    "slug": "sliders",
-    "title": "Sliders",
-    "category": "Appetizers",
-    "source": "Cooking/Appetizers/Sliders",
+    "source": "Cooking/Appetizers/Ham & Cheese Melt Sliders",
     "prepTime": null,
     "cookTime": "15 minutes",
     "totalTime": null,
-    "servings": null,
+    "servings": "Servings: 12 Sliders",
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",
       "Contains Eggs",
       "Contains Gluten"
     ],
+    "notes": "Tip: You can make these the night before, refrigerate, and then bake right before leaving for a picnic. They’re still tasty at room temp if you can’t keep them hot.\nHam and cheese melt sliders are a picnic classic because they’re easy to make in batches, travel well, and taste good warm or at room temp.",
     "ingredients": [
       {
         "title": "1 pack of 12 Hawaiian rolls (or any soft dinner rolls)",
@@ -267,7 +133,155 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "Brush or pour glaze evenly over the tops of the rolls (use it all — it soaks in deliciously).",
           "Cover with foil and bake 15 minutes.",
           "Remove foil and bake another 10 minutes until cheese is melted and tops are golden.",
-          "Slice and serve warm, or let cool and pack for a picnic — they hold together well! ✨ Tip: You can make these the night before, refrigerate, and then bake right before leaving for a picnic. They’re still tasty at room temp if you can’t keep them hot."
+          "Slice and serve warm, or let cool and pack for a picnic — they hold together well!"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "irish-soda-bread",
+    "title": "Irish Soda Bread",
+    "category": "Appetizers",
+    "source": "Cooking/Appetizers/Irish Soda Bread",
+    "prepTime": null,
+    "cookTime": "30–40 minutes",
+    "totalTime": null,
+    "servings": null,
+    "allergyFriendlyTags": [],
+    "allergenTags": [
+      "Contains Dairy",
+      "Contains Gluten"
+    ],
+    "notes": "The cross helps the center cook and is also an old Irish tradition.\nBest eaten warm with butter.\nIf you don’t have buttermilk:\nMix 1¾ cups milk + 1½ tbsp lemon juice or vinegar and let sit 5 minutes.\nEasy Variation:\nBrush the loaf with melted butter when it comes out of the oven.",
+    "ingredients": [
+      {
+        "title": null,
+        "items": [
+          "4 cups all-purpose flour",
+          "1 tbsp sugar (optional)",
+          "1 tsp baking soda",
+          "1 tsp salt",
+          "1 tbsp caraway seeds (optional)",
+          "1 cup raisins (optional)",
+          "1¾ cups buttermilk"
+        ]
+      }
+    ],
+    "directions": [
+      {
+        "title": null,
+        "items": [
+          "Preheat oven to 425°F (218°C).",
+          "In a large bowl, whisk together: flour sugar baking soda salt",
+          "Stir in caraway seeds and raisins if using.",
+          "Add buttermilk and mix just until a shaggy dough forms.",
+          "Turn dough onto a lightly floured surface and knead gently 8–10 times (just enough to bring it together).",
+          "Shape into a round loaf about 1½–2 inches thick.",
+          "Place on a baking sheet or cast-iron skillet.",
+          "Cut a deep cross on top with a sharp knife.",
+          "Bake 30–40 minutes until golden and hollow-sounding when tapped."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "phyllo-cups",
+    "title": "Phyllo Cups",
+    "category": "Appetizers",
+    "source": "Cooking/Appetizers/Phyllo Cups",
+    "prepTime": null,
+    "cookTime": "10-12 minutes",
+    "totalTime": null,
+    "servings": "Servings: Makes about 15-20 cups",
+    "allergyFriendlyTags": [],
+    "allergenTags": [
+      "Contains Dairy",
+      "Contains Gluten"
+    ],
+    "notes": "These can be prepped ahead and baked just before your friends arrive.\nFor Spinach and Feta Stuffed Phyllo Cups, the best salt options are:\nKosher salt – Best for balancing flavors without being too salty.\nSea salt – A good option for a slightly more complex flavor.\nTable salt – Works fine but use slightly less, as it's more concentrated.\nSince feta cheese is already salty, start with just a small pinch of salt in the spinach mixture and adjust to taste. You can also skip added salt if your feta is extra salty!\nAlternatives to Garlic:\nThe Spinach and Feta Stuffed Phyllo Cups will still taste great without garlic! The feta and onion provide plenty of flavor. If you want to add a little depth in place of garlic, here are some options:\nA pinch of smoked paprika – Adds a subtle warmth.\nA dash of lemon zest – Brightens up the filling.\nA tiny bit of nutmeg – A classic pairing with spinach and feta.\nExtra black pepper or red pepper flakes – If you like a bit of spice.\nIf you're serving the Spinach and Feta Stuffed Phyllo Cups within a couple of hours, they don’t need refrigeration. However, if you have leftovers, refrigerate them in an airtight container for up to 2-3 days.\nReheating Tips:\nReheat in a 350°F oven for 5-7 minutes to keep them crispy.\nAvoid the microwave—it can make the phyllo soggy.",
+    "ingredients": [
+      {
+        "title": null,
+        "items": [
+          "1 package of mini phyllo cups (usually found in the freezer section)",
+          "1 cup fresh spinach, chopped (or 1/2 cup frozen spinach, thawed and drained)",
+          "1/2 cup crumbled feta cheese",
+          "1/4 cup cream cheese, softened",
+          "1 small onion, finely chopped",
+          "2 cloves garlic, minced",
+          "1 tablespoon olive oil",
+          "Salt and pepper, to taste",
+          "Optional: a pinch of red pepper flakes for some heat"
+        ]
+      }
+    ],
+    "directions": [
+      {
+        "title": null,
+        "items": [
+          "Prep and Sauté: Preheat your oven to 350°F. In a skillet, heat olive oil over medium heat. Sauté onions until soft, about 3-4 minutes. Add garlic and chopped spinach. Cook until spinach is wilted (or warmed through if using frozen spinach). Season with salt, pepper, and red pepper flakes if using. Remove from heat.",
+          "Make the Filling: In a bowl, combine the spinach mixture with feta and cream cheese. Mix until smooth and creamy. Adjust seasoning if needed.",
+          "Assemble the Cups: Arrange phyllo cups on a baking sheet. Spoon the spinach and feta mixture into each cup, filling generously.",
+          "Bake: Bake at 350°F for 10-12 minutes, or until the cups are golden and the filling is warmed through.",
+          "Serve: Garnish with a sprinkle of extra feta or fresh parsley if desired. Serve warm!"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "roasted-veggie-platter-with-tahini-dip",
+    "title": "Roasted Veggie Platter with Tahini Dip",
+    "category": "Appetizers",
+    "source": "Cooking/Appetizers/Roasted Veggie Platter with Tahini Dip",
+    "prepTime": null,
+    "cookTime": "20–25 minutes",
+    "totalTime": null,
+    "servings": null,
+    "allergyFriendlyTags": [],
+    "allergenTags": [],
+    "notes": "Serving idea: Sprinkle platter with fresh parsley or toasted pumpkin seeds for color and crunch.",
+    "ingredients": [
+      {
+        "title": "Veggies (choose a mix)",
+        "items": [
+          "2 medium zucchini, sliced into half-moons",
+          "2 red bell peppers, cut into strips",
+          "2 yellow bell peppers, cut into strips",
+          "2 cups green beans, trimmed",
+          "2 medium sweet potatoes, cubed",
+          "1 small head of broccoli, cut into florets",
+          "1 small head of cauliflower, cut into florets",
+          "2 tbsp olive oil",
+          "1 tsp salt",
+          "1 tsp black pepper",
+          "1 tsp dried rosemary or thyme"
+        ]
+      },
+      {
+        "title": "You can swap in asparagus, mushrooms, or squash if you prefer.)",
+        "items": []
+      },
+      {
+        "title": "Tahini Dip",
+        "items": [
+          "½ cup tahini (sesame seed paste)",
+          "2 tbsp lemon juice (fresh if possible)",
+          "1–2 tbsp maple syrup (adjust sweetness to taste)",
+          "1 tsp ground cumin (optional, for warmth)",
+          "4–6 tbsp cold water (to thin to dip consistency)",
+          "Pinch of salt"
+        ]
+      }
+    ],
+    "directions": [
+      {
+        "title": null,
+        "items": [
+          "Preheat oven to 400°F (200°C).",
+          "Toss chopped veggies with olive oil, salt, pepper, and herbs. Spread on baking sheets (don’t overcrowd).",
+          "Roast 20–25 minutes, stirring halfway, until golden and tender.",
+          "While roasting, whisk together the tahini dip until creamy and pourable. Add more water if too thick.",
+          "Arrange roasted veggies on a platter with the dip in a bowl in the center."
         ]
       }
     ]
@@ -285,6 +299,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "allergenTags": [
       "Contains Dairy"
     ],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -326,7 +341,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "category": "Breakfast",
     "source": "Cooking/Breakfast/Breakfast Burritos",
     "prepTime": null,
-    "cookTime": "3-5 minutes",
+    "cookTime": "2 minutes",
     "totalTime": null,
     "servings": null,
     "allergyFriendlyTags": [],
@@ -334,6 +349,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Dairy",
       "Contains Eggs"
     ],
+    "notes": "How to Store:\nYou can store these delicious burritos in the fridge or freezer! But if you don’t think you’ll get through them all in a week, go ahead and freeze some!\nTo store in fridge: Wrap burrito up tightly in foil or plastic wrap and place in a large ziplock bag or airtight container for 5-7 days.\nTo freeze: Do the same as above, just make sure to wrap the burritos tightly in aluminum foil and remove as much air as possible from the ziplock freezer bag to prevent freezer burn.\nIf stored in the fridge, these burritos will stay fresh for 5-6 days.\nStored in the freezer, these burritos will last 3-4 months.\nTo Reheat:\nIf Frozen: It is BEST to let them defrost in the fridge overnight, they will taste the most fresh this way\nIf reheating from frozen: Wrap in a wet paper towel and add to a plate. Microwave for 45-60 seconds, flip, and microwave another 45-60 seconds. Then air fry at 350F for 3-5 minutes flipping halfway through.\nFrom Fridge: Air fry for 4-6 minutes at 375F (recommended!) or bake for 10-15 minutes at 375F.",
     "ingredients": [
       {
         "title": null,
@@ -360,18 +376,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "Place the tortillas on a plate and cover with a damp paper towel. Microwave for 30 seconds. Spread half of each laughing cow cheese wedge in the middle of the tortillas in a 2-inch line (or add the shredded cheese) leaving 1-inch on each end. Scoop the scrambled egg mixture on top and then fold up like a burrito.",
           "Wrap the burrito up tightly in tin foil and place in a large ziplock bag. Store in the fridge or freezer (see notes)."
         ]
-      },
-      {
-        "title": "How to Store",
-        "items": [
-          "You can store these delicious burritos in the fridge or freezer! But if you don’t think you’ll get through them all in a week, go ahead and freeze some! To store in fridge: Wrap burrito up tightly in foil or plastic wrap and place in a large ziplock bag or airtight container for 5-7 days. To freeze: Do the same as above, just make sure to wrap the burritos tightly in aluminum foil and remove as much air as possible from the ziplock freezer bag to prevent freezer burn. If stored in the fridge, these burritos will stay fresh for 5-6 days. Stored in the freezer, these burritos will last 3-4 months."
-        ]
-      },
-      {
-        "title": "To Reheat",
-        "items": [
-          "If Frozen: It is BEST to let them defrost in the fridge overnight, they will taste the most fresh this way If reheating from frozen: Wrap in a wet paper towel and add to a plate. Microwave for 45-60 seconds, flip, and microwave another 45-60 seconds. Then air fry at 350F for 3-5 minutes flipping halfway through. From Fridge: Air fry for 4-6 minutes at 375F (recommended!) or bake for 10-15 minutes at 375F."
-        ]
       }
     ]
   },
@@ -389,6 +393,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Dairy",
       "Contains Eggs"
     ],
+    "notes": "Bake time is for frozen potatoes. If you are using defrosted hash browns or choose to substitute fresh potatoes, your cook time will be shorter.",
     "ingredients": [
       {
         "title": "https://www.allrecipes.com/recipe/265839/make-ahead-breakfast-bars/)[",
@@ -440,14 +445,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         "items": [
           "Bake, uncovered, in the preheated oven until top starts to brown, about 40 minutes. Cool before cutting into bars."
         ]
-      },
-      {
-        "title": "Cook's Note",
-        "items": []
-      },
-      {
-        "title": "Bake time is for frozen potatoes. If you are using defrosted hash browns or choose to substitute fresh potatoes, your cook time will be shorter.",
-        "items": []
       }
     ],
     "directions": [
@@ -475,6 +472,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "allergenTags": [
       "Contains Nuts"
     ],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -515,9 +513,10 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Eggs",
       "Contains Gluten"
     ],
+    "notes": "A pinch is equal to 1/16 teaspoon. You can use a regular rimmed baking sheet if you don’t have a quarter-sheet pan, though you’ll have to use your oven.",
     "ingredients": [
       {
-        "title": "A pinch is equal to 1/16 teaspoon. You can use a regular rimmed baking sheet if you don’t have a quarter-sheet pan, though you’ll have to use your oven.",
+        "title": null,
         "items": [
           "3 tablespoons all-purpose flour",
           "Pinch baking soda",
@@ -556,6 +555,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Nut Free"
     ],
     "allergenTags": [],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -594,10 +594,10 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Dairy Free",
       "Egg Free",
       "Gluten Free",
-      "Wheat Free",
-      "Nut Free"
+      "Wheat Free"
     ],
     "allergenTags": [],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -625,7 +625,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "If using, fold in dairy-free chocolate chips.",
           "Spread the batter evenly into the prepared pan.",
           "Bake for 25–30 minutes, or until the edges are golden and a toothpick inserted in the center comes out clean (a few moist crumbs are okay).",
-          "Cool in the pan before cutting into squares. ✅ This version is: Cow’s milk free Egg free Wheat free Nut free (since we skipped them) Would you like me to give you a texture comparison (how these blondies will differ from the original ones)?"
+          "Cool in the pan before cutting into squares."
         ]
       }
     ]
@@ -645,6 +645,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Gluten",
       "Contains Nuts"
     ],
+    "notes": "Flavor ideas instead of cinnamon:\nLemon zest (very Greek)\nOrange zest\nVanilla\nA tiny splash of rosewater or orange blossom water",
     "ingredients": [
       {
         "title": "Pastry",
@@ -680,12 +681,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "Add syrup Pour the cool syrup over the hot baklava immediately after baking.",
           "Rest Let sit 4–6 hours before serving."
         ]
-      },
-      {
-        "title": "Flavor ideas instead of cinnamon",
-        "items": [
-          "Lemon zest (very Greek) Orange zest Vanilla A tiny splash of rosewater or orange blossom water"
-        ]
       }
     ]
   },
@@ -706,6 +701,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Eggs",
       "Contains Nuts"
     ],
+    "notes": "Keeps 3 days refrigerated\nCan be made a day ahead",
     "ingredients": [
       {
         "title": null,
@@ -786,7 +782,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         "title": "Serve & Store",
         "items": [
           "Remove gently with a butter knife",
-          "Serve chilled Keeps 3 days refrigerated Can be made a day ahead"
+          "Serve chilled"
         ]
       }
     ]
@@ -807,6 +803,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Gluten",
       "Contains Nuts"
     ],
+    "notes": "Despite the name “Caramel Squares”, there’s no actual caramel in the recipe. The “caramel” flavor comes from the brown sugar combined with shortening and vanilla, which bakes up into a chewy, caramel like bar\nMakes about a 9×9 pan:",
     "ingredients": [
       {
         "title": null,
@@ -859,6 +856,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "allergenTags": [
       "Contains Eggs"
     ],
+    "notes": null,
     "ingredients": [],
     "directions": [
       {
@@ -884,16 +882,18 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "totalTime": null,
     "servings": null,
     "allergyFriendlyTags": [
-      "Dairy Free",
       "Egg Free",
-      "Gluten Free",
-      "Nut Free",
-      "Soy Free"
+      "Gluten Free"
     ],
-    "allergenTags": [],
+    "allergenTags": [
+      "Contains Dairy",
+      "Contains Nuts",
+      "Contains Soy"
+    ],
+    "notes": "Extra lemony? Add another teaspoon of zest or a bit of lemon extract.\nSweeter? Increase sugar to 1 cup.\nGluten-free version: Use King Arthur or Bob’s Red Mill GF 1:1 and add 2 extra tablespoons of milk if the batter seems too thick.\nMoister muffins: Add 2 Tbsp applesauce (still egg-free).",
     "ingredients": [
       {
-        "title": "Dry ingredients",
+        "title": null,
         "items": [
           "2 cups all-purpose flour"
         ]
@@ -908,7 +908,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         ]
       },
       {
-        "title": "Wet ingredients",
+        "title": null,
         "items": [
           "1 cup non-dairy milk (oat, almond, soy, etc.; oat works best for texture)",
           "⅓ cup neutral oil (canola, vegetable, or melted coconut)",
@@ -934,19 +934,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "Bake 18–22 minutes, until lightly golden and a toothpick comes out clean.",
           "Cool in the pan for 5 minutes, then transfer to a rack."
         ]
-      },
-      {
-        "title": "Tips for Best Results",
-        "items": [
-          "Extra lemony? Add another teaspoon of zest or a bit of lemon extract.",
-          "Sweeter? Increase sugar to 1 cup.",
-          "Gluten-free version: Use King Arthur or Bob’s Red Mill GF 1:1 and add 2 extra tablespoons of milk if the batter seems too thick.",
-          "Moister muffins: Add 2 Tbsp applesauce (still egg-free)."
-        ]
-      },
-      {
-        "title": "If you want, I can tailor it further—gluten-free only, low-sugar, oil-free, or using specific ingredients you already have.",
-        "items": []
       }
     ],
     "directions": [
@@ -970,9 +957,8 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "totalTime": null,
     "servings": null,
     "allergyFriendlyTags": [],
-    "allergenTags": [
-      "Contains Dairy"
-    ],
+    "allergenTags": [],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -985,9 +971,11 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "Optional: ¼ cup small tapioca pearls",
           "Optional: mint garnish"
         ]
-      },
+      }
+    ],
+    "directions": [
       {
-        "title": "Steps",
+        "title": null,
         "items": [
           "Simmer peaches + sugar until soft.",
           "Add coconut milk + salt.",
@@ -998,8 +986,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "Next day or after a few hours: add small mint leaves"
         ]
       }
-    ],
-    "directions": []
+    ]
   },
   {
     "slug": "snickerdoodles",
@@ -1009,13 +996,14 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "prepTime": null,
     "cookTime": "10–12 minutes",
     "totalTime": null,
-    "servings": null,
-    "allergyFriendlyTags": [
-      "Dairy Free",
-      "Egg Free",
-      "Gluten Free"
+    "servings": "Servings: Makes about a dozen cookies",
+    "allergyFriendlyTags": [],
+    "allergenTags": [
+      "Contains Dairy",
+      "Contains Eggs",
+      "Contains Gluten"
     ],
-    "allergenTags": [],
+    "notes": "Don’t overbake, or they won’t stay soft.\nApplesauce keeps them chewy, but you can substitute:\n3 tbsp aquafaba\n1 tbsp ground flax + 2 ½ tbsp water\nFor extra puff, add 2 tbsp more flour.\nFor extra tang, add ¼ tsp more cream of tartar.",
     "ingredients": [
       {
         "title": "Dry",
@@ -1065,33 +1053,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       {
         "title": "Let cool on the sheet for 5 minutes before moving to a rack.",
         "items": []
-      },
-      {
-        "title": "Tips",
-        "items": [
-          "Don’t overbake, or they won’t stay soft.",
-          "Applesauce keeps them chewy, but you can substitute:",
-          "3 tbsp aquafaba",
-          "1 tbsp ground flax + 2 ½ tbsp water",
-          "For extra puff, add 2 tbsp more flour.",
-          "For extra tang, add ¼ tsp more cream of tartar."
-        ]
-      },
-      {
-        "title": "If you want, I can also give you: ✔ a version that doesn’t use applesauce",
-        "items": []
-      },
-      {
-        "title": "a gluten-free version",
-        "items": []
-      },
-      {
-        "title": "a small-batch recipe (6 cookies)",
-        "items": []
-      },
-      {
-        "title": "a cinnamon-roll-style snickerdoodle variation",
-        "items": []
       }
     ],
     "directions": [
@@ -1132,6 +1093,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "allergenTags": [
       "Contains Dairy"
     ],
+    "notes": null,
     "ingredients": [
       {
         "title": "1 lb (450 g) ground beef (80/20 blend recommended)",
@@ -1186,6 +1148,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Eggs",
       "Contains Gluten"
     ],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -1236,6 +1199,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Contains Gluten",
       "Contains Soy"
     ],
+    "notes": null,
     "ingredients": [
       {
         "title": null,
@@ -1277,6 +1241,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "servings": null,
     "allergyFriendlyTags": [],
     "allergenTags": [],
+    "notes": null,
     "ingredients": [
       {
         "title": null,

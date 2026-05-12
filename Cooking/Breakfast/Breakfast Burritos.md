@@ -16,8 +16,8 @@
 6. Keep stirring until eggs are scrambled then remove from heat. Let eggs cool down some before adding to tortillas.
 7. Place the tortillas on a plate and cover with a damp paper towel. Microwave for 30 seconds. Spread half of each laughing cow cheese wedge in the middle of the tortillas in a 2-inch line (or add the shredded cheese) leaving 1-inch on each end. Scoop the scrambled egg mixture on top and then fold up like a burrito.
 8. Wrap the burrito up tightly in tin foil and place in a large ziplock bag. Store in the fridge or freezer (see notes).
-
-## How to Store
+## Notes
+### How to Store
 
 You can store these delicious burritos in the fridge or freezer! But if you don’t think you’ll get through them all in a week, go ahead and freeze some! 
 
@@ -29,7 +29,7 @@ If stored in the fridge, these burritos will stay fresh for 5-6 days. 
 
 Stored in the freezer, these burritos will last 3-4 months.
 
-## To Reheat
+### To Reheat
 
 **If Frozen:** It is BEST to let them defrost in the fridge overnight, they will taste the most fresh this way
 

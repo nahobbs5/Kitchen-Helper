@@ -1,7 +1,7 @@
 
-# 🌱 Egg-Free, Dairy-Free Snickerdoodles
 
-**Makes about a dozen cookies - may want to double recipe**
+
+## **Servings: Makes about a dozen cookies**
 
 ## **Ingredients**
 
@@ -65,7 +65,8 @@ Let cool on the sheet for 5 minutes before moving to a rack.
 
 ---
 
-## **Tips**
+## Notes
+### **Tips**
 
 - **Don’t overbake**, or they won’t stay soft.
 - Applesauce keeps them chewy, but you can substitute:
@@ -73,10 +74,3 @@ Let cool on the sheet for 5 minutes before moving to a rack.
     - 1 tbsp ground flax + 2 ½ tbsp water
 - For _extra puff_, add 2 tbsp more flour.
 - For _extra tang_, add ¼ tsp more cream of tartar.
-
----
-
-If you want, I can also give you: ✔ a version that doesn’t use applesauce  
-✔ a gluten-free version  
-✔ a small-batch recipe (6 cookies)  
-✔ a cinnamon-roll-style snickerdoodle variation
