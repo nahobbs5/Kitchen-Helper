@@ -222,6 +222,11 @@ export default function EditRecipeScreen() {
     setDirections(extracted.directionsText);
   }
 
+  function handleNotesChange(value: string) {
+    const extracted = applyExtractedMetadata(ingredients, directions, value);
+    setNotes(extracted.notesText);
+  }
+
   if (!loaded) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -452,7 +457,7 @@ export default function EditRecipeScreen() {
                   </Text>
                   <TextInput
                     value={notes}
-                    onChangeText={setNotes}
+                    onChangeText={handleNotesChange}
                     placeholder="Optional notes, substitutions, or reminders"
                     placeholderTextColor={palette.searchPlaceholder}
                     multiline

@@ -232,6 +232,11 @@ export default function AddRecipeScreen() {
     setDirections(extracted.directionsText);
   }
 
+  function handleNotesChange(value: string) {
+    const extracted = applyExtractedMetadata(ingredients, directions, value);
+    setNotes(extracted.notesText);
+  }
+
   async function handleImportFromWebsite() {
     const trimmedUrl = websiteUrl.trim();
     setWebsiteImportError('');
@@ -697,7 +702,7 @@ export default function AddRecipeScreen() {
                   </Text>
                   <TextInput
                     value={notes}
-                    onChangeText={setNotes}
+                    onChangeText={handleNotesChange}
                     placeholder="Optional notes, substitutions, or reminders"
                     placeholderTextColor={palette.searchPlaceholder}
                     multiline

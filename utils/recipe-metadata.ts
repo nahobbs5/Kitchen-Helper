@@ -36,9 +36,9 @@ function normalizeTextBlock(value: string) {
 
 function matchStandaloneMetadata(line: string): RecipeMetadata | null {
   const trimmed = line.replace(/^[-*]\s*/, '').trim();
-  const prepMatch = trimmed.match(/^prep(?:aration)?(?:\s*time)?\s*:\s*(.+)$/i);
-  const cookMatch = trimmed.match(/^(?:cook|bake|roast|simmer)(?:\s*time)?\s*:\s*(.+)$/i);
-  const servingsMatch = trimmed.match(/^(servings?|serves|yield)\s*:?\s*(.+)$/i);
+  const prepMatch = trimmed.match(/^prep(?:aration)?(?:\s*time)?\s*[:–-]\s*(.+)$/i);
+  const cookMatch = trimmed.match(/^(?:cook|bake|roast|simmer)(?:\s*time)?\s*[:–-]\s*(.+)$/i);
+  const servingsMatch = trimmed.match(/^(servings?|serves|yield)\s*[:–-]?\s*(.+)$/i);
 
   if (prepMatch) {
     return { ...emptyMetadata, prepTime: cleanMetadataValue(prepMatch[1]) };

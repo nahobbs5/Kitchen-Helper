@@ -436,38 +436,12 @@ export default function ObsidianRecipeScreen() {
               </View>
             </View>
 
-            {(recipe.notes || recipe.prepTime || recipe.cookTime || recipe.totalTime) ? (
+            {recipe.notes ? (
               <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
                 <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Notes</Text>
                 <View style={styles.listStack}>
                   <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    {recipe.notes ? (
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
-                    ) : null}
-                    {recipe.prepTime || recipe.cookTime || recipe.servings ? (
-                      <View style={styles.tagRow}>
-                        {recipe.prepTime ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
-                          </View>
-                        ) : null}
-                        {recipe.cookTime ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>
-                              {formatCookTimeTag(recipe.category, recipe.cookTime)}
-                            </Text>
-                          </View>
-                        ) : null}
-                        {recipe.servings ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
-                          </View>
-                        ) : null}
-                      </View>
-                    ) : null}
-                    {recipe.totalTime ? (
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Total time: {recipe.totalTime}</Text>
-                    ) : null}
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
                   </View>
                 </View>
               </View>
