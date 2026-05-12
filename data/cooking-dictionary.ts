@@ -4272,6 +4272,219 @@ export const instrumentsDictionaryEntries: DictionaryEntry[] = [
   }
 ];
 
+export const breadsDictionaryEntries: DictionaryEntry[] = [
+  {
+    "term": "Arepa",
+    "letter": "A",
+    "definition": "Origin: Venezuela & Colombia. Type: Cornbread / Flatbread. A round patty made from pre-cooked cornmeal (masa), water, and salt. Arepas can be grilled, baked, or fried, and are split open and stuffed with fillings such as cheese, black beans, shredded beef, or avocado. A daily staple in Venezuelan and Colombian households, with hundreds of regional variations. Gluten-free by nature."
+  },
+  {
+    "term": "Babka",
+    "letter": "B",
+    "definition": "Origin: Poland & Ukraine (Jewish diaspora). Type: Enriched yeast bread. A sweet, swirled loaf of Eastern European and Jewish origin, made from a rich, buttery dough filled with chocolate, cinnamon, or fruit preserves and twisted before baking to create a marbled interior. Originally a Sabbath treat, babka has become widely popular in artisan bakeries and grocery stores across North America and Europe. The name derives from the Polish word for \"grandmother.\""
+  },
+  {
+    "term": "Bagel",
+    "letter": "B",
+    "definition": "Origin: Poland (Ashkenazi Jewish tradition). Type: Yeast bread. A ring-shaped bread that is first boiled in water, then baked — giving it a uniquely dense, chewy interior and a glossy, slightly crisp crust. The boiling step is what sets a bagel apart from an ordinary bread roll. Commonly topped with sesame seeds, poppy seeds, or \"everything\" seasoning. Typically sliced and toasted, then spread with cream cheese or used as a sandwich base. Available in plain, sesame, poppy, onion, everything, cinnamon-raisin, and blueberry varieties in most supermarkets."
+  },
+  {
+    "term": "Baguette",
+    "letter": "B",
+    "definition": "Origin: France. Type: Yeast bread. The defining loaf of French culture — a long, slender loaf with a crackly golden crust and an open, chewy crumb. Made from just four ingredients: flour, water, yeast, and salt. Awarded UNESCO Intangible Cultural Heritage status in 2022. Traditionally eaten the day it is baked; the crisp end piece is affectionately called _le quignon_. Grocery store versions tend to be softer and longer-lasting than authentic bakery baguettes."
+  },
+  {
+    "term": "Banana Bread",
+    "letter": "B",
+    "definition": "Origin: United States. Type: Quick bread. A moist, dense, sweet loaf made with overripe mashed bananas as both sweetener and flavouring. Leavened with baking soda rather than yeast, so it requires no rising time. Often contains walnuts or chocolate chips. Sits somewhere between bread and cake — technically a quick bread, but typically eaten as a snack or treat. Found in the bakery section of most grocery stores."
+  },
+  {
+    "term": "Brioche",
+    "letter": "B",
+    "definition": "Origin: France. Type: Enriched yeast bread. A highly enriched bread made with a generous quantity of butter and eggs, giving it an exceptionally soft, pillowy crumb and a rich, deep-golden colour. The flavour is subtly sweet and buttery — somewhere between bread and pastry. Available as full loaves, buns, or rolls. Widely used for French toast, gourmet burgers, and bread pudding. The high fat content keeps brioche soft for longer than most breads."
+  },
+  {
+    "term": "Challah",
+    "letter": "C",
+    "definition": "Origin: Jewish Ashkenazi tradition. Type: Enriched yeast bread. A braided, ceremonial loaf eaten on the Jewish Sabbath and holidays. Enriched with eggs and oil, it has a glossy, golden crust achieved by an egg wash before baking, and a soft, slightly sweet, pull-apart crumb. The round version eaten at Rosh Hashanah symbolises the cycle of the year. Dairy-free despite its brioche-like richness."
+  },
+  {
+    "term": "Ciabatta",
+    "letter": "C",
+    "definition": "Origin: Italy (Veneto region). Type: White yeast bread. Invented in 1982 as an Italian answer to the baguette, ciabatta (\"slipper\" in Italian) is a wide, flat loaf with an irregular, porous open crumb and a thin, crisp crust. Made with a very wet, high-hydration dough and a long fermentation that gives it its characteristic airiness. Commonly available as whole loaves or pre-sliced rolls. Excellent for sandwiches, bruschetta, and dipping in olive oil."
+  },
+  {
+    "term": "Cornbread",
+    "letter": "C",
+    "definition": "Origin: United States (Native American roots). Type: Quick bread / Cornbread. A dense, crumbly bread made from cornmeal — a staple of Native American cooking long before European settlement. American cornbread is typically leavened with baking powder and has a golden-yellow colour and slightly gritty texture. It can be sweet (Northern style) or savoury with no sugar (Southern style). Sold in loaves, muffin-style rounds, or as a dry mix. Often served alongside chilli, barbecue, and soups."
+  },
+  {
+    "term": "Crumpet",
+    "letter": "C",
+    "definition": "Origin: England. Type: Griddle bread. A thick, spongy, round bread cooked entirely on a griddle, distinguished by a surface full of small holes that form as the batter cooks. Always served toasted, with butter melting down into the holes. A beloved British teatime staple with a slightly chewy texture and mild, yeasty flavour. Not to be confused with an English muffin — a crumpet is wetter, spongier, and never split."
+  },
+  {
+    "term": "Damper",
+    "letter": "D",
+    "definition": "Origin: Australia. Type: Unleavened / soda bread. A traditional bush bread of the Australian outback, historically made by drovers and stockmen over campfires. The basic recipe is flour, water, salt, and sometimes a little butter or milk — mixed quickly and baked in hot coals or a camp oven. Simple and sustaining, damper is often eaten with golden syrup or alongside stew."
+  },
+  {
+    "term": "English Muffin",
+    "letter": "E",
+    "definition": "Origin: England. Type: Yeast bread. A small, round, flat bread cooked on a griddle rather than baked in an oven, giving it a pale, soft exterior and a distinctive nook-and-cranny interior. Always served split horizontally and toasted. The uneven surface is designed to hold butter and toppings. A staple of the British and American breakfast table, and the essential base for Eggs Benedict. Available in plain, wholemeal, and sourdough varieties."
+  },
+  {
+    "term": "Ezekiel Bread",
+    "letter": "E",
+    "definition": "Origin: United States (biblical inspiration). Type: Sprouted grain bread. A flourless bread made from sprouted whole grains and legumes — typically wheat, barley, millet, spelt, soybeans, and lentils — inspired by a passage in the Book of Ezekiel. Sprouting the grains before baking increases nutrient availability and reduces antinutrients. Dense, chewy, and earthy in flavour. Sold refrigerated or frozen in health food sections, as it contains no preservatives."
+  },
+  {
+    "term": "Flatbread",
+    "letter": "F",
+    "definition": "Origin: Global. Type: Unleavened or lightly leavened flatbread. A broad category covering any thin, flat bread — including tortillas, naan, pita, and many others listed separately here. In the grocery context, \"flatbread\" usually refers to a generic thin, crisp or soft bread sold as a pizza base, wrap, or snack cracker. Often made with flour, water, oil, and salt. Available in a wide range of flavours and thicknesses."
+  },
+  {
+    "term": "Focaccia",
+    "letter": "F",
+    "definition": "Origin: Italy (Liguria). Type: Yeast flatbread. A thick, olive-oil-rich Italian flatbread dimpled with fingertips before baking, then generously drizzled with oil and scattered with sea salt, herbs, olives, or caramelised onion. Focaccia alla Genovese is considered the original — soft and pillowy inside with a slightly crisp, oily base. One of the oldest breads in recorded history, with roots in ancient Rome. Found in the bakery section of most supermarkets."
+  },
+  {
+    "term": "Granary Bread",
+    "letter": "G",
+    "definition": "Origin: United Kingdom. Type: Malted wheat bread. A British bread made with malted wheat grain flour, giving it a distinctive nutty, slightly sweet flavour and a chewy texture from the whole grain flakes. \"Granary\" is technically a trademarked flour blend produced by Hovis, but the term is widely used for any malted grain loaf. A popular everyday sandwich bread in the UK, commonly found alongside white and wholemeal in supermarket bread aisles."
+  },
+  {
+    "term": "Grissini",
+    "letter": "G",
+    "definition": "Origin: Italy (Turin, Piedmont). Type: Dry bread / breadstick. Pencil-thin, ultra-crisp breadsticks said to have been invented in 17th-century Turin for the young Duke of Savoy, who had difficulty digesting regular bread. Made from flour, water, olive oil, yeast, and salt, rolled by hand and baked until completely dry and crunchy throughout. A staple of Italian restaurant tables, often flavoured with sesame, rosemary, or black pepper. Sold in cellophane sleeves in most supermarkets."
+  },
+  {
+    "term": "Hot Cross Bun",
+    "letter": "H",
+    "definition": "Origin: England. Type: Enriched sweet bun. A spiced, slightly sweet bun made with enriched dough containing currants or raisins and warming spices such as cinnamon, nutmeg, and allspice, marked with a white cross on top before baking. Traditionally eaten on Good Friday, but now sold year-round in most supermarkets. Best served toasted and spread with butter. The cross originally symbolised the crucifixion; today it's largely a beloved seasonal treat."
+  },
+  {
+    "term": "Injera",
+    "letter": "I",
+    "definition": "Origin: Ethiopia & Eritrea. Type: Fermented flatbread. A large, spongy, sourdough flatbread made from teff — a tiny, iron-rich ancient grain native to the Ethiopian highlands. The batter is fermented for several days before being poured onto a clay griddle to cook. The resulting bread is porous and mildly sour, and serves as both plate and utensil: food is piled on top and torn pieces of injera are used to scoop it up."
+  },
+  {
+    "term": "Irish Soda Bread",
+    "letter": "I",
+    "definition": "Origin: Ireland. Type: Soda bread (quick bread). A traditional Irish bread leavened with bicarbonate of soda and buttermilk rather than yeast — the acid in the buttermilk reacts with the soda to produce carbon dioxide, causing the bread to rise. Dense, slightly crumbly, with a tender crumb and a characteristic cross scored on top. Available in white and brown (wholemeal) versions. Best eaten fresh, often with butter, smoked salmon, or Irish stew."
+  },
+  {
+    "term": "Johnnycake",
+    "letter": "J",
+    "definition": "Origin: United States (Native American roots). Type: Cornbread / Flatbread. One of the oldest breads in North America, with origins among the indigenous peoples of the eastern woodlands. Made from cornmeal, water or milk, and salt, cooked on a hot griddle. Also known as a hoecake — a reference to cooking it on the flat of a hoe over an open fire. Simple, filling, and historically important as a staple of colonial American diets."
+  },
+  {
+    "term": "Khachapuri",
+    "letter": "K",
+    "definition": "Origin: Georgia (Caucasus). Type: Cheese-filled flatbread. Georgia's most beloved bread — a boat-shaped or round dough filled with melted imeruli and sulguni cheeses. The Adjarian version (_Adjaruli_) arrives at the table as an open pastry boat, topped with a raw egg cracked into bubbling cheese and finished with a knob of butter. There are over 53 regional variations across the country."
+  },
+  {
+    "term": "Lavash",
+    "letter": "L",
+    "definition": "Origin: Armenia (and wider Middle East). Type: Thin flatbread. An ultra-thin, flexible flatbread baked in seconds on the scorching walls of a clay tandoor oven. When fresh it is soft and pliable, perfect for wrapping around meats, herbs, and cheese; when left to dry it becomes cracker-crisp. Lavash has been made in Armenia for thousands of years and was inscribed on UNESCO's list of Intangible Cultural Heritage in 2014."
+  },
+  {
+    "term": "Matzo",
+    "letter": "M",
+    "definition": "Origin: Jewish tradition. Type: Unleavened crispbread. The bread of the Exodus — eaten during Passover to commemorate the Israelites leaving Egypt too hastily to allow their bread to rise. Made from flour and water only, mixed and baked within 18 minutes to ensure no fermentation occurs. The result is a pale, flat cracker. Year-round consumption is common, and it forms the base of dishes including matzo brei and matzo ball soup."
+  },
+  {
+    "term": "Milk Bread (Shokupan)",
+    "letter": "M",
+    "definition": "Origin: Japan. Type: Enriched yeast bread. An exceptionally soft, pillowy white bread made using the _tangzhong_ method — a portion of the flour is cooked with milk or water into a thick paste before being added to the dough, giving it extraordinary tenderness and a longer shelf life. Sold as thick-sliced square loaves. Increasingly common in Western supermarkets, eaten plain, toasted, or used for sandwiches and French toast."
+  },
+  {
+    "term": "Multigrain Bread",
+    "letter": "M",
+    "definition": "Origin: Global. Type: Yeast bread. A broad category of bread made with two or more grain types beyond basic wheat — such as oats, barley, flaxseed, millet, sunflower seeds, or rye. Multigrain breads tend to have a heartier texture and nuttier flavour than white bread, and are widely marketed for their nutritional profile. One of the most common everyday loaf choices in Western supermarkets. Note: multigrain does not necessarily mean wholegrain — check labels."
+  },
+  {
+    "term": "Naan",
+    "letter": "N",
+    "definition": "Origin: South Asia & Central Asia. Type: Leavened flatbread. A soft, leavened flatbread traditionally baked against the walls of a clay tandoor oven, emerging blistered and lightly charred on the surface and tender and chewy inside. Made with white flour, yeast or yogurt, and milk. Often brushed with ghee or garlic butter before serving. Supermarket versions are pre-made and packaged, designed to be warmed in an oven or dry pan. Popular variations include garlic, peshwari, and keema."
+  },
+  {
+    "term": "Oatmeal Bread",
+    "letter": "O",
+    "definition": "Origin: Scotland & Ireland. Type: Yeast or soda bread. A hearty, nutritious loaf made with a significant proportion of rolled oats — either stirred into the dough or used to coat the outside crust. The oats give the bread a slightly nutty, wholesome flavour and a moist, dense crumb that keeps well. Often found in health-focused bread aisles alongside seeded and wholegrain loaves. Pairs well with smoked salmon, strong cheese, or soup."
+  },
+  {
+    "term": "Pitta (Pita)",
+    "letter": "P",
+    "definition": "Origin: Middle East & Mediterranean. Type: Flatbread. A round, leavened flatbread with an ancient history across the Levant, Greece, and North Africa. Its defining characteristic is the hollow pocket that forms during baking, as the dough puffs up rapidly in a very hot oven and the two layers separate. This pocket makes pita uniquely versatile — ideal for stuffing with falafel, shawarma, hummus, and salads, or toasting and cutting into triangles for dipping. Available in white and wholemeal."
+  },
+  {
+    "term": "Pretzel Bread",
+    "letter": "P",
+    "definition": "Origin: Germany / Alsace. Type: Yeast bread. Originally a baked good twisted into a distinctive knot shape and dipped in lye solution before baking, which gives it a deep-brown, glossy crust and a unique chewy bite. The pretzel flavour — salty, malty, and slightly bitter — comes from the alkaline dipping process. Now widely sold in supermarkets as both traditional knotted pretzels and as pretzel rolls or sandwich loaves, often sprinkled with coarse salt."
+  },
+  {
+    "term": "Pumpernickel",
+    "letter": "P",
+    "definition": "Origin: Germany (Westphalia). Type: Rye bread. One of the darkest, densest breads available — a traditional German rye bread made from coarsely ground whole rye flour, baked at low temperature for up to 24 hours. The long baking causes the starches to caramelise, producing its deep brown colour, moist sticky crumb, and distinctive malty, slightly sour flavour. Sold in thin pre-sliced packs. Often served with smoked fish, cream cheese, or charcuterie."
+  },
+  {
+    "term": "Roti",
+    "letter": "R",
+    "definition": "Origin: South Asia. Type: Unleavened flatbread. One of the most widely eaten breads on earth — a simple, unleavened disc made from whole-wheat _atta_ flour, water, and a pinch of salt. Rolled thin and cooked on a flat _tawa_ griddle, then often held briefly over an open flame to puff up. Roti serves as both bread and utensil across India, Pakistan, Bangladesh, Sri Lanka, and beyond, scooping up curries, dals, and vegetables."
+  },
+  {
+    "term": "Rye Bread",
+    "letter": "R",
+    "definition": "Origin: Northern & Eastern Europe. Type: Rye bread. A broad family of breads made with a significant proportion of rye flour, which contains less gluten than wheat, resulting in a denser, moister loaf with a distinctive earthy, slightly sour flavour. Ranges from light rye (a small rye fraction mixed with wheat flour) to dark rye and pumpernickel. A classic for Reuben sandwiches and open-faced Scandinavian smørrebrød, and ideal with smoked meats and strong cheese."
+  },
+  {
+    "term": "Sourdough",
+    "letter": "S",
+    "definition": "Origin: Ancient Egypt / Worldwide. Type: Naturally leavened bread. The oldest form of leavened bread, made without commercial yeast. Instead, a fermented culture of wild yeast and lactic acid bacteria — the \"starter\" — leavens the dough. The long, slow fermentation develops a complex tangy flavour, a chewy open crumb, and a thick crackling crust. Sourdough starters can be decades old, passed down through generations. Among the most popular artisan bread styles in modern grocery stores, available in white, wholemeal, rye, and seeded varieties."
+  },
+  {
+    "term": "Tortilla",
+    "letter": "T",
+    "definition": "Origin: Mexico (Mesoamerican). Type: Flatbread. One of the most ancient and most widely sold breads in grocery stores worldwide. Corn tortillas are made from _masa_ — cornmeal treated through a process called _nixtamalisation_ — and are the traditional base for tacos, enchiladas, and tostadas. Flour tortillas, made with refined wheat flour and fat, are softer and more pliable, used for burritos, wraps, and quesadillas. Available in a huge range of sizes."
+  },
+  {
+    "term": "Vollkornbrot",
+    "letter": "V",
+    "definition": "Origin: Germany. Type: Wholegrain rye bread. Germany's most serious bread — a dense, dark, moist loaf made almost entirely from whole rye grains and rye flour, often enriched with sunflower seeds, linseeds, or caraway. Typically baked in a tin at low temperature for several hours. The flavour is malty, earthy, and mildly sour. Vollkornbrot keeps for weeks and is exceptionally high in fibre and nutrients. Sold in pre-sliced packs in specialist and health food shops."
+  },
+  {
+    "term": "White Bread",
+    "letter": "W",
+    "definition": "Origin: Worldwide. Type: Yeast bread. The most widely purchased bread in Western supermarkets — a soft, mild, sliced loaf made from refined white flour, water, yeast, salt, and usually a small amount of sugar and fat to extend softness. The dominant everyday loaf of the 20th century, following the invention of the mechanical bread slicer in 1928. Available in standard, thick-cut, thin-cut, and soft-crust varieties. Nutritionally simpler than wholegrain alternatives due to the removal of bran and germ during milling."
+  },
+  {
+    "term": "Wholemeal (Whole Wheat) Bread",
+    "letter": "W",
+    "definition": "Origin: Worldwide. Type: Yeast bread. Made from flour that retains the bran and germ of the wheat grain, giving it a darker colour, nuttier flavour, and significantly higher fibre, vitamin, and mineral content than white bread. A staple of health-conscious grocery shopping. Slightly denser in texture than white bread. Available as standard sliced loaves, rolls, and pittas. Often the default \"brown bread\" option in sandwiches and cafés."
+  },
+  {
+    "term": "Wraps",
+    "letter": "W",
+    "definition": "Origin: Global / Commercial. Type: Soft flatbread. A modern commercial product — a large, thin, pliable flatbread designed specifically for rolling around fillings. Related to flour tortillas but typically made slightly thicker and softer for easier handling. Available in plain white, wholemeal, spinach, tomato, and seeded varieties. One of the fastest-growing bread categories in Western supermarkets. Used in place of sandwiches for packed lunches, quick meals, and meal prep."
+  },
+  {
+    "term": "Xystí",
+    "letter": "X",
+    "definition": "Origin: Cyprus. Type: Sesame bread ring. A traditional Cypriot bread ring encrusted with sesame seeds, sold by street vendors and bakeries across the island. Similar in shape to the Greek _koulouri_ and the Turkish _simit_. Made from white wheat dough glazed with grape-must syrup before being rolled in sesame seeds and baked until golden. Eaten as a snack or breakfast, often alongside halloumi or olives."
+  },
+  {
+    "term": "Yufka",
+    "letter": "Y",
+    "definition": "Origin: Turkey. Type: Thin unleavened flatbread. An extremely thin, round flatbread from Turkey, closely related to phyllo (filo) dough. Made from flour, water, and salt, rolled as thin as paper and cooked briefly on a convex iron griddle (_sac_). Fresh yufka is soft and pliable, used to wrap kebabs, cheeses, and vegetables; dried, it becomes a cracker-like sheet used in layered pastries. A staple of Anatolian village kitchens for centuries."
+  },
+  {
+    "term": "Zopf",
+    "letter": "Z",
+    "definition": "Origin: Switzerland (also Austria & Germany). Type: Enriched yeast bread. A beautiful braided Sunday loaf from Switzerland, whose name means \"braid\" or \"plait\" in Swiss German. Made from white flour, butter, milk, eggs, and yeast, it has a rich, golden, brioche-like crumb and a shiny, deep-brown crust achieved with an egg glaze. Traditionally baked on Saturday evening for Sunday breakfast and served with butter and jam. Sharing a loaf of Zopf is a cherished Swiss family ritual."
+  }
+];
+
 export const cookingDictionaryEntries: DictionaryEntry[] = [
   {
     "term": "À la carte",
@@ -4509,6 +4722,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Short-grain Italian rice used to make risotto."
   },
   {
+    "term": "Arepa",
+    "letter": "A",
+    "definition": "Origin: Venezuela & Colombia. Type: Cornbread / Flatbread. A round patty made from pre-cooked cornmeal (masa), water, and salt. Arepas can be grilled, baked, or fried, and are split open and stuffed with fillings such as cheese, black beans, shredded beef, or avocado. A daily staple in Venezuelan and Colombian households, with hundreds of regional variations. Gluten-free by nature."
+  },
+  {
     "term": "Armagnac",
     "letter": "A",
     "definition": "French brandy from Gascony; older and more rustic than Cognac."
@@ -4584,6 +4802,21 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A cocktail of equal parts Bénédictine liqueur and brandy."
   },
   {
+    "term": "Babka",
+    "letter": "B",
+    "definition": "Origin: Poland & Ukraine (Jewish diaspora). Type: Enriched yeast bread. A sweet, swirled loaf of Eastern European and Jewish origin, made from a rich, buttery dough filled with chocolate, cinnamon, or fruit preserves and twisted before baking to create a marbled interior. Originally a Sabbath treat, babka has become widely popular in artisan bakeries and grocery stores across North America and Europe. The name derives from the Polish word for \"grandmother.\""
+  },
+  {
+    "term": "Bagel",
+    "letter": "B",
+    "definition": "Origin: Poland (Ashkenazi Jewish tradition). Type: Yeast bread. A ring-shaped bread that is first boiled in water, then baked — giving it a uniquely dense, chewy interior and a glossy, slightly crisp crust. The boiling step is what sets a bagel apart from an ordinary bread roll. Commonly topped with sesame seeds, poppy seeds, or \"everything\" seasoning. Typically sliced and toasted, then spread with cream cheese or used as a sandwich base. Available in plain, sesame, poppy, onion, everything, cinnamon-raisin, and blueberry varieties in most supermarkets."
+  },
+  {
+    "term": "Baguette",
+    "letter": "B",
+    "definition": "Origin: France. Type: Yeast bread. The defining loaf of French culture — a long, slender loaf with a crackly golden crust and an open, chewy crumb. Made from just four ingredients: flour, water, yeast, and salt. Awarded UNESCO Intangible Cultural Heritage status in 2022. Traditionally eaten the day it is baked; the crisp end piece is affectionately called _le quignon_. Grocery store versions tend to be softer and longer-lasting than authentic bakery baguettes."
+  },
+  {
     "term": "Baharat",
     "letter": "B",
     "definition": "Middle Eastern spice blend of black pepper, coriander, cinnamon, cloves, and cumin."
@@ -4632,6 +4865,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Ballotine",
     "letter": "B",
     "definition": "Meat or poultry that has been boned, stuffed, and rolled."
+  },
+  {
+    "term": "Banana Bread",
+    "letter": "B",
+    "definition": "Origin: United States. Type: Quick bread. A moist, dense, sweet loaf made with overripe mashed bananas as both sweetener and flavouring. Leavened with baking soda rather than yeast, so it requires no rising time. Often contains walnuts or chocolate chips. Sits somewhere between bread and cake — technically a quick bread, but typically eaten as a snack or treat. Found in the bakery section of most grocery stores."
   },
   {
     "term": "Bard",
@@ -4904,6 +5142,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A salt-water solution used to preserve or season food."
   },
   {
+    "term": "Brioche",
+    "letter": "B",
+    "definition": "Origin: France. Type: Enriched yeast bread. A highly enriched bread made with a generous quantity of butter and eggs, giving it an exceptionally soft, pillowy crumb and a rich, deep-golden colour. The flavour is subtly sweet and buttery — somewhere between bread and pastry. Available as full loaves, buns, or rolls. Widely used for French toast, gourmet burgers, and bread pudding. The high fat content keeps brioche soft for longer than most breads."
+  },
+  {
     "term": "Broach",
     "letter": "B",
     "definition": "To spit-roast meat over an open fire."
@@ -5094,6 +5337,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A heat-retaining dish used for casseroles, gratins, and desserts."
   },
   {
+    "term": "Challah",
+    "letter": "C",
+    "definition": "Origin: Jewish Ashkenazi tradition. Type: Enriched yeast bread. A braided, ceremonial loaf eaten on the Jewish Sabbath and holidays. Enriched with eggs and oil, it has a glossy, golden crust achieved by an egg wash before baking, and a soft, slightly sweet, pull-apart crumb. The round version eaten at Rosh Hashanah symbolises the cycle of the year. Dairy-free despite its brioche-like richness."
+  },
+  {
     "term": "Champagne",
     "letter": "C",
     "definition": "Sparkling wine from the Champagne region of France."
@@ -5192,6 +5440,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Chopping board",
     "letter": "C",
     "definition": "A flat surface for cutting food; available in wood, plastic, and bamboo."
+  },
+  {
+    "term": "Ciabatta",
+    "letter": "C",
+    "definition": "Origin: Italy (Veneto region). Type: White yeast bread. Invented in 1982 as an Italian answer to the baguette, ciabatta (\"slipper\" in Italian) is a wide, flat loaf with an irregular, porous open crumb and a thin, crisp crust. Made with a very wet, high-hydration dough and a long fermentation that gives it its characteristic airiness. Commonly available as whole loaves or pre-sliced rolls. Excellent for sandwiches, bruschetta, and dipping in olive oil."
   },
   {
     "term": "Cider",
@@ -5359,6 +5612,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Grain: Extracted from maize kernels. Neutral flavour with a high smoke point, popular for deep-frying and commercial food production. High heat."
   },
   {
+    "term": "Cornbread",
+    "letter": "C",
+    "definition": "Origin: United States (Native American roots). Type: Quick bread / Cornbread. A dense, crumbly bread made from cornmeal — a staple of Native American cooking long before European settlement. American cornbread is typically leavened with baking powder and has a golden-yellow colour and slightly gritty texture. It can be sweet (Northern style) or savoury with no sugar (Southern style). Sold in loaves, muffin-style rounds, or as a dry mix. Often served alongside chilli, barbecue, and soups."
+  },
+  {
     "term": "Cosmopolitan",
     "letter": "C",
     "definition": "Vodka, triple sec, cranberry juice, and lime juice; popularized in the 1990s."
@@ -5434,6 +5692,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Raw vegetables served with a dipping sauce as an appetizer."
   },
   {
+    "term": "Crumpet",
+    "letter": "C",
+    "definition": "Origin: England. Type: Griddle bread. A thick, spongy, round bread cooked entirely on a griddle, distinguished by a surface full of small holes that form as the batter cooks. Always served toasted, with butter melting down into the holes. A beloved British teatime staple with a slightly chewy texture and mild, yeasty flavour. Not to be confused with an English muffin — a crumpet is wetter, spongier, and never split."
+  },
+  {
     "term": "Cuba Libre",
     "letter": "C",
     "definition": "Rum, Coca-Cola, and lime; a classic highball."
@@ -5482,6 +5745,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Daiquiri",
     "letter": "D",
     "definition": "White rum, lime juice, and sugar; one of the great classic cocktails."
+  },
+  {
+    "term": "Damper",
+    "letter": "D",
+    "definition": "Origin: Australia. Type: Unleavened / soda bread. A traditional bush bread of the Australian outback, historically made by drovers and stockmen over campfires. The basic recipe is flour, water, salt, and sometimes a little butter or milk — mixed quickly and baked in hot coals or a camp oven. Simple and sustaining, damper is often eaten with golden syrup or alongside stew."
   },
   {
     "term": "Danablu",
@@ -5744,6 +6012,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Food cooked in a sealed parcel of parchment or foil."
   },
   {
+    "term": "English Muffin",
+    "letter": "E",
+    "definition": "Origin: England. Type: Yeast bread. A small, round, flat bread cooked on a griddle rather than baked in an oven, giving it a pale, soft exterior and a distinctive nook-and-cranny interior. Always served split horizontally and toasted. The uneven surface is designed to hold butter and toppings. A staple of the British and American breakfast table, and the essential base for Eggs Benedict. Available in plain, wholemeal, and sourdough varieties."
+  },
+  {
     "term": "Epazote",
     "letter": "E",
     "definition": "Pungent Mexican herb used in black bean dishes and quesadillas."
@@ -5797,6 +6070,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Extrude",
     "letter": "E",
     "definition": "To force dough or paste through a shaped die to create pasta."
+  },
+  {
+    "term": "Ezekiel Bread",
+    "letter": "E",
+    "definition": "Origin: United States (biblical inspiration). Type: Sprouted grain bread. A flourless bread made from sprouted whole grains and legumes — typically wheat, barley, millet, spelt, soybeans, and lentils — inspired by a passage in the Book of Ezekiel. Sprouting the grains before baking increases nutrient availability and reduces antinutrients. Dense, chewy, and earthy in flavour. Sold refrigerated or frozen in health food sections, as it contains no preservatives."
   },
   {
     "term": "Farce",
@@ -5904,6 +6182,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A wide, flat whisk ideal for deglazing pans and making roux."
   },
   {
+    "term": "Flatbread",
+    "letter": "F",
+    "definition": "Origin: Global. Type: Unleavened or lightly leavened flatbread. A broad category covering any thin, flat bread — including tortillas, naan, pita, and many others listed separately here. In the grocery context, \"flatbread\" usually refers to a generic thin, crisp or soft bread sold as a pizza base, wrap, or snack cracker. Often made with flour, water, oil, and salt. Available in a wide range of flavours and thicknesses."
+  },
+  {
     "term": "Flaxseed oil",
     "letter": "F",
     "definition": "Seed: Rich in omega-3 fatty acids. Nutty, slightly bitter taste. Best used cold as a dressing or supplement — breaks down quickly when heated. Low/no heat."
@@ -5912,6 +6195,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Fluted pan",
     "letter": "F",
     "definition": "A tart or cake pan with a fluted rim for decorative edges."
+  },
+  {
+    "term": "Focaccia",
+    "letter": "F",
+    "definition": "Origin: Italy (Liguria). Type: Yeast flatbread. A thick, olive-oil-rich Italian flatbread dimpled with fingertips before baking, then generously drizzled with oil and scattered with sea salt, herbs, olives, or caramelised onion. Focaccia alla Genovese is considered the original — soft and pillowy inside with a slightly crisp, oily base. One of the oldest breads in recorded history, with roots in ancient Rome. Found in the bakery section of most supermarkets."
   },
   {
     "term": "Fold",
@@ -6134,6 +6422,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "West African spice with peppery, citrus notes; related to cardamom."
   },
   {
+    "term": "Granary Bread",
+    "letter": "G",
+    "definition": "Origin: United Kingdom. Type: Malted wheat bread. A British bread made with malted wheat grain flour, giving it a distinctive nutty, slightly sweet flavour and a chewy texture from the whole grain flakes. \"Granary\" is technically a trademarked flour blend produced by Hovis, but the term is widely used for any malted grain loaf. A popular everyday sandwich bread in the UK, commonly found alongside white and wholemeal in supermarket bread aisles."
+  },
+  {
     "term": "Grand Marnier",
     "letter": "G",
     "definition": "Premium French liqueur of Cognac and bitter orange."
@@ -6202,6 +6495,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Grind",
     "letter": "G",
     "definition": "To crush food into a powder or coarse meal."
+  },
+  {
+    "term": "Grissini",
+    "letter": "G",
+    "definition": "Origin: Italy (Turin, Piedmont). Type: Dry bread / breadstick. Pencil-thin, ultra-crisp breadsticks said to have been invented in 17th-century Turin for the young Duke of Savoy, who had difficulty digesting regular bread. Made from flour, water, olive oil, yeast, and salt, rolled by hand and baked until completely dry and crunchy throughout. A staple of Italian restaurant tables, often flavoured with sesame, rosemary, or black pepper. Sold in cellophane sleeves in most supermarkets."
   },
   {
     "term": "Gristle",
@@ -6324,6 +6622,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Small appetizers served before a meal."
   },
   {
+    "term": "Hot Cross Bun",
+    "letter": "H",
+    "definition": "Origin: England. Type: Enriched sweet bun. A spiced, slightly sweet bun made with enriched dough containing currants or raisins and warming spices such as cinnamon, nutmeg, and allspice, marked with a white cross on top before baking. Traditionally eaten on Good Friday, but now sold year-round in most supermarkets. Best served toasted and spread with butter. The cross originally symbolised the crucifixion; today it's largely a beloved seasonal treat."
+  },
+  {
     "term": "Hot toddy",
     "letter": "H",
     "definition": "Whisky, honey, lemon, and hot water; a warming winter drink."
@@ -6379,6 +6682,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To steep ingredients in hot liquid to extract flavor."
   },
   {
+    "term": "Injera",
+    "letter": "I",
+    "definition": "Origin: Ethiopia & Eritrea. Type: Fermented flatbread. A large, spongy, sourdough flatbread made from teff — a tiny, iron-rich ancient grain native to the Ethiopian highlands. The batter is fermented for several days before being poured onto a clay griddle to cook. The resulting bread is porous and mildly sour, and serves as both plate and utensil: food is piled on top and torn pieces of injera are used to scoop it up."
+  },
+  {
     "term": "IPA",
     "letter": "I",
     "definition": "India Pale Ale; a hop-forward beer style with bitter, citrus, and floral notes."
@@ -6387,6 +6695,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Irish coffee",
     "letter": "I",
     "definition": "Hot coffee, Irish whiskey, and sugar topped with cream."
+  },
+  {
+    "term": "Irish Soda Bread",
+    "letter": "I",
+    "definition": "Origin: Ireland. Type: Soda bread (quick bread). A traditional Irish bread leavened with bicarbonate of soda and buttermilk rather than yeast — the acid in the buttermilk reacts with the soda to produce carbon dioxide, causing the bread to rise. Dense, slightly crumbly, with a tender crumb and a characteristic cross scored on top. Available in white and brown (wholemeal) versions. Best eaten fresh, often with butter, smoked salmon, or Irish stew."
   },
   {
     "term": "Irish stout",
@@ -6432,6 +6745,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Jigger",
     "letter": "J",
     "definition": "A bartender's measuring tool; typically 1 oz and 1.5 oz measures."
+  },
+  {
+    "term": "Johnnycake",
+    "letter": "J",
+    "definition": "Origin: United States (Native American roots). Type: Cornbread / Flatbread. One of the oldest breads in North America, with origins among the indigenous peoples of the eastern woodlands. Made from cornmeal, water or milk, and salt, cooked on a hot griddle. Also known as a hoecake — a reference to cooking it on the flat of a hoe over an open fire. Simple, filling, and historically important as a staple of colonial American diets."
   },
   {
     "term": "Jojoba oil",
@@ -6497,6 +6815,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Kefalotiri",
     "letter": "K",
     "definition": "Greece | Sheep: Hard, salty Greek grating cheese with a sharp, full flavour."
+  },
+  {
+    "term": "Khachapuri",
+    "letter": "K",
+    "definition": "Origin: Georgia (Caucasus). Type: Cheese-filled flatbread. Georgia's most beloved bread — a boat-shaped or round dough filled with melted imeruli and sulguni cheeses. The Adjarian version (_Adjaruli_) arrives at the table as an open pastry boat, topped with a raw egg cracked into bubbling cheese and finished with a knob of butter. There are over 53 regional variations across the country."
   },
   {
     "term": "Kir",
@@ -6612,6 +6935,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Last Word",
     "letter": "L",
     "definition": "A classic equal-parts cocktail: gin, green Chartreuse, maraschino, and lime."
+  },
+  {
+    "term": "Lavash",
+    "letter": "L",
+    "definition": "Origin: Armenia (and wider Middle East). Type: Thin flatbread. An ultra-thin, flexible flatbread baked in seconds on the scorching walls of a clay tandoor oven. When fresh it is soft and pliable, perfect for wrapping around meats, herbs, and cheese; when left to dry it becomes cracker-crisp. Lavash has been made in Armenia for thousands of years and was inscribed on UNESCO's list of Intangible Cultural Heritage in 2014."
   },
   {
     "term": "Lavender",
@@ -6794,6 +7122,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To coat food completely with sauce or aspic."
   },
   {
+    "term": "Matzo",
+    "letter": "M",
+    "definition": "Origin: Jewish tradition. Type: Unleavened crispbread. The bread of the Exodus — eaten during Passover to commemorate the Israelites leaving Egypt too hastily to allow their bread to rise. Made from flour and water only, mixed and baked within 18 minutes to ensure no fermentation occurs. The result is a pale, flat cracker. Year-round consumption is common, and it forms the base of dishes including matzo brei and matzo ball soup."
+  },
+  {
     "term": "MCT oil",
     "letter": "M",
     "definition": "Derived: Medium-chain triglycerides from coconut or palm oil. Flavourless and odourless. Popular in keto diets; best used cold or added to drinks. Low/no heat."
@@ -6832,6 +7165,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Midori",
     "letter": "M",
     "definition": "Japanese honeydew melon liqueur; bright green and very sweet."
+  },
+  {
+    "term": "Milk Bread (Shokupan)",
+    "letter": "M",
+    "definition": "Origin: Japan. Type: Enriched yeast bread. An exceptionally soft, pillowy white bread made using the _tangzhong_ method — a portion of the flour is cooked with milk or water into a thick paste before being added to the dough, giving it extraordinary tenderness and a longer shelf life. Sold as thick-sliced square loaves. Increasingly common in Western supermarkets, eaten plain, toasted, or used for sandwiches and French toast."
   },
   {
     "term": "Mimosa",
@@ -6944,6 +7282,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Red wine heated with spices such as cinnamon, cloves, and orange peel."
   },
   {
+    "term": "Multigrain Bread",
+    "letter": "M",
+    "definition": "Origin: Global. Type: Yeast bread. A broad category of bread made with two or more grain types beyond basic wheat — such as oats, barley, flaxseed, millet, sunflower seeds, or rye. Multigrain breads tend to have a heartier texture and nuttier flavour than white bread, and are widely marketed for their nutritional profile. One of the most common everyday loaf choices in Western supermarkets. Note: multigrain does not necessarily mean wholegrain — check labels."
+  },
+  {
     "term": "Munster",
     "letter": "M",
     "definition": "France | Cow: Soft washed-rind Alsatian cheese with pungent aroma and mild, creamy taste."
@@ -6957,6 +7300,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Mustard seed",
     "letter": "M",
     "definition": "Sharp, pungent seeds used in pickling, curries, and condiments."
+  },
+  {
+    "term": "Naan",
+    "letter": "N",
+    "definition": "Origin: South Asia & Central Asia. Type: Leavened flatbread. A soft, leavened flatbread traditionally baked against the walls of a clay tandoor oven, emerging blistered and lightly charred on the surface and tender and chewy inside. Made with white flour, yeast or yogurt, and milk. Often brushed with ghee or garlic butter before serving. Supermarket versions are pre-made and packaged, designed to be warmed in an oven or dry pan. Popular variations include garlic, peshwari, and keema."
   },
   {
     "term": "Nap",
@@ -7027,6 +7375,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Nutmeg grater",
     "letter": "N",
     "definition": "A small, fine grater for freshly grating whole nutmeg."
+  },
+  {
+    "term": "Oatmeal Bread",
+    "letter": "O",
+    "definition": "Origin: Scotland & Ireland. Type: Yeast or soda bread. A hearty, nutritious loaf made with a significant proportion of rolled oats — either stirred into the dough or used to coat the outside crust. The oats give the bread a slightly nutty, wholesome flavour and a moist, dense crumb that keeps well. Often found in health-focused bread aisles alongside seeded and wholegrain loaves. Pairs well with smoked salmon, strong cheese, or soup."
   },
   {
     "term": "Oblique cut",
@@ -7329,6 +7682,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To remove the stone or pit from fruit."
   },
   {
+    "term": "Pitta (Pita)",
+    "letter": "P",
+    "definition": "Origin: Middle East & Mediterranean. Type: Flatbread. A round, leavened flatbread with an ancient history across the Levant, Greece, and North Africa. Its defining characteristic is the hollow pocket that forms during baking, as the dough puffs up rapidly in a very hot oven and the two layers separate. This pocket makes pita uniquely versatile — ideal for stuffing with falafel, shawarma, hummus, and salads, or toasting and cutting into triangles for dipping. Available in white and wholemeal."
+  },
+  {
     "term": "Pizza cutter",
     "letter": "P",
     "definition": "A rolling wheel blade for cutting pizza and flatbreads."
@@ -7384,6 +7742,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A press that forces cooked potato through small holes for smooth mash."
   },
   {
+    "term": "Pretzel Bread",
+    "letter": "P",
+    "definition": "Origin: Germany / Alsace. Type: Yeast bread. Originally a baked good twisted into a distinctive knot shape and dipped in lye solution before baking, which gives it a deep-brown, glossy crust and a unique chewy bite. The pretzel flavour — salty, malty, and slightly bitter — comes from the alkaline dipping process. Now widely sold in supermarkets as both traditional knotted pretzels and as pretzel rolls or sandwich loaves, often sprinkled with coarse salt."
+  },
+  {
     "term": "Proof",
     "letter": "P",
     "definition": "A measure of alcohol content; in the US, proof is twice the ABV percentage."
@@ -7397,6 +7760,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Provolone",
     "letter": "P",
     "definition": "Italy | Cow: Stretched-curd cheese ranging from sweet (dolce) to sharp (piccante)."
+  },
+  {
+    "term": "Pumpernickel",
+    "letter": "P",
+    "definition": "Origin: Germany (Westphalia). Type: Rye bread. One of the darkest, densest breads available — a traditional German rye bread made from coarsely ground whole rye flour, baked at low temperature for up to 24 hours. The long baking causes the starches to caramelise, producing its deep brown colour, moist sticky crumb, and distinctive malty, slightly sour flavour. Sold in thin pre-sliced packs. Often served with smoked fish, cream cheese, or charcuterie."
   },
   {
     "term": "Pumpkin seed oil",
@@ -7584,6 +7952,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Robust, piney herb used with roasted meats, potatoes, and breads."
   },
   {
+    "term": "Roti",
+    "letter": "R",
+    "definition": "Origin: South Asia. Type: Unleavened flatbread. One of the most widely eaten breads on earth — a simple, unleavened disc made from whole-wheat _atta_ flour, water, and a pinch of salt. Rolled thin and cooked on a flat _tawa_ griddle, then often held briefly over an open flame to puff up. Roti serves as both bread and utensil across India, Pakistan, Bangladesh, Sri Lanka, and beyond, scooping up curries, dals, and vegetables."
+  },
+  {
     "term": "Roux",
     "letter": "R",
     "definition": "A cooked mixture of equal parts fat and flour used to thicken sauces."
@@ -7602,6 +7975,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Rum punch",
     "letter": "R",
     "definition": "A Caribbean rum drink with citrus juice and fruit."
+  },
+  {
+    "term": "Rye Bread",
+    "letter": "R",
+    "definition": "Origin: Northern & Eastern Europe. Type: Rye bread. A broad family of breads made with a significant proportion of rye flour, which contains less gluten than wheat, resulting in a denser, moister loaf with a distinctive earthy, slightly sour flavour. Ranges from light rye (a small rye fraction mixed with wheat flour) to dark rye and pumpernickel. A classic for Reuben sandwiches and open-faced Scandinavian smørrebrød, and ideal with smoked meats and strong cheese."
   },
   {
     "term": "Rye whiskey",
@@ -7874,6 +8252,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A category of cocktail made with spirits, citrus juice, and a sweetener."
   },
   {
+    "term": "Sourdough",
+    "letter": "S",
+    "definition": "Origin: Ancient Egypt / Worldwide. Type: Naturally leavened bread. The oldest form of leavened bread, made without commercial yeast. Instead, a fermented culture of wild yeast and lactic acid bacteria — the \"starter\" — leavens the dough. The long, slow fermentation develops a complex tangy flavour, a chewy open crumb, and a thick crackling crust. Sourdough starters can be decades old, passed down through generations. Among the most popular artisan bread styles in modern grocery stores, available in white, wholemeal, rye, and seeded varieties."
+  },
+  {
     "term": "Sous vide",
     "letter": "S",
     "definition": "Cooking vacuum-sealed food in a temperature-controlled water bath."
@@ -8134,6 +8517,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A rich, dense cake, often made with little or no flour."
   },
   {
+    "term": "Tortilla",
+    "letter": "T",
+    "definition": "Origin: Mexico (Mesoamerican). Type: Flatbread. One of the most ancient and most widely sold breads in grocery stores worldwide. Corn tortillas are made from _masa_ — cornmeal treated through a process called _nixtamalisation_ — and are the traditional base for tacos, enchiladas, and tostadas. Flour tortillas, made with refined wheat flour and fat, are softer and more pliable, used for burritos, wraps, and quesadillas. Available in a huge range of sizes."
+  },
+  {
     "term": "Toss",
     "letter": "T",
     "definition": "To mix ingredients by lifting and turning them together."
@@ -8304,6 +8692,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A hollow puff pastry case filled with savory ingredients."
   },
   {
+    "term": "Vollkornbrot",
+    "letter": "V",
+    "definition": "Origin: Germany. Type: Wholegrain rye bread. Germany's most serious bread — a dense, dark, moist loaf made almost entirely from whole rye grains and rye flour, often enriched with sunflower seeds, linseeds, or caraway. Typically baked in a tin at low temperature for several hours. The flavour is malty, earthy, and mildly sour. Vollkornbrot keeps for weeks and is exceptionally high in fibre and nutrients. Sold in pre-sliced packs in specialist and health food shops."
+  },
+  {
     "term": "Waffle iron",
     "letter": "W",
     "definition": "An electric or stovetop appliance with a grid pattern for making waffles."
@@ -8354,6 +8747,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A broad category of barrel-aged grain spirits; styles include Scotch, bourbon, Irish, and Japanese."
   },
   {
+    "term": "White Bread",
+    "letter": "W",
+    "definition": "Origin: Worldwide. Type: Yeast bread. The most widely purchased bread in Western supermarkets — a soft, mild, sliced loaf made from refined white flour, water, yeast, salt, and usually a small amount of sugar and fat to extend softness. The dominant everyday loaf of the 20th century, following the invention of the mechanical bread slicer in 1928. Available in standard, thick-cut, thin-cut, and soft-crust varieties. Nutritionally simpler than wholegrain alternatives due to the removal of bran and germ during milling."
+  },
+  {
     "term": "White pepper",
     "letter": "W",
     "definition": "Pepper with the outer husk removed; milder, earthier flavor than black."
@@ -8367,6 +8765,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "White wine",
     "letter": "W",
     "definition": "Wine made from green or yellow grapes with no skin contact."
+  },
+  {
+    "term": "Wholemeal (Whole Wheat) Bread",
+    "letter": "W",
+    "definition": "Origin: Worldwide. Type: Yeast bread. Made from flour that retains the bran and germ of the wheat grain, giving it a darker colour, nuttier flavour, and significantly higher fibre, vitamin, and mineral content than white bread. A staple of health-conscious grocery shopping. Slightly denser in texture than white bread. Available as standard sliced loaves, rolls, and pittas. Often the default \"brown bread\" option in sandwiches and cafés."
   },
   {
     "term": "Wild garlic",
@@ -8414,6 +8817,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "The liquid extracted from malted barley during the brewing process; fermented into beer."
   },
   {
+    "term": "Wraps",
+    "letter": "W",
+    "definition": "Origin: Global / Commercial. Type: Soft flatbread. A modern commercial product — a large, thin, pliable flatbread designed specifically for rolling around fillings. Related to flour tortillas but typically made slightly thicker and softer for easier handling. Available in plain white, wholemeal, spinach, tomato, and seeded varieties. One of the fastest-growing bread categories in Western supermarkets. Used in place of sandwiches for packed lunches, quick meals, and meal prep."
+  },
+  {
     "term": "Xanthan gum",
     "letter": "X",
     "definition": "A food additive used as a thickener and stabilizer in cooking."
@@ -8437,6 +8845,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Xynotyri",
     "letter": "X",
     "definition": "Greece | Sheep: Ancient Greek dried sour cheese; crumbly and sharp, traditionally sun-dried."
+  },
+  {
+    "term": "Xystí",
+    "letter": "X",
+    "definition": "Origin: Cyprus. Type: Sesame bread ring. A traditional Cypriot bread ring encrusted with sesame seeds, sold by street vendors and bakeries across the island. Similar in shape to the Greek _koulouri_ and the Turkish _simit_. Made from white wheat dough glazed with grape-must syrup before being rolled in sesame seeds and baked until golden. Eaten as a snack or breakfast, often alongside halloumi or olives."
   },
   {
     "term": "Yeast",
@@ -8467,6 +8880,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Yorkshire Blue",
     "letter": "Y",
     "definition": "England | Cow: Creamy, mellow English blue cheese with a softer character than Stilton."
+  },
+  {
+    "term": "Yufka",
+    "letter": "Y",
+    "definition": "Origin: Turkey. Type: Thin unleavened flatbread. An extremely thin, round flatbread from Turkey, closely related to phyllo (filo) dough. Made from flour, water, and salt, rolled as thin as paper and cooked briefly on a convex iron griddle (_sac_). Fresh yufka is soft and pliable, used to wrap kebabs, cheeses, and vegetables; dried, it becomes a cracker-like sheet used in layered pastries. A staple of Anatolian village kitchens for centuries."
   },
   {
     "term": "Yuzu",
@@ -8517,6 +8935,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Zombie",
     "letter": "Z",
     "definition": "A rum-based tiki cocktail made with multiple types of rum, fruit juices, and grenadine."
+  },
+  {
+    "term": "Zopf",
+    "letter": "Z",
+    "definition": "Origin: Switzerland (also Austria & Germany). Type: Enriched yeast bread. A beautiful braided Sunday loaf from Switzerland, whose name means \"braid\" or \"plait\" in Swiss German. Made from white flour, butter, milk, eggs, and yeast, it has a rich, golden, brioche-like crumb and a shiny, deep-brown crust achieved with an egg glaze. Traditionally baked on Saturday evening for Sunday breakfast and served with butter and jam. Sharing a loaf of Zopf is a cherished Swiss family ritual."
   },
   {
     "term": "Zucchini",

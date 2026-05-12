@@ -16,6 +16,7 @@ import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions, conversionSections } from '../components/sample-data';
 import {
   alcoholDictionaryEntries,
+  breadsDictionaryEntries,
   cheesesDictionaryEntries,
   cookingDictionaryEntries,
   generalDictionaryEntries,
@@ -27,7 +28,7 @@ import { useAppSettings } from '../contexts/settings-context';
 
 type MainTab = 'conversions' | 'substitutions' | 'dictionary';
 type SubSection = 'all' | 'allergy' | 'pantry';
-type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'alcohol' | 'instruments';
+type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'breads' | 'alcohol' | 'instruments';
 
 const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
@@ -49,6 +50,7 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
   { key: 'spices', label: 'Spices' },
   { key: 'oils', label: 'Oils' },
   { key: 'cheeses', label: 'Cheeses' },
+  { key: 'breads', label: 'Breads' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -255,6 +257,7 @@ export default function ReferenceScreen() {
       case 'cheeses': return cheesesDictionaryEntries;
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
+      case 'breads': return breadsDictionaryEntries;
       default: return cookingDictionaryEntries;
     }
   }, [dictTab]);
@@ -792,7 +795,7 @@ export default function ReferenceScreen() {
                       style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                     >
                       <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.term}</Text>
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.definition}</Text>
+                      {renderDictionaryDefinition(entry.definition, palette.textMuted)}
                     </View>
                   ))}
                 </View>
@@ -834,6 +837,25 @@ export default function ReferenceScreen() {
         </Pressable>
       ) : null}
     </SafeAreaView>
+  );
+}
+
+function renderDictionaryDefinition(definition: string, color: string) {
+  const breadDefinitionMatch = definition.match(/^Origin: (.*?)\. Type: (.*?)\. (.+)$/);
+
+  if (!breadDefinitionMatch) {
+    return <Text style={[styles.detailCardBody, { color }]}>{definition}</Text>;
+  }
+
+  const [, origin, type, description] = breadDefinitionMatch;
+
+  return (
+    <Text style={[styles.detailCardBody, { color }]}>
+      <Text style={{ fontWeight: '700' }}>Origin:</Text>
+      {` ${origin}. `}
+      <Text style={{ fontWeight: '700' }}>Type:</Text>
+      {` ${type}. ${description}`}
+    </Text>
   );
 }
 

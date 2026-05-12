@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Dessert/Blackberry Tart.md",
+                "file": "Resources/New Custom Cooking Dictionary.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Blackberry Tart"
+              "title": "New Custom Cooking Dictionary"
             }
           }
         ]
@@ -199,6 +199,7 @@
   },
   "active": "692e5b79c7e7a0dc",
   "lastOpenFiles": [
+    "Dessert/Blackberry Tart.md",
     "Dessert/Baklava.md",
     "Dessert/Allergy free Blondies.md",
     "Dessert/Allergen Free Sweet Potato Casserole.md",
@@ -217,7 +218,6 @@
     "Dessert/Lemon Blueberry Muffins.md",
     "Dessert/Half batch allergy free sweet Potato Casserole.md",
     "Dessert/Caramel Squares.md",
-    "Dessert/Blackberry Tart.md",
     "Resources/Weight Chart.md",
     "Resources/Cleaning Rust.md",
     "Resources/2026 Bible Reading.md",

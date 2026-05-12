@@ -7,6 +7,7 @@ import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAppSettings } from '../contexts/settings-context';
 import {
   alcoholDictionaryEntries,
+  breadsDictionaryEntries,
   cheesesDictionaryEntries,
   cookingDictionaryEntries,
   generalDictionaryEntries,
@@ -15,7 +16,7 @@ import {
   spicesDictionaryEntries,
 } from '../data/cooking-dictionary';
 
-type TabKey = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'alcohol' | 'instruments';
+type TabKey = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'breads' | 'alcohol' | 'instruments';
 
 const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
@@ -25,6 +26,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'spices', label: 'Spices' },
   { key: 'oils', label: 'Oils' },
   { key: 'cheeses', label: 'Cheeses' },
+  { key: 'breads', label: 'Breads' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -37,6 +39,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   cheeses: 'Cheeses',
   alcohol: 'Alcohol and mixed drinks',
   instruments: 'Cooking instruments and utensils',
+  breads: 'Breads',
 };
 
 export default function CookingDictionaryScreen() {
@@ -58,6 +61,7 @@ export default function CookingDictionaryScreen() {
       case 'cheeses': return cheesesDictionaryEntries;
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
+      case 'breads': return breadsDictionaryEntries;
       default: return cookingDictionaryEntries;
     }
   }, [activeTab]);
@@ -242,7 +246,7 @@ export default function CookingDictionaryScreen() {
                     style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                   >
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.term}</Text>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.definition}</Text>
+                    {renderDictionaryDefinition(entry.definition, palette.textMuted)}
                   </View>
                 ))}
               </View>
@@ -272,6 +276,25 @@ export default function CookingDictionaryScreen() {
         </Pressable>
       ) : null}
     </SafeAreaView>
+  );
+}
+
+function renderDictionaryDefinition(definition: string, color: string) {
+  const breadDefinitionMatch = definition.match(/^Origin: (.*?)\. Type: (.*?)\. (.+)$/);
+
+  if (!breadDefinitionMatch) {
+    return <Text style={[styles.detailCardBody, { color }]}>{definition}</Text>;
+  }
+
+  const [, origin, type, description] = breadDefinitionMatch;
+
+  return (
+    <Text style={[styles.detailCardBody, { color }]}>
+      <Text style={{ fontWeight: '700' }}>Origin:</Text>
+      {` ${origin}. `}
+      <Text style={{ fontWeight: '700' }}>Type:</Text>
+      {` ${type}. ${description}`}
+    </Text>
   );
 }
 

@@ -63,9 +63,86 @@ function parseEntries(markdown) {
     });
 }
 
+function parseBreadEntries(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const entries = [];
+  let currentEntry = null;
+
+  function finishCurrentEntry() {
+    if (!currentEntry?.term) {
+      return;
+    }
+
+    const metadata = [
+      currentEntry.origin ? `Origin: ${currentEntry.origin}.` : null,
+      currentEntry.type ? `Type: ${currentEntry.type}.` : null,
+    ].filter(Boolean);
+    const definition = [...metadata, currentEntry.description.join(' ')].filter(Boolean).join(' ');
+    const normalizedTerm = normalizeForSorting(currentEntry.term);
+    const letter = /^[a-z]/i.test(normalizedTerm) ? normalizedTerm[0].toUpperCase() : '#';
+
+    entries.push({
+      term: currentEntry.term,
+      letter,
+      definition: stripMarkdown(definition),
+    });
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (!line || line === '---') {
+      continue;
+    }
+
+    const headingMatch = line.match(/^##\s+(.+)$/);
+    const originMatch = line.match(/^\*\*Origin:\*\*\s+(.+)$/);
+    const typeMatch = line.match(/^\*\*Type:\*\*\s+(.+)$/);
+
+    if (headingMatch) {
+      finishCurrentEntry();
+      currentEntry = {
+        term: stripMarkdown(headingMatch[1]).trim(),
+        origin: '',
+        type: '',
+        description: [],
+      };
+      continue;
+    }
+
+    if (!currentEntry) {
+      continue;
+    }
+
+    if (originMatch) {
+      currentEntry.origin = stripMarkdown(originMatch[1]);
+      continue;
+    }
+
+    if (typeMatch) {
+      currentEntry.type = stripMarkdown(typeMatch[1]);
+      continue;
+    }
+
+    currentEntry.description.push(stripMarkdown(line));
+  }
+
+  finishCurrentEntry();
+
+  return entries
+    .filter((entry) => entry.term && entry.definition)
+    .sort((left, right) => {
+      const letterCompare = left.letter.localeCompare(right.letter);
+      if (letterCompare !== 0) return letterCompare;
+      return normalizeForSorting(left.term).localeCompare(normalizeForSorting(right.term), undefined, {
+        sensitivity: 'base',
+      });
+    });
+}
+
 function splitIntoSections(markdown) {
   const lines = markdown.split(/\r?\n/);
-  const sections = { general: [], spices: [], oils: [], cheeses: [], alcohol: [], instruments: [] };
+  const sections = { general: [], spices: [], oils: [], cheeses: [], alcohol: [], instruments: [], breads: [] };
   let currentSection = 'general';
 
   for (const rawLine of lines) {
@@ -89,6 +166,8 @@ function splitIntoSections(markdown) {
         currentSection = 'alcohol';
       } else if (/instrument/i.test(line)) {
         currentSection = 'instruments';
+      } else if (/bread/i.test(line)) {
+        currentSection = 'breads';
       }
       continue;
     }
@@ -109,6 +188,7 @@ async function main() {
   const cheesesEntries = parseEntries(sections.cheeses.join('\n'));
   const alcoholEntries = parseEntries(sections.alcohol.join('\n'));
   const instrumentsEntries = parseEntries(sections.instruments.join('\n'));
+  const breadsEntries = parseBreadEntries(sections.breads.join('\n'));
 
   const allEntries = [
     ...generalEntries,
@@ -117,6 +197,7 @@ async function main() {
     ...cheesesEntries,
     ...alcoholEntries,
     ...instrumentsEntries,
+    ...breadsEntries,
   ].sort((left, right) => {
     const letterCompare = left.letter.localeCompare(right.letter);
     if (letterCompare !== 0) return letterCompare;
@@ -143,6 +224,8 @@ export const alcoholDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(alco
 
 export const instrumentsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(instrumentsEntries, null, 2)};
 
+export const breadsDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(breadsEntries, null, 2)};
+
 export const cookingDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(allEntries, null, 2)};\n`;
 
   await fs.writeFile(outputPath, fileContents, 'utf8');
@@ -153,6 +236,7 @@ export const cookingDictionaryEntries: DictionaryEntry[] = ${JSON.stringify(allE
   console.log(`  Cheeses:     ${cheesesEntries.length}`);
   console.log(`  Alcohol:     ${alcoholEntries.length}`);
   console.log(`  Instruments: ${instrumentsEntries.length}`);
+  console.log(`  Breads:      ${breadsEntries.length}`);
   console.log(`  All:         ${allEntries.length}`);
 }
 
