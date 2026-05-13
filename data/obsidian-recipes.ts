@@ -542,7 +542,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "servings": null,
     "allergyFriendlyTags": [
       "Dairy Free",
-      "Egg Free",
       "Gluten Free",
       "Nut Free"
     ],
@@ -612,9 +611,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Dairy Free",
       "Gluten Free"
     ],
-    "allergenTags": [
-      "Contains Eggs"
-    ],
+    "allergenTags": [],
     "notes": null,
     "ingredients": [
       {
@@ -715,14 +712,12 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       "Gluten Free"
     ],
     "allergenTags": [
-      "Contains Dairy",
-      "Contains Eggs",
-      "Contains Nuts"
+      "Contains Dairy"
     ],
     "notes": "Keeps 3 days refrigerated\nCan be made a day ahead\nEach tartlet ends up with ~1 teaspoon blackberry or less.",
     "ingredients": [
       {
-        "title": null,
+        "title": "Crust (Press-In, No Rolling)",
         "items": [
           "1½ cups gluten-free all-purpose flour (no oat flour)",
           "⅓ cup sugar",
@@ -732,7 +727,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         ]
       },
       {
-        "title": null,
+        "title": "Coconut Vanilla Custard Filling",
         "items": [
           "1½ cups full-fat coconut milk",
           "⅓ cup sugar",
@@ -742,7 +737,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         ]
       },
       {
-        "title": null,
+        "title": "Blackberry Swirl",
         "items": [
           "½ cup blackberries (fresh or frozen)",
           "1–2 tbsp sugar",
@@ -752,7 +747,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     ],
     "directions": [
       {
-        "title": null,
+        "title": "Crust",
         "items": [
           "Mix flour, sugar, salt",
           "Stir in oil, then water until dough holds together",
@@ -762,11 +757,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         ]
       },
       {
-        "title": "Coconut Vanilla Custard Filling",
-        "items": []
-      },
-      {
-        "title": null,
+        "title": "Coconut Vanilla Custard",
         "items": [
           "Whisk everything in a saucepan",
           "Cook over medium heat, whisking constantly",
@@ -775,11 +766,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         ]
       },
       {
-        "title": "Blackberry Swirl (Low-Exposure)",
-        "items": []
-      },
-      {
-        "title": null,
+        "title": "Blackberry Swirl",
         "items": [
           "Simmer berries + sugar + water 5–7 minutes",
           "Mash thoroughly",
@@ -868,14 +855,33 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "servings": null,
     "allergyFriendlyTags": [
       "Dairy Free",
-      "Gluten Free",
-      "Nut Free"
+      "Gluten Free"
     ],
-    "allergenTags": [
-      "Contains Eggs"
-    ],
+    "allergenTags": [],
     "notes": null,
-    "ingredients": [],
+    "ingredients": [
+      {
+        "title": "Base",
+        "items": [
+          "1 ½ cups cooked mashed sweet potatoes",
+          "¼ cup sugar",
+          "¼ cup unsweetened applesauce (replaces flax egg)",
+          "2 tbsp dairy-free butter substitute (or vegetable oil)",
+          "¾ tsp vanilla extract",
+          "¼ tsp salt (to taste)",
+          "¼ cup unsweetened coconut milk"
+        ]
+      },
+      {
+        "title": "Streusel-Style Crumb Topping",
+        "items": [
+          "¼ cup gluten-free flour (Bob’s Red Mill 1-to-1 or King Arthur Measure for Measure)",
+          "2 ½ tbsp brown sugar",
+          "⅛ tsp cinnamon",
+          "2 tbsp melted dairy-free butter or coconut/vegetable oil (if vegetable oil, 1 ½ tbsp)"
+        ]
+      }
+    ],
     "directions": [
       {
         "title": null,
@@ -1018,7 +1024,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "allergyFriendlyTags": [],
     "allergenTags": [
       "Contains Dairy",
-      "Contains Eggs",
       "Contains Gluten"
     ],
     "notes": "Don’t overbake, or they won’t stay soft.\nApplesauce keeps them chewy, but you can substitute:\n3 tbsp aquafaba\n1 tbsp ground flax + 2 ½ tbsp water\nFor extra puff, add 2 tbsp more flour.\nFor extra tang, add ¼ tsp more cream of tartar.",

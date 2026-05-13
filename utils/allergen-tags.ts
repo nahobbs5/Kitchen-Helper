@@ -29,8 +29,34 @@ const nonDairyDairyWordMatchers = [
   /\bbutter\s+substitute\b/gi,
 ];
 
+const eggReplacementWordMatchers = [
+  /\b(?:flax|chia)\s+eggs?\b/gi,
+  /\begg\s+replac(?:er|ement)s?(?:\s+for\s+\d+(?:\s+[^\s()]+)?\s+eggs?)?\b/gi,
+  /\beggs?\s+replac(?:er|ement)s?\b/gi,
+  /\breplaces?\s+(?:flax\s+|chia\s+)?eggs?\b/gi,
+  /\bsubstitutes?\s+for\s+eggs?\b/gi,
+  /\beggs?\s+substitutes?\b/gi,
+  /\bvegan\s+eggs?\b/gi,
+];
+
 function stripNonDairyDairyWords(text: string) {
   return nonDairyDairyWordMatchers.reduce((nextText, matcher) => nextText.replace(matcher, ''), text);
+}
+
+function stripEggReplacementWords(text: string) {
+  return eggReplacementWordMatchers.reduce((nextText, matcher) => nextText.replace(matcher, ''), text);
+}
+
+function stripNonAllergenContext(text: string, tag: (typeof allergenTagOptions)[number]) {
+  if (tag === 'Contains Dairy') {
+    return stripNonDairyDairyWords(text);
+  }
+
+  if (tag === 'Contains Eggs') {
+    return stripEggReplacementWords(text);
+  }
+
+  return text;
 }
 
 const allergenMatchers: Record<(typeof allergenTagOptions)[number], RegExp[]> = {
@@ -109,7 +135,7 @@ export function inferRecipeTags(input: InferenceInput) {
 
   for (const line of ingredientLines) {
     for (const tag of allergenTagOptions) {
-      const searchableLine = tag === 'Contains Dairy' ? stripNonDairyDairyWords(line) : line;
+      const searchableLine = stripNonAllergenContext(line, tag);
 
       if (!allergenMatchers[tag].some((m) => m.test(searchableLine))) continue;
 
@@ -124,7 +150,7 @@ export function inferRecipeTags(input: InferenceInput) {
   }
 
   const nonIngredientAllergens = allergenTagOptions.filter((tag) => {
-    const searchableText = tag === 'Contains Dairy' ? stripNonDairyDairyWords(nonIngredientText) : nonIngredientText;
+    const searchableText = stripNonAllergenContext(nonIngredientText, tag);
 
     return allergenMatchers[tag].some((m) => m.test(searchableText));
   });

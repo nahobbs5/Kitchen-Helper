@@ -267,8 +267,34 @@ const nonDairyDairyWordMatchers = [
   /\bbutter\s+substitute\b/gi,
 ];
 
+const eggReplacementWordMatchers = [
+  /\b(?:flax|chia)\s+eggs?\b/gi,
+  /\begg\s+replac(?:er|ement)s?(?:\s+for\s+\d+(?:\s+[^\s()]+)?\s+eggs?)?\b/gi,
+  /\beggs?\s+replac(?:er|ement)s?\b/gi,
+  /\breplaces?\s+(?:flax\s+|chia\s+)?eggs?\b/gi,
+  /\bsubstitutes?\s+for\s+eggs?\b/gi,
+  /\beggs?\s+substitutes?\b/gi,
+  /\bvegan\s+eggs?\b/gi,
+];
+
 function stripNonDairyDairyWords(text) {
   return nonDairyDairyWordMatchers.reduce((nextText, matcher) => nextText.replace(matcher, ''), text);
+}
+
+function stripEggReplacementWords(text) {
+  return eggReplacementWordMatchers.reduce((nextText, matcher) => nextText.replace(matcher, ''), text);
+}
+
+function stripNonAllergenContext(text, label) {
+  if (label === 'Contains Dairy') {
+    return stripNonDairyDairyWords(text);
+  }
+
+  if (label === 'Contains Eggs') {
+    return stripEggReplacementWords(text);
+  }
+
+  return text;
 }
 
 function extractAllergyTags(title, content, parsedRecipe) {
@@ -328,7 +354,7 @@ function extractAllergyTags(title, content, parsedRecipe) {
       continue;
     }
 
-    const searchableText = rule.label === 'Contains Dairy' ? stripNonDairyDairyWords(text) : text;
+    const searchableText = stripNonAllergenContext(text, rule.label);
 
     if (rule.pattern.test(searchableText)) {
       allergenTags.push(rule.label);

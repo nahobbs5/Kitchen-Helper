@@ -27,6 +27,7 @@ const numberPattern =
 const unitWordMap: Record<string, { singular: string; plural: string }> = {
   teaspoon: { singular: 'teaspoon', plural: 'teaspoons' },
   teaspoons: { singular: 'teaspoon', plural: 'teaspoons' },
+  tsp: { singular: 'tsp', plural: 'tsp' },
   tablespoon: { singular: 'tablespoon', plural: 'tablespoons' },
   tablespoons: { singular: 'tablespoon', plural: 'tablespoons' },
   tbsp: { singular: 'tbsp', plural: 'tbsp' },
@@ -38,6 +39,18 @@ const unitWordMap: Record<string, { singular: string; plural: string }> = {
   pound: { singular: 'pound', plural: 'pounds' },
   pounds: { singular: 'pound', plural: 'pounds' },
   lb: { singular: 'lb', plural: 'lb' },
+  gram: { singular: 'gram', plural: 'grams' },
+  grams: { singular: 'gram', plural: 'grams' },
+  g: { singular: 'g', plural: 'g' },
+  kilogram: { singular: 'kilogram', plural: 'kilograms' },
+  kilograms: { singular: 'kilogram', plural: 'kilograms' },
+  kg: { singular: 'kg', plural: 'kg' },
+  milliliter: { singular: 'milliliter', plural: 'milliliters' },
+  milliliters: { singular: 'milliliter', plural: 'milliliters' },
+  ml: { singular: 'ml', plural: 'ml' },
+  liter: { singular: 'liter', plural: 'liters' },
+  liters: { singular: 'liter', plural: 'liters' },
+  l: { singular: 'l', plural: 'l' },
   clove: { singular: 'clove', plural: 'cloves' },
   cloves: { singular: 'clove', plural: 'cloves' },
   egg: { singular: 'egg', plural: 'eggs' },
@@ -146,46 +159,74 @@ function pluralizeLeadingUnit(remainder: string, quantity: number): string {
   return `${whitespace}${replacement}${rest}`;
 }
 
-function scaleParentheticalMeasurements(text: string, multiplier: number): string {
-  const pattern = new RegExp(
-    `\\(\\s*(${numberPattern})(\\s*[-–]\\s*(${numberPattern}))?(\\s+)([A-Za-z]+\\.?)([^)]*)\\)`,
+function scaleMeasurementText(
+  measurementMatch: string,
+  firstAmount: string,
+  rangeText: string | undefined,
+  secondAmount: string | undefined,
+  unitSpacing: string,
+  unitWord: string,
+  multiplier: number
+) {
+  const unit = unitWordMap[normalizeUnitWord(unitWord)];
+
+  if (!unit) {
+    return measurementMatch;
+  }
+
+  const firstValue = parseSingleAmount(firstAmount);
+
+  if (firstValue === null) {
+    return measurementMatch;
+  }
+
+  const scaledFirstValue = firstValue * multiplier;
+  let scaledAmount = formatScaledAmount(scaledFirstValue);
+  let quantityForUnit = scaledFirstValue;
+
+  if (rangeText && secondAmount) {
+    const secondValue = parseSingleAmount(secondAmount);
+
+    if (secondValue !== null) {
+      const separator = rangeText.includes('–') ? '–' : '-';
+      const scaledSecondValue = secondValue * multiplier;
+      scaledAmount = `${scaledAmount}${separator}${formatScaledAmount(scaledSecondValue)}`;
+      quantityForUnit = Math.max(scaledFirstValue, scaledSecondValue);
+    }
+  }
+
+  const replacementUnit = shouldUseSingular(quantityForUnit) ? unit.singular : unit.plural;
+  return `${scaledAmount}${unitSpacing}${replacementUnit}`;
+}
+
+function scaleInlineMeasurements(text: string, multiplier: number) {
+  const measurementPattern = new RegExp(
+    `(${numberPattern})(\\s*[-–]\\s*(${numberPattern}))?(\\s+)([A-Za-z]+\\.?)\\b`,
     'g'
   );
 
   return text.replace(
-    pattern,
-    (fullMatch, firstAmount, rangeText, secondAmount, unitSpacing, unitWord, rest) => {
-      const unit = unitWordMap[normalizeUnitWord(unitWord)];
-
-      if (!unit) {
-        return fullMatch;
-      }
-
-      const firstValue = parseSingleAmount(firstAmount);
-
-      if (firstValue === null) {
-        return fullMatch;
-      }
-
-      const scaledFirstValue = firstValue * multiplier;
-      let scaledAmount = formatScaledAmount(scaledFirstValue);
-      let quantityForUnit = scaledFirstValue;
-
-      if (rangeText && secondAmount) {
-        const secondValue = parseSingleAmount(secondAmount);
-
-        if (secondValue !== null) {
-          const separator = rangeText.includes('–') ? '–' : '-';
-          const scaledSecondValue = secondValue * multiplier;
-          scaledAmount = `${scaledAmount}${separator}${formatScaledAmount(scaledSecondValue)}`;
-          quantityForUnit = Math.max(scaledFirstValue, scaledSecondValue);
-        }
-      }
-
-      const replacementUnit = shouldUseSingular(quantityForUnit) ? unit.singular : unit.plural;
-      return `(${scaledAmount}${unitSpacing}${replacementUnit}${rest})`;
-    }
+    measurementPattern,
+    (measurementMatch, firstAmount, rangeText, secondAmount, unitSpacing, unitWord) =>
+      scaleMeasurementText(
+        measurementMatch,
+        firstAmount,
+        rangeText,
+        secondAmount,
+        unitSpacing,
+        unitWord,
+        multiplier
+      )
   );
+}
+
+function scaleParentheticalMeasurements(text: string, multiplier: number): string {
+  const parentheticalPattern = /\(([^)]*)\)/g;
+
+  return text.replace(parentheticalPattern, (fullMatch, content: string) => {
+    const scaledContent = scaleInlineMeasurements(content, multiplier);
+    return `(${scaledContent})`;
+  });
 }
 
 export function extractBaseServings(servingsText: string | null): number | null {
@@ -204,19 +245,26 @@ export function scaleIngredientLine(line: string, multiplier: number): string {
     return line;
   }
 
+  const optionalPrefixMatch = line.match(/^(\s*(?:\(\s*optional\s*\)|optional)\s*:?\s*)(.+)$/i);
+
+  if (optionalPrefixMatch) {
+    const [, optionalPrefix, optionalText] = optionalPrefixMatch;
+    return `${optionalPrefix}${scaleInlineMeasurements(optionalText, multiplier)}`;
+  }
+
   const trimmed = line.trim();
   const pattern = new RegExp(`^(${numberPattern})(\\s*[-–]\\s*(${numberPattern}))?(.*)$`);
   const match = trimmed.match(pattern);
 
   if (!match) {
-    return line;
+    return scaleParentheticalMeasurements(line, multiplier);
   }
 
   const [, firstAmount, rangeText, secondAmount, remainder] = match;
   const firstValue = parseSingleAmount(firstAmount);
 
   if (firstValue === null) {
-    return line;
+    return scaleParentheticalMeasurements(line, multiplier);
   }
 
   const scaledFirst = formatScaledAmount(firstValue * multiplier);
