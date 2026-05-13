@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { RecipeSectionEditor } from '../../components/recipe-section-editor';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useAppSettings } from '../../contexts/settings-context';
-import type { ObsidianRecipe } from '../../data/obsidian-recipes';
+import type { ObsidianRecipe, RecipeSection } from '../../data/obsidian-recipes';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
 import {
   allergenTagOptions,
@@ -15,6 +16,11 @@ import {
   toggleFriendlySelection,
 } from '../../utils/allergen-tags';
 import { extractRecipeMetadata, formatCookTimeTag } from '../../utils/recipe-metadata';
+import {
+  countRecipeSectionItems,
+  formatRecipeSections,
+  recipeSectionsHaveItems,
+} from '../../utils/recipe-sections';
 
 const categoryOptions = [
   { label: 'Appetizer', value: 'Appetizers' },
@@ -23,10 +29,6 @@ const categoryOptions = [
   { label: 'Entree', value: 'Entree' },
   { label: 'Dessert', value: 'Dessert' },
 ] as const;
-
-function sectionText(items: { items: string[] }[]) {
-  return items.flatMap((section) => section.items).join('\n');
-}
 
 type EditableRecipe = (ObsidianRecipe & {
   notes: string | null;
@@ -73,8 +75,8 @@ export default function EditRecipeScreen() {
 
   const [category, setCategory] = useState<string>(recipe?.category ?? 'Entree');
   const [recipeName, setRecipeName] = useState(recipe?.title ?? '');
-  const [ingredients, setIngredients] = useState(recipe ? sectionText(recipe.ingredients) : '');
-  const [directions, setDirections] = useState(recipe ? sectionText(recipe.directions) : '');
+  const [ingredientsSections, setIngredientsSections] = useState<RecipeSection[]>(recipe?.ingredients ?? []);
+  const [directionsSections, setDirectionsSections] = useState<RecipeSection[]>(recipe?.directions ?? []);
   const [prepTime, setPrepTime] = useState(recipe?.prepTime ?? '');
   const [cookTime, setCookTime] = useState(recipe?.cookTime ?? '');
   const [servings, setServings] = useState(recipe?.servings ?? '');
@@ -84,15 +86,23 @@ export default function EditRecipeScreen() {
   const [allergyFriendlyTags, setAllergyFriendlyTags] = useState<string[]>(recipe?.allergyFriendlyTags ?? []);
   const [saveAttempted, setSaveAttempted] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const ingredientsText = useMemo(
+    () => formatRecipeSections(ingredientsSections),
+    [ingredientsSections]
+  );
+  const directionsText = useMemo(
+    () => formatRecipeSections(directionsSections, { ordered: true }),
+    [directionsSections]
+  );
   const detectedTags = useMemo(
     () =>
       inferRecipeTags({
         title: recipeName,
-        ingredientsText: ingredients,
-        directionsText: directions,
+        ingredientsText,
+        directionsText,
         notes,
       }),
-    [directions, ingredients, notes, recipeName]
+    [directionsText, ingredientsText, notes, recipeName]
   );
 
   useEffect(() => {
@@ -102,8 +112,8 @@ export default function EditRecipeScreen() {
 
     setCategory(recipe.category ?? 'Entree');
     setRecipeName(recipe.title);
-    setIngredients(sectionText(recipe.ingredients));
-    setDirections(sectionText(recipe.directions));
+    setIngredientsSections(recipe.ingredients);
+    setDirectionsSections(recipe.directions);
     setPrepTime(recipe.prepTime ?? '');
     setCookTime(recipe.cookTime ?? '');
     setServings(recipe.servings ?? '');
@@ -117,10 +127,10 @@ export default function EditRecipeScreen() {
     () =>
       [
         !recipeName.trim() ? 'recipe name' : null,
-        !ingredients.trim() ? 'ingredients' : null,
-        !directions.trim() ? 'directions' : null,
+        !recipeSectionsHaveItems(ingredientsSections) ? 'ingredients' : null,
+        !recipeSectionsHaveItems(directionsSections) ? 'directions' : null,
       ].filter(Boolean) as string[],
-    [directions, ingredients, recipeName]
+    [directionsSections, ingredientsSections, recipeName]
   );
 
   const canSave = missingRequiredFields.length === 0;
@@ -135,8 +145,10 @@ export default function EditRecipeScreen() {
     const saved = await updateRecipe(normalizedSlug, {
       category,
       title: recipeName,
-      ingredientsText: ingredients,
-      directionsText: directions,
+      ingredientsText,
+      directionsText,
+      ingredientsSections,
+      directionsSections,
       prepTime,
       cookTime,
       servings,
@@ -212,18 +224,18 @@ export default function EditRecipeScreen() {
     return extracted;
   }
 
-  function handleIngredientsChange(value: string) {
-    const extracted = applyExtractedMetadata(value, directions);
-    setIngredients(extracted.ingredientsText);
+  function handleIngredientsSectionsChange(nextSections: RecipeSection[]) {
+    applyExtractedMetadata(formatRecipeSections(nextSections), directionsText);
+    setIngredientsSections(nextSections);
   }
 
-  function handleDirectionsChange(value: string) {
-    const extracted = applyExtractedMetadata(ingredients, value);
-    setDirections(extracted.directionsText);
+  function handleDirectionsSectionsChange(nextSections: RecipeSection[]) {
+    applyExtractedMetadata(ingredientsText, formatRecipeSections(nextSections, { ordered: true }));
+    setDirectionsSections(nextSections);
   }
 
   function handleNotesChange(value: string) {
-    const extracted = applyExtractedMetadata(ingredients, directions, value);
+    const extracted = applyExtractedMetadata(ingredientsText, directionsText, value);
     setNotes(extracted.notesText);
   }
 
@@ -367,44 +379,34 @@ export default function EditRecipeScreen() {
                   />
                 </View>
 
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Ingredients *</Text>
-                  <TextInput
-                    value={ingredients}
-                    onChangeText={handleIngredientsChange}
-                    placeholderTextColor={palette.searchPlaceholder}
-                    multiline
-                    style={[
-                      styles.formInput,
-                      styles.formTextArea,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                  {saveAttempted && !ingredients.trim() ? (
-                    <Text style={[styles.formHint, { color: palette.accent }]}>Ingredients are required.</Text>
-                  ) : null}
-                </View>
+                <RecipeSectionEditor
+                  label="Ingredients *"
+                  hint="Use ## Sauce or [Sauce] for section headers, or switch to Sections."
+                  placeholder={'## Dough\n2 cups flour\n1 teaspoon salt\n\n[Filling]\n1/2 cup butter'}
+                  sections={ingredientsSections}
+                  onChange={handleIngredientsSectionsChange}
+                  palette={palette}
+                  error={
+                    saveAttempted && !recipeSectionsHaveItems(ingredientsSections)
+                      ? 'Ingredients are required.'
+                      : undefined
+                  }
+                />
 
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Directions *</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    One step per line. Numbers optional.
-                  </Text>
-                  <TextInput
-                    value={directions}
-                    onChangeText={handleDirectionsChange}
-                    placeholderTextColor={palette.searchPlaceholder}
-                    multiline
-                    style={[
-                      styles.formInput,
-                      styles.formTextArea,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                  {saveAttempted && !directions.trim() ? (
-                    <Text style={[styles.formHint, { color: palette.accent }]}>Directions are required.</Text>
-                  ) : null}
-                </View>
+                <RecipeSectionEditor
+                  label="Directions *"
+                  hint="Use ## Sauce or [Sauce] for section headers. One step per line; numbers optional."
+                  placeholder={'## Prep\n1. Preheat the oven.\n\n[Bake]\n2. Bake until golden.'}
+                  ordered
+                  sections={directionsSections}
+                  onChange={handleDirectionsSectionsChange}
+                  palette={palette}
+                  error={
+                    saveAttempted && !recipeSectionsHaveItems(directionsSections)
+                      ? 'Directions are required.'
+                      : undefined
+                  }
+                />
 
                 <View style={styles.formField}>
                   <View style={styles.metadataRow}>
@@ -614,13 +616,13 @@ export default function EditRecipeScreen() {
                     {recipeName.trim() || 'Recipe name will appear here'}
                   </Text>
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {ingredients.trim()
-                      ? `${ingredients.trim().split('\n').filter(Boolean).length} ingredient line(s) added`
+                    {recipeSectionsHaveItems(ingredientsSections)
+                      ? `${countRecipeSectionItems(ingredientsSections)} ingredient line(s) added`
                       : 'No ingredients entered yet'}
                   </Text>
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {directions.trim()
-                      ? `${directions.trim().split('\n').filter(Boolean).length} direction line(s) added`
+                    {recipeSectionsHaveItems(directionsSections)
+                      ? `${countRecipeSectionItems(directionsSections)} direction line(s) added`
                       : 'No directions entered yet'}
                   </Text>
                   {prepTime.trim() || cookTime.trim() || servings.trim() ? (

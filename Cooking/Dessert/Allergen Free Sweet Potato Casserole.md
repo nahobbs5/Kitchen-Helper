@@ -1,6 +1,3 @@
- **gluten-free, dairy-free, and egg-free**
-
----
 ## Ingredients
 ### Base
 
@@ -37,7 +34,7 @@
 
 If you want a more traditional crumb topping without oats:
 
-**Ingredients:**
+### **Ingredients:**
 
 - ½ cup gluten-free flour
 - ⅓ cup brown sugar

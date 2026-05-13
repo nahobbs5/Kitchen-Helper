@@ -29,8 +29,11 @@ import {
 import {
   buildDirectionStepOverrides,
   replaceDirectionStepText,
-  toDirectionSections,
 } from '../utils/scaled-directions';
+import {
+  normalizeRecipeSections,
+  parseRecipeSectionsText,
+} from '../utils/recipe-sections';
 
 export type RecipeSource = {
   websiteName: string | null;
@@ -69,6 +72,8 @@ type NewUserRecipeInput = {
   title: string;
   ingredientsText: string;
   directionsText: string;
+  ingredientsSections?: RecipeSection[];
+  directionsSections?: RecipeSection[];
   notes?: string;
   cuisineRegion?: string | null;
   sourceInfo?: RecipeSource;
@@ -213,15 +218,6 @@ function createId(prefix: string) {
 
 function normalizeOptionalString(value: string | null | undefined) {
   return value?.trim() ? value.trim() : null;
-}
-
-function toSection(text: string): RecipeSection[] {
-  const items = text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  return items.length > 0 ? [{ title: null, items }] : [];
 }
 
 function normalizeCustomRecipe(recipe: unknown): UserRecipe {
@@ -859,6 +855,12 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             directionsText: input.directionsText,
             notes: input.notes,
           });
+          const ingredientsSection = input.ingredientsSections
+            ? normalizeRecipeSections(input.ingredientsSections)
+            : parseRecipeSectionsText(input.ingredientsText);
+          const directionsSection = input.directionsSections
+            ? normalizeRecipeSections(input.directionsSections)
+            : parseRecipeSectionsText(input.directionsText, { ordered: true });
           const now = new Date().toISOString();
           const draftRecipe: UserRecipe = {
             id: createId('recipe'),
@@ -874,9 +876,9 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             servings: normalizeOptionalString(input.servings),
             allergyFriendlyTags: input.allergyFriendlyTags ?? inferredTags.allergyFriendlyTags,
             allergenTags: input.allergenTags ?? inferredTags.allergenTags,
-            ingredients: toSection(input.ingredientsText),
-            originalDirections: toDirectionSections(input.directionsText),
-            directions: toDirectionSections(input.directionsText),
+            ingredients: ingredientsSection,
+            originalDirections: directionsSection,
+            directions: directionsSection,
             directionStepOverrides: {},
             notes: input.notes?.trim() ? input.notes.trim() : null,
             cuisineRegion: input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null,
@@ -1122,8 +1124,12 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
             directionsText: input.directionsText,
             notes: input.notes,
           });
-          const ingredientsSection = toSection(input.ingredientsText);
-          const directionsSection = toDirectionSections(input.directionsText);
+          const ingredientsSection = input.ingredientsSections
+            ? normalizeRecipeSections(input.ingredientsSections)
+            : parseRecipeSectionsText(input.ingredientsText);
+          const directionsSection = input.directionsSections
+            ? normalizeRecipeSections(input.directionsSections)
+            : parseRecipeSectionsText(input.directionsText, { ordered: true });
           const notes = input.notes?.trim() ? input.notes.trim() : null;
           const cuisineRegion = input.cuisineRegion?.trim() ? input.cuisineRegion.trim() : null;
           const sourceInfo = normalizeSource(input.sourceInfo);

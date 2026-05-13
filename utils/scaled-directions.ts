@@ -250,8 +250,40 @@ export function splitDirectionsText(text: string) {
 }
 
 export function toDirectionSections(text: string): RecipeSection[] {
-  const items = splitDirectionsText(text);
-  return items.length > 0 ? [{ title: null, items }] : [];
+  const sections: RecipeSection[] = [];
+
+  function ensureSection() {
+    if (sections.length === 0) {
+      sections.push({ title: null, items: [] });
+    }
+
+    return sections[sections.length - 1];
+  }
+
+  text
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .forEach((rawLine) => {
+      const line = rawLine.trim();
+
+      if (!line) {
+        return;
+      }
+
+      const markdownTitle = /^\s*#{2,6}\s+(.+?)\s*#*\s*$/.exec(line)?.[1];
+      const bracketTitle = /^\s*\[([^\]]+)]\s*$/.exec(line)?.[1];
+      const title = (markdownTitle ?? bracketTitle)?.replace(/[*_`>#]/g, '').replace(/:+$/, '').trim();
+
+      if (title) {
+        sections.push({ title, items: [] });
+        return;
+      }
+
+      ensureSection().items.push(...splitDirectionsText(line));
+    });
+
+  return sections.filter((section) => section.title || section.items.length > 0);
 }
 
 export function flattenDirectionSections(sections: RecipeSection[]): FlattenedStep[] {

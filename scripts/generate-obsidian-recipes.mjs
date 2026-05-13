@@ -62,6 +62,11 @@ function headingText(line) {
   return cleanSectionTitle(line.replace(/^\s*#{1,6}\s+/, ''));
 }
 
+function bracketHeadingText(line) {
+  const match = line.trim().match(/^\[([^\]]+)]$/);
+  return match ? cleanSectionTitle(match[1]) : null;
+}
+
 function normalizeItem(line) {
   return stripMarkdown(
     line
@@ -416,6 +421,12 @@ function parseRecipe(content) {
         continue;
       }
 
+      const bracketTitle = bracketHeadingText(line);
+      if (bracketTitle) {
+        ingredients.push({ title: bracketTitle, items: [] });
+        continue;
+      }
+
       if (isDirectionHeading(cleaned)) {
         mode = 'directions';
         directions.push({ title: null, items: [] });
@@ -445,6 +456,12 @@ function parseRecipe(content) {
 
     if (mode === 'directions') {
       if (isServingsMetadata(cleaned)) {
+        continue;
+      }
+
+      const bracketTitle = bracketHeadingText(line);
+      if (bracketTitle) {
+        directions.push({ title: bracketTitle, items: [] });
         continue;
       }
 

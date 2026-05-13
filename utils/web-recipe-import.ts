@@ -1,5 +1,7 @@
 import { splitDirectionsText } from './scaled-directions';
+import type { RecipeSection } from '../data/obsidian-recipes';
 import { extractRecipeMetadata, normalizeIsoDuration } from './recipe-metadata';
+import { formatRecipeSections, normalizeRecipeSections } from './recipe-sections';
 
 type ImportedRecipe = {
   title: string;
@@ -111,28 +113,77 @@ function hasRecipeType(value: unknown): boolean {
   return false;
 }
 
-function extractInstructions(value: unknown): string[] {
+function hasHowToSectionType(value: unknown): boolean {
+  if (!value) {
+    return false;
+  }
+
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'howtosection';
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((entry) => hasHowToSectionType(entry));
+  }
+
+  return false;
+}
+
+function mergeInstructionSections(sections: RecipeSection[]) {
+  const merged: RecipeSection[] = [];
+
+  for (const section of normalizeRecipeSections(sections)) {
+    const previous = merged[merged.length - 1];
+
+    if (!section.title && previous && !previous.title) {
+      previous.items.push(...section.items);
+      continue;
+    }
+
+    merged.push(section);
+  }
+
+  return merged;
+}
+
+function extractInstructionSections(value: unknown): RecipeSection[] {
   if (!value) {
     return [];
   }
 
   if (typeof value === 'string') {
-    return splitDirectionsText(normalizeText(value));
+    const items = splitDirectionsText(normalizeText(value));
+    return items.length > 0 ? [{ title: null, items }] : [];
   }
 
   if (Array.isArray(value)) {
-    return value.flatMap((item) => extractInstructions(item));
+    return mergeInstructionSections(value.flatMap((item) => extractInstructionSections(item)));
   }
 
   if (typeof value === 'object') {
     const record = value as Record<string, any>;
 
-    if (typeof record.text === 'string') {
-      return [normalizeText(record.text)];
+    if (hasHowToSectionType(record['@type']) || record.itemListElement) {
+      const childSections = extractInstructionSections(record.itemListElement);
+      const sectionTitle = normalizeText(record.name);
+
+      if (sectionTitle && childSections.length > 0) {
+        return [
+          {
+            title: sectionTitle,
+            items: childSections.flatMap((section) => section.items),
+          },
+        ];
+      }
+
+      if (childSections.length > 0) {
+        return childSections;
+      }
     }
 
-    if (record.itemListElement) {
-      return extractInstructions(record.itemListElement);
+    if (typeof record.text === 'string') {
+      const items = splitDirectionsText(normalizeText(record.text));
+      return items.length > 0 ? [{ title: null, items }] : [];
     }
   }
 
@@ -195,7 +246,9 @@ export function parseRecipeFromHtml(url: string, html: string): ImportedRecipe {
   const ingredientsText = Array.isArray(recipeNode?.recipeIngredient)
     ? recipeNode.recipeIngredient.map((item: unknown) => normalizeText(item)).filter(Boolean).join('\n')
     : '';
-  const directionsText = extractInstructions(recipeNode?.recipeInstructions).join('\n');
+  const directionsText = formatRecipeSections(extractInstructionSections(recipeNode?.recipeInstructions), {
+    ordered: true,
+  });
   const extractedMetadata = extractRecipeMetadata({ ingredientsText, directionsText });
   const prepTime = normalizeIsoDuration(recipeNode?.prepTime) || extractedMetadata.prepTime;
   const cookTime = normalizeIsoDuration(recipeNode?.cookTime) || extractedMetadata.cookTime;

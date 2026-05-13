@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { RecipeSectionEditor } from '../components/recipe-section-editor';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
+import type { RecipeSection } from '../data/obsidian-recipes';
 import {
   allergenTagOptions,
   allergyFriendlyTagOptions,
@@ -24,6 +26,11 @@ import {
 } from '../utils/allergen-tags';
 import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
 import { extractRecipeMetadata, formatCookTimeTag } from '../utils/recipe-metadata';
+import {
+  formatRecipeSections,
+  parseRecipeSectionsText,
+  recipeSectionsHaveItems,
+} from '../utils/recipe-sections';
 import { parseRecipeFromHtml } from '../utils/web-recipe-import';
 
 const categoryOptions = [
@@ -60,8 +67,8 @@ export default function AddRecipeScreen() {
   const [category, setCategory] = useState<string>('Entree');
   const [recipeName, setRecipeName] = useState('');
   const [sourceInfo, setSourceInfo] = useState<{ websiteName: string | null; author: string | null; url: string | null } | null>(null);
-  const [ingredients, setIngredients] = useState('');
-  const [directions, setDirections] = useState('');
+  const [ingredientsSections, setIngredientsSections] = useState<RecipeSection[]>([]);
+  const [directionsSections, setDirectionsSections] = useState<RecipeSection[]>([]);
   const [prepTime, setPrepTime] = useState('');
   const [cookTime, setCookTime] = useState('');
   const [servings, setServings] = useState('');
@@ -72,26 +79,34 @@ export default function AddRecipeScreen() {
   const [allergenTouched, setAllergenTouched] = useState(false);
   const [friendlyTouched, setFriendlyTouched] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
+  const ingredientsText = useMemo(
+    () => formatRecipeSections(ingredientsSections),
+    [ingredientsSections]
+  );
+  const directionsText = useMemo(
+    () => formatRecipeSections(directionsSections, { ordered: true }),
+    [directionsSections]
+  );
 
   const detectedTags = useMemo(
     () =>
       inferRecipeTags({
         title: recipeName,
-        ingredientsText: ingredients,
-        directionsText: directions,
+        ingredientsText,
+        directionsText,
         notes,
       }),
-    [directions, ingredients, notes, recipeName]
+    [directionsText, ingredientsText, notes, recipeName]
   );
 
   const missingRequiredFields = useMemo(
     () =>
       [
         !recipeName.trim() ? 'recipe name' : null,
-        !ingredients.trim() ? 'ingredients' : null,
-        !directions.trim() ? 'directions' : null,
+        !recipeSectionsHaveItems(ingredientsSections) ? 'ingredients' : null,
+        !recipeSectionsHaveItems(directionsSections) ? 'directions' : null,
       ].filter(Boolean) as string[],
-    [directions, ingredients, recipeName]
+    [directionsSections, ingredientsSections, recipeName]
   );
 
   const canSave = missingRequiredFields.length === 0;
@@ -117,8 +132,10 @@ export default function AddRecipeScreen() {
     const savedRecipe = await addRecipe({
       category,
       title: recipeName,
-      ingredientsText: ingredients,
-      directionsText: directions,
+      ingredientsText,
+      directionsText,
+      ingredientsSections,
+      directionsSections,
       prepTime,
       cookTime,
       servings,
@@ -163,11 +180,11 @@ export default function AddRecipeScreen() {
     }
 
     if (parsed.ingredientsText) {
-      setIngredients(parsed.ingredientsText);
+      setIngredientsSections(parseRecipeSectionsText(parsed.ingredientsText));
     }
 
     if (parsed.directionsText) {
-      setDirections(parsed.directionsText);
+      setDirectionsSections(parseRecipeSectionsText(parsed.directionsText, { ordered: true }));
     }
 
     if (parsed.prepTime) {
@@ -222,18 +239,18 @@ export default function AddRecipeScreen() {
     return extracted;
   }
 
-  function handleIngredientsChange(value: string) {
-    const extracted = applyExtractedMetadata(value, directions);
-    setIngredients(extracted.ingredientsText);
+  function handleIngredientsSectionsChange(nextSections: RecipeSection[]) {
+    applyExtractedMetadata(formatRecipeSections(nextSections), directionsText);
+    setIngredientsSections(nextSections);
   }
 
-  function handleDirectionsChange(value: string) {
-    const extracted = applyExtractedMetadata(ingredients, value);
-    setDirections(extracted.directionsText);
+  function handleDirectionsSectionsChange(nextSections: RecipeSection[]) {
+    applyExtractedMetadata(ingredientsText, formatRecipeSections(nextSections, { ordered: true }));
+    setDirectionsSections(nextSections);
   }
 
   function handleNotesChange(value: string) {
-    const extracted = applyExtractedMetadata(ingredients, directions, value);
+    const extracted = applyExtractedMetadata(ingredientsText, directionsText, value);
     setNotes(extracted.notesText);
   }
 
@@ -268,11 +285,11 @@ export default function AddRecipeScreen() {
       }
 
       if (imported.ingredientsText) {
-        setIngredients(imported.ingredientsText);
+        setIngredientsSections(parseRecipeSectionsText(imported.ingredientsText));
       }
 
       if (imported.directionsText) {
-        setDirections(imported.directionsText);
+        setDirectionsSections(parseRecipeSectionsText(imported.directionsText, { ordered: true }));
       }
 
       if (imported.prepTime) {
@@ -607,49 +624,34 @@ export default function AddRecipeScreen() {
                   />
                 </View>
 
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Ingredients *</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    One ingredient per line works best for parsing and scaling later.
-                  </Text>
-                  <TextInput
-                    value={ingredients}
-                    onChangeText={handleIngredientsChange}
-                    placeholder={'2 cups flour\n1 teaspoon salt\n1/2 cup butter'}
-                    placeholderTextColor={palette.searchPlaceholder}
-                    multiline
-                    style={[
-                      styles.formInput,
-                      styles.formTextArea,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                  {saveAttempted && !ingredients.trim() ? (
-                    <Text style={[styles.formHint, { color: palette.accent }]}>Ingredients are required.</Text>
-                  ) : null}
-                </View>
+                <RecipeSectionEditor
+                  label="Ingredients *"
+                  hint="Use ## Sauce or [Sauce] for section headers, or switch to Sections."
+                  placeholder={'## Dough\n2 cups flour\n1 teaspoon salt\n\n[Filling]\n1/2 cup butter'}
+                  sections={ingredientsSections}
+                  onChange={handleIngredientsSectionsChange}
+                  palette={palette}
+                  error={
+                    saveAttempted && !recipeSectionsHaveItems(ingredientsSections)
+                      ? 'Ingredients are required.'
+                      : undefined
+                  }
+                />
 
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Directions *</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    One step per line. Numbers optional.
-                  </Text>
-                  <TextInput
-                    value={directions}
-                    onChangeText={handleDirectionsChange}
-                    placeholder={'1. Preheat the oven.\n2. Mix the ingredients.\n3. Bake until golden.'}
-                    placeholderTextColor={palette.searchPlaceholder}
-                    multiline
-                    style={[
-                      styles.formInput,
-                      styles.formTextArea,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                  {saveAttempted && !directions.trim() ? (
-                    <Text style={[styles.formHint, { color: palette.accent }]}>Directions are required.</Text>
-                  ) : null}
-                </View>
+                <RecipeSectionEditor
+                  label="Directions *"
+                  hint="Use ## Sauce or [Sauce] for section headers. One step per line; numbers optional."
+                  placeholder={'## Prep\n1. Preheat the oven.\n\n[Bake]\n2. Bake until golden.'}
+                  ordered
+                  sections={directionsSections}
+                  onChange={handleDirectionsSectionsChange}
+                  palette={palette}
+                  error={
+                    saveAttempted && !recipeSectionsHaveItems(directionsSections)
+                      ? 'Directions are required.'
+                      : undefined
+                  }
+                />
 
                 <View style={styles.formField}>
                   <View style={styles.metadataRow}>
@@ -835,11 +837,11 @@ export default function AddRecipeScreen() {
                   </Text>
                   <Text style={[styles.helperCardBody, { color: palette.accentText }]}>Ingredients</Text>
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {ingredients.trim() ? ingredients.trim() : 'No ingredients entered yet'}
+                    {ingredientsText.trim() ? ingredientsText.trim() : 'No ingredients entered yet'}
                   </Text>
                   <Text style={[styles.helperCardBody, { color: palette.accentText }]}>Directions</Text>
                   <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {directions.trim() ? directions.trim() : 'No directions entered yet'}
+                    {directionsText.trim() ? directionsText.trim() : 'No directions entered yet'}
                   </Text>
                   {prepTime.trim() || cookTime.trim() || servings.trim() ? (
                     <View style={styles.tagRow}>

@@ -1,5 +1,5 @@
 
-**nut-free, oat-free, dairy free, gluten free)**
+## Ingredients
 
 ### Base
 
@@ -10,14 +10,14 @@
 - **¾ tsp** vanilla extract
 - **¼ tsp** salt (to taste)
 - **¼ cup** unsweetened coconut milk
-### 🧁 Streusel-Style Crumb Topping
+### Streusel-Style Crumb Topping
 
 - **¼ cup** gluten-free flour (Bob’s Red Mill 1-to-1 or King Arthur Measure for Measure)
 - **2 ½ tbsp** brown sugar
 - **⅛ tsp** cinnamon
 - **2 tbsp** melted dairy-free butter or coconut/vegetable oil (if vegetable oil, **1 ½ tbsp**)
 
-### Instructions
+## Instructions
 
 1. Preheat oven to **350°F (175°C)**.
 2. In a large bowl, mix sweet potatoes, sugar, applesauce, butter or oil, vanilla, salt, and non-dairy milk until smooth.
