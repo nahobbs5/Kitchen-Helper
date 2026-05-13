@@ -143,10 +143,6 @@ export default function UserRecipeScreen() {
 
   const syncStatusLabel =
     recipe.syncStatus === 'synced' ? 'Synced across devices' : 'Saved locally';
-  const syncStatusDescription =
-    recipe.syncStatus === 'synced'
-      ? 'This recipe is synced across devices with your account.'
-      : 'This recipe is saved locally on this device.';
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -177,9 +173,6 @@ export default function UserRecipeScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
             <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              {syncStatusDescription}
-            </Text>
             <View style={styles.actionRow}>
               <Pressable
                 onPress={handleShare}

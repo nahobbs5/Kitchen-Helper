@@ -192,11 +192,6 @@ export default function ObsidianRecipeScreen() {
           <View style={styles.heroCopy}>
             <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
             <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-              This page is generated from your Obsidian Markdown note. The app is now reading the
-              note structure, showing the ingredients and directions, and letting you scale the
-              ingredient list with direction guidance.
-            </Text>
             <View style={styles.actionRow}>
               <Pressable
                 onPress={handleShare}
