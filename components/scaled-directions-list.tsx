@@ -18,6 +18,13 @@ type ScaledDirectionsListProps = {
   stepOverrides?: Record<string, string>;
   scale: number;
   palette: AppPalette;
+  emptyMessage?: string;
+};
+
+type RecipeDirectionsListProps = {
+  directions: RecipeSection[];
+  palette: AppPalette;
+  emptyMessage: string;
 };
 
 function highlightStyle(type: DirectionHighlightRange['type'], palette: AppPalette) {
@@ -86,6 +93,40 @@ function HighlightedStepText({
   );
 }
 
+export function RecipeDirectionsList({
+  directions,
+  palette,
+  emptyMessage,
+}: RecipeDirectionsListProps) {
+  if (directions.length === 0) {
+    return (
+      <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.listStack}>
+      {directions.map((section, sectionIndex) => (
+        <View
+          key={`${section.title ?? 'directions'}-${sectionIndex}`}
+          style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+        >
+          {section.title ? (
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text>
+          ) : null}
+          {section.items.map((item, itemIndex) => (
+            <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
+              {itemIndex + 1}. {item}
+            </Text>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function ScaledDirectionsList({
   slug,
   source,
@@ -94,6 +135,7 @@ export function ScaledDirectionsList({
   stepOverrides,
   scale,
   palette,
+  emptyMessage = 'No directions were detected.',
 }: ScaledDirectionsListProps) {
   const { resetDirectionStep, updateDirectionStep } = useCustomRecipes();
   const [editingStepId, setEditingStepId] = useState<string | null>(null);
@@ -113,7 +155,7 @@ export function ScaledDirectionsList({
   if (steps.length === 0) {
     return (
       <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No directions were detected.</Text>
+        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>
       </View>
     );
   }

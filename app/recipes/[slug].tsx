@@ -4,6 +4,7 @@ import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } 
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { RecipeShareCard, recipeShareCardWidth } from '../../components/recipe-share-card';
+import { RecipeDirectionsList, ScaledDirectionsList } from '../../components/scaled-directions-list';
 import { ShareIcon } from '../../components/share-icon';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
@@ -142,6 +143,7 @@ export default function ObsidianRecipeScreen() {
   }, [multiplier, recipe]);
 
   const customLabel = baseServings ? 'Custom servings' : 'Custom multiplier';
+  const isOriginalScale = Math.abs(multiplier - 1) < 0.001;
 
   if (!recipe) {
     return (
@@ -193,7 +195,7 @@ export default function ObsidianRecipeScreen() {
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               This page is generated from your Obsidian Markdown note. The app is now reading the
               note structure, showing the ingredients and directions, and letting you scale the
-              ingredient list.
+              ingredient list with direction guidance.
             </Text>
             <View style={styles.actionRow}>
               <Pressable
@@ -265,13 +267,6 @@ export default function ObsidianRecipeScreen() {
                 </View>
               </View>
             ) : null}
-            {recipe.servings ? (
-              <View style={styles.badgeRow}>
-                <Text style={[styles.badge, { backgroundColor: palette.tag, color: palette.tagText }]}>
-                  {recipe.servings}
-                </Text>
-              </View>
-            ) : null}
             {recipe.allergyFriendlyTags.length > 0 ? (
               <View style={styles.tagRow}>
                 {recipe.allergyFriendlyTags.map((tag) => (
@@ -290,7 +285,7 @@ export default function ObsidianRecipeScreen() {
                 ))}
               </View>
             ) : null}
-            {recipe.prepTime || recipe.cookTime || recipe.totalTime ? (
+            {recipe.prepTime || recipe.cookTime || recipe.totalTime || recipe.servings ? (
               <View style={styles.tagRow}>
                 {recipe.prepTime ? (
                   <View style={[styles.tag, { backgroundColor: palette.tag }]}>
@@ -309,20 +304,23 @@ export default function ObsidianRecipeScreen() {
                     <Text style={[styles.tagText, { color: palette.tagText }]}>Total: {recipe.totalTime}</Text>
                   </View>
                 ) : null}
+                {recipe.servings ? (
+                  <View style={[styles.tag, { backgroundColor: palette.tag }]}>
+                    <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
+                  </View>
+                ) : null}
               </View>
             ) : null}
           </View>
 
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+          <View
+            style={[
+              styles.heroCard,
+              isWide && styles.recipeServingControlsCardWide,
+              { backgroundColor: palette.elevatedDark },
+            ]}
+          >
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
-              {baseServings ? `Based on ${baseServings} servings` : 'Based on original recipe amount'}
-            </Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              Use 1/4x, 1/2x, or quick serving presets. When a note includes servings, the `2`,
-              `4`, and `8` buttons target those serving counts. Otherwise they act as multipliers.
-            </Text>
-
             <View style={styles.servingsRow}>
               {servingButtons.map((button) => {
                 const isActive = Math.abs(multiplier - button.multiplier) < 0.001;
@@ -411,29 +409,24 @@ export default function ObsidianRecipeScreen() {
           <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
-              <View style={styles.listStack}>
-                {recipe.directions.length > 0 ? (
-                  recipe.directions.map((section, sectionIndex) => (
-                    <View
-                      key={`${section.title ?? 'directions'}-${sectionIndex}`}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
-                      {section.items.map((item, itemIndex) => (
-                        <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                          {itemIndex + 1}. {item}
-                        </Text>
-                      ))}
-                    </View>
-                  ))
-                ) : (
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      No directions were detected in this note.
-                    </Text>
-                  </View>
-                )}
-              </View>
+              {isOriginalScale ? (
+                <RecipeDirectionsList
+                  directions={recipe.directions}
+                  palette={palette}
+                  emptyMessage="No directions were detected in this note."
+                />
+              ) : (
+                <ScaledDirectionsList
+                  slug={recipe.slug}
+                  source="obsidian"
+                  baseDirections={baseRecipe?.directions ?? recipe.directions}
+                  displayDirections={recipe.directions}
+                  stepOverrides={override?.directionStepOverrides ?? {}}
+                  scale={multiplier}
+                  palette={palette}
+                  emptyMessage="No directions were detected in this note."
+                />
+              )}
             </View>
 
             {recipe.notes ? (

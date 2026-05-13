@@ -87,6 +87,9 @@ export const kitchenStyles = StyleSheet.create({
     padding: 20,
     gap: 12,
   },
+  recipeServingControlsCardWide: {
+    alignSelf: 'center',
+  },
   heroCardLabel: {
     color: '#e4b66b',
     fontSize: 12,

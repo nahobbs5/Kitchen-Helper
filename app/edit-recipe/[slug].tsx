@@ -381,7 +381,7 @@ export default function EditRecipeScreen() {
 
                 <RecipeSectionEditor
                   label="Ingredients *"
-                  hint="Use ## Sauce or [Sauce] for section headers, or switch to Sections."
+                  hint="Use ## Sauce or [Sauce] for section headers."
                   placeholder={'## Dough\n2 cups flour\n1 teaspoon salt\n\n[Filling]\n1/2 cup butter'}
                   sections={ingredientsSections}
                   onChange={handleIngredientsSectionsChange}

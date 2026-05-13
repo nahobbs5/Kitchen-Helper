@@ -4,6 +4,7 @@ import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } 
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { RecipeShareCard, recipeShareCardWidth } from '../../components/recipe-share-card';
+import { RecipeDirectionsList, ScaledDirectionsList } from '../../components/scaled-directions-list';
 import { ShareIcon } from '../../components/share-icon';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
@@ -82,6 +83,7 @@ export default function UserRecipeScreen() {
       items: section.items.map((item) => scaleIngredientLine(item, multiplier)),
     }));
   }, [multiplier, recipe]);
+  const isOriginalScale = Math.abs(multiplier - 1) < 0.001;
 
   async function handleDelete() {
     if (!recipe) {
@@ -270,15 +272,14 @@ export default function UserRecipeScreen() {
             </View>
           </View>
 
-          <View style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}>
+          <View
+            style={[
+              styles.heroCard,
+              isWide && styles.recipeServingControlsCardWide,
+              { backgroundColor: palette.elevatedDark },
+            ]}
+          >
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
-            <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>Scale ingredients</Text>
-            <Text style={[styles.heroCardText, { color: palette.inverseMuted }]}>
-              {recipe.servings
-                ? `Saved serving size: ${recipe.servings}. These buttons scale the ingredient list by multiplier.`
-                : 'No serving size is saved yet, so these buttons act as multipliers for the ingredient list.'}
-            </Text>
-
             <View style={styles.servingsRow}>
               {servingButtons.map((button) => {
                 const isActive = Math.abs(multiplier - button.multiplier) < 0.001;
@@ -364,27 +365,24 @@ export default function UserRecipeScreen() {
           <View style={styles.secondaryColumn}>
             <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
               <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Directions</Text>
-              <View style={styles.listStack}>
-                {recipe.directions.length > 0 ? (
-                  recipe.directions.map((section, sectionIndex) => (
-                    <View
-                      key={`${section.title ?? 'directions'}-${sectionIndex}`}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
-                      {section.items.map((item, itemIndex) => (
-                        <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                          {itemIndex + 1}. {item}
-                        </Text>
-                      ))}
-                    </View>
-                  ))
-                ) : (
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No directions were saved.</Text>
-                  </View>
-                )}
-              </View>
+              {isOriginalScale ? (
+                <RecipeDirectionsList
+                  directions={recipe.directions}
+                  palette={palette}
+                  emptyMessage="No directions were saved."
+                />
+              ) : (
+                <ScaledDirectionsList
+                  slug={recipe.slug}
+                  source="custom"
+                  baseDirections={recipe.originalDirections}
+                  displayDirections={recipe.directions}
+                  stepOverrides={recipe.directionStepOverrides}
+                  scale={multiplier}
+                  palette={palette}
+                  emptyMessage="No directions were saved."
+                />
+              )}
             </View>
 
             {(recipe.notes || recipe.cuisineRegion) ? (
