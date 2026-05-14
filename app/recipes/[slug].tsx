@@ -11,7 +11,7 @@ import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
-import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -98,8 +98,6 @@ export default function ObsidianRecipeScreen() {
     }
     : null;
 
-  const baseServings = useMemo(() => extractBaseServings(recipe?.servings ?? null), [recipe?.servings]);
-
   const servingButtons = useMemo(() => {
     const buttons = [
       { key: 'original', label: 'Original', multiplier: 1 },
@@ -110,26 +108,16 @@ export default function ObsidianRecipeScreen() {
       })),
     ];
 
-    if (baseServings) {
-      buttons.push(
-        ...servingTargets.map((value) => ({
-          key: `servings-${value}`,
-          label: `${value}`,
-          multiplier: value / baseServings,
-        }))
-      );
-    } else {
-      buttons.push(
-        ...servingTargets.map((value) => ({
-          key: `multiplier-${value}`,
-          label: `${value}x`,
-          multiplier: value,
-        }))
-      );
-    }
+    buttons.push(
+      ...servingTargets.map((value) => ({
+        key: `multiplier-${value}`,
+        label: `${value}x`,
+        multiplier: value,
+      }))
+    );
 
     return buttons;
-  }, [baseServings]);
+  }, []);
 
   const scaledIngredients = useMemo(() => {
     if (!recipe) {
@@ -142,7 +130,6 @@ export default function ObsidianRecipeScreen() {
     }));
   }, [multiplier, recipe]);
 
-  const customLabel = baseServings ? 'Custom servings' : 'Custom multiplier';
   const isOriginalScale = Math.abs(multiplier - 1) < 0.001;
 
   if (!recipe) {
@@ -346,16 +333,15 @@ export default function ObsidianRecipeScreen() {
               })}
             </View>
 
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>{customLabel}</Text>
+            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Custom multiplier</Text>
             <View style={styles.numberGrid}>
               {customServingOptions.map((value) => {
-                const optionMultiplier = baseServings ? value / baseServings : value;
-                const isActive = Math.abs(multiplier - optionMultiplier) < 0.001;
+                const isActive = Math.abs(multiplier - value) < 0.001;
 
                 return (
                   <Pressable
                     key={`custom-${value}`}
-                    onPress={() => setMultiplier(optionMultiplier)}
+                    onPress={() => setMultiplier(value)}
                     style={[
                       styles.numberButton,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
@@ -363,7 +349,7 @@ export default function ObsidianRecipeScreen() {
                       isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                     ]}
                   >
-                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{value}</Text>
+                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{value}x</Text>
                   </Pressable>
                 );
               })}

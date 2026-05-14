@@ -29,42 +29,26 @@
 ### **1. Preheat**
 
 Preheat oven to **350°F (175°C)** and line a baking sheet with parchment.
-
 ### **2. Mix Dry**
-
 In a bowl, whisk together:
-
 - flour
 - cream of tartar
 - baking soda
 - salt
-
 ### **3. Cream Wet**
-
 In a separate bowl, beat:
-
 - vegetable oil
 - sugar  
     until fluffy (1–2 min).
-
 Add applesauce + vanilla. Mix until combined.
-
 ### **4. Combine**
-
 Mix dry ingredients into wet until a soft dough forms.  
 Chill **20–30 minutes** to make rolling easier (optional, but recommended).
-
 ### **5. Roll**
-
 Roll dough into 1-inch balls, then coat in cinnamon-sugar mixture.
-
 ### **6. Bake**
-
 Bake **10–12 minutes** until edges are set but centers still soft.  
 Let cool on the sheet for 5 minutes before moving to a rack.
-
----
-
 ## Notes
 ### **Tips**
 

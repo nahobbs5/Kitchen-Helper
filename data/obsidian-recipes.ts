@@ -78,48 +78,24 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "notes": "Tip: You can make these the night before, refrigerate, and then bake right before leaving for a picnic. They’re still tasty at room temp if you can’t keep them hot.\nHam and cheese melt sliders are a picnic classic because they’re easy to make in batches, travel well, and taste good warm or at room temp.",
     "ingredients": [
       {
-        "title": "1 pack of 12 Hawaiian rolls (or any soft dinner rolls)",
-        "items": []
+        "title": "Base",
+        "items": [
+          "1 pack of 12 Hawaiian rolls (or any soft dinner rolls)",
+          "12 slices deli ham (thin but not paper-thin)",
+          "6 slices Swiss cheese (or cheddar/provolone), halved",
+          "2 Tbsp mayonnaise (optional, for a light spread)"
+        ]
       },
       {
-        "title": "12 slices deli ham (thin but not paper-thin)",
-        "items": []
-      },
-      {
-        "title": "6 slices Swiss cheese (or cheddar/provolone), halved",
-        "items": []
-      },
-      {
-        "title": "2 Tbsp mayonnaise (optional, for a light spread)",
-        "items": []
-      },
-      {
-        "title": "For the buttery glaze",
-        "items": []
-      },
-      {
-        "title": "cup (1 stick) unsalted butter, melted",
-        "items": []
-      },
-      {
-        "title": "1 Tbsp Dijon mustard",
-        "items": []
-      },
-      {
-        "title": "1 Tbsp Worcestershire sauce",
-        "items": []
-      },
-      {
-        "title": "1 Tbsp poppy seeds (optional, but traditional)",
-        "items": []
-      },
-      {
-        "title": "1 tsp onion powder",
-        "items": []
-      },
-      {
-        "title": "Pinch of salt & pepper",
-        "items": []
+        "title": "Buttery Glaze",
+        "items": [
+          "½ cup (1 stick) unsalted butter, melted",
+          "1 Tbsp Dijon mustard",
+          "1 Tbsp Worcestershire sauce",
+          "1 Tbsp poppy seeds (optional, but traditional)",
+          "1 tsp onion powder",
+          "Pinch of salt & pepper"
+        ]
       }
     ],
     "directions": [
@@ -254,12 +230,9 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "2 tbsp olive oil",
           "1 tsp salt",
           "1 tsp black pepper",
-          "1 tsp dried rosemary or thyme"
+          "1 tsp dried rosemary or thyme",
+          "(You can swap in asparagus, mushrooms, or squash if you prefer.)"
         ]
-      },
-      {
-        "title": "You can swap in asparagus, mushrooms, or squash if you prefer.)",
-        "items": []
       },
       {
         "title": "Tahini Dip",
@@ -396,30 +369,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "notes": "Bake time is for frozen potatoes. If you are using defrosted hash browns or choose to substitute fresh potatoes, your cook time will be shorter.",
     "ingredients": [
       {
-        "title": "https://www.allrecipes.com/recipe/265839/make-ahead-breakfast-bars/)[",
-        "items": []
-      },
-      {
-        "title": "https://www.allrecipes.com/recipe/265839/make-ahead-breakfast-bars/)[24",
-        "items": []
-      },
-      {
-        "title": "https://www.allrecipes.com/recipe/265839/make-ahead-breakfast-bars/)",
-        "items": []
-      },
-      {
-        "title": "Prep Time: 10 mins",
-        "items": []
-      },
-      {
-        "title": "Cook Time: 40 mins",
-        "items": []
-      },
-      {
-        "title": "Total Time: 50 mins",
-        "items": []
-      },
-      {
         "title": null,
         "items": [
           "cooking spray",
@@ -431,19 +380,15 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "¼ teaspoon salt",
           "⅛ teaspoon ground black pepper"
         ]
-      },
-      {
-        "title": null,
-        "items": [
-          "Bake, uncovered, in the preheated oven until top starts to brown, about 40 minutes. Cool before cutting into bars."
-        ]
       }
     ],
     "directions": [
       {
         "title": null,
         "items": [
-          "Preheat the oven to 350 degrees F (175 degrees C). Grease an 8x11-inch casserole dish with cooking spray."
+          "Preheat the oven to 350 degrees F (175 degrees C). Grease an 8x11-inch casserole dish with cooking spray.",
+          "Mix hash browns, eggs, ham, Cheddar-Jack cheese, onion powder, salt, and pepper together. Pour mixture into the prepared dish. Shake dish gently from side to side to level out ingredients.",
+          "Bake, uncovered, in the preheated oven until top starts to brown, about 40 minutes. Cool before cutting into bars."
         ]
       }
     ]
@@ -553,12 +498,8 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         "items": [
           "3 cups cooked mashed sweet potatoes",
           "1/2 cup sugar",
-          "2 flax eggs (2 tbsp ground flaxseed + 6 tbsp warm water, let sit 5 min to gel)"
-        ]
-      },
-      {
-        "title": "or substitute 1/2 cup unsweetened applesauce if preferred",
-        "items": [
+          "2 flax eggs (2 tbsp ground flaxseed + 6 tbsp warm water, let sit 5 min to gel)",
+          "or substitute 1/2 cup unsweetened applesauce if preferred",
           "1/4 cup dairy-free butter substitute - vegetable oil? (e.g., Earth Balance, Miyoko’s, or plant-based margarine)",
           "1 1/2 tsp vanilla extract",
           "1/2 tsp salt (to taste)",
@@ -823,14 +764,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "¼ cup chopped nuts (optional)",
           "3 oz chocolate chips (half of a 6 oz bag, ~½ cup)"
         ]
-      },
-      {
-        "title": null,
-        "items": [
-          "Spread into a greased and floured 9×9 inch pan.",
-          "Bake at 350°F for 25–30 minutes.",
-          "Cool, then cut into squares."
-        ]
       }
     ],
     "directions": [
@@ -839,7 +772,11 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         "items": [
           "Sift together flour, baking powder, and salt; set aside.",
           "Melt butter, stir in brown sugar, and let cool slightly.",
-          "Beat in eggs one at a time, then stir in vanilla."
+          "Beat in eggs one at a time, then stir in vanilla.",
+          "Mix in dry ingredients, then fold in nuts and chocolate chips.",
+          "Spread into a greased and floured 9×9 inch pan.",
+          "Bake at 350°F for 25–30 minutes.",
+          "Cool, then cut into squares."
         ]
       }
     ]
@@ -917,14 +854,10 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "notes": "Extra lemony? Add another teaspoon of zest or a bit of lemon extract.\nSweeter? Increase sugar to 1 cup.\nGluten-free version: Use King Arthur or Bob’s Red Mill GF 1:1 and add 2 extra tablespoons of milk if the batter seems too thick.\nMoister muffins: Add 2 Tbsp applesauce (still egg-free).",
     "ingredients": [
       {
-        "title": null,
+        "title": "Dry ingredients",
         "items": [
-          "2 cups all-purpose flour"
-        ]
-      },
-      {
-        "title": "or a 1:1 gluten-free baking blend if needed)",
-        "items": [
+          "2 cups all-purpose flour",
+          "(or a 1:1 gluten-free baking blend if needed)",
           "¾ cup sugar",
           "1 Tbsp baking powder",
           "½ tsp salt",
@@ -932,7 +865,7 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         ]
       },
       {
-        "title": null,
+        "title": "Wet ingredients",
         "items": [
           "1 cup non-dairy milk (oat, almond, soy, etc.; oat works best for texture)",
           "⅓ cup neutral oil (canola, vegetable, or melted coconut)",
@@ -943,20 +876,8 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       {
         "title": "Add-ins",
         "items": [
-          "1–1 ½ cups fresh or frozen blueberries"
-        ]
-      },
-      {
-        "title": "if frozen, do not thaw—toss with 1 Tbsp flour to prevent color bleeding)",
-        "items": []
-      },
-      {
-        "title": "Batter should be thick — don’t overmix.)",
-        "items": [
-          "Fold in blueberries gently.",
-          "Fill muffin cups almost to the top.",
-          "Bake 18–22 minutes, until lightly golden and a toothpick comes out clean.",
-          "Cool in the pan for 5 minutes, then transfer to a rack."
+          "1–1 ½ cups fresh or frozen blueberries",
+          "(if frozen, do not thaw—toss with 1 Tbsp flour to prevent color bleeding)"
         ]
       }
     ],
@@ -966,7 +887,12 @@ export const obsidianRecipes: ObsidianRecipe[] = [
         "items": [
           "Preheat oven to 400°F (205°C). Line a muffin tin.",
           "In a large bowl, whisk together: flour sugar baking powder salt lemon zest",
-          "In a separate bowl, whisk: non-dairy milk oil lemon juice vanilla"
+          "In a separate bowl, whisk: non-dairy milk oil lemon juice vanilla",
+          "Pour wet ingredients into dry and stir just until combined. (Batter should be thick — don’t overmix.)",
+          "Fold in blueberries gently.",
+          "Fill muffin cups almost to the top.",
+          "Bake 18–22 minutes, until lightly golden and a toothpick comes out clean.",
+          "Cool in the pan for 5 minutes, then transfer to a rack."
         ]
       }
     ]
@@ -1052,30 +978,6 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "¼ cup sugar",
           "½ tbsp cinnamon"
         ]
-      },
-      {
-        "title": "Chill 20–30 minutes to make rolling easier (optional, but recommended).",
-        "items": []
-      },
-      {
-        "title": "5. Roll",
-        "items": []
-      },
-      {
-        "title": "Roll dough into 1-inch balls, then coat in cinnamon-sugar mixture.",
-        "items": []
-      },
-      {
-        "title": "6. Bake",
-        "items": []
-      },
-      {
-        "title": "Bake 10–12 minutes until edges are set but centers still soft.",
-        "items": []
-      },
-      {
-        "title": "Let cool on the sheet for 5 minutes before moving to a rack.",
-        "items": []
       }
     ],
     "directions": [
@@ -1099,7 +1001,21 @@ export const obsidianRecipes: ObsidianRecipe[] = [
       },
       {
         "title": "4. Combine",
-        "items": []
+        "items": [
+          "Mix dry ingredients into wet until a soft dough forms. Chill 20–30 minutes to make rolling easier (optional, but recommended)."
+        ]
+      },
+      {
+        "title": "5. Roll",
+        "items": [
+          "Roll dough into 1-inch balls, then coat in cinnamon-sugar mixture."
+        ]
+      },
+      {
+        "title": "6. Bake",
+        "items": [
+          "Bake 10–12 minutes until edges are set but centers still soft. Let cool on the sheet for 5 minutes before moving to a rack."
+        ]
       }
     ]
   },
@@ -1119,28 +1035,15 @@ export const obsidianRecipes: ObsidianRecipe[] = [
     "notes": null,
     "ingredients": [
       {
-        "title": "1 lb (450 g) ground beef (80/20 blend recommended)",
-        "items": []
-      },
-      {
-        "title": "1 Tbsp Worcestershire sauce",
-        "items": []
-      },
-      {
-        "title": "1 tsp Dijon or yellow mustard",
-        "items": []
-      },
-      {
-        "title": "1 tsp salt",
-        "items": []
-      },
-      {
-        "title": "tsp black pepper",
-        "items": []
-      },
-      {
-        "title": "Optional: ½ tsp garlic powder, ½ tsp onion powder",
-        "items": []
+        "title": null,
+        "items": [
+          "1 lb (450 g) ground beef (80/20 blend recommended)",
+          "1 Tbsp Worcestershire sauce",
+          "1 tsp Dijon or yellow mustard",
+          "1 tsp salt",
+          "½ tsp black pepper",
+          "Optional: ½ tsp garlic powder, ½ tsp onion powder"
+        ]
       }
     ],
     "directions": [
@@ -1278,16 +1181,18 @@ export const obsidianRecipes: ObsidianRecipe[] = [
           "1 teaspoon pepper",
           "2 beef flank steaks (1 pound each)"
         ]
-      },
+      }
+    ],
+    "directions": [
       {
         "title": null,
         "items": [
+          "In a small bowl, mix the first seven ingredients; spread over both sides of steaks. Place in a large resealable plastic bag; refrigerate 6 hours or overnight, turning occasionally.",
           "Grill steaks, covered, on a greased grill rack over medium heat or broil 4 in. from heat 6-9 minutes on each side or until meat reaches desired doneness (for medium-rare, a thermometer should read 135°; medium, 140°; medium-well, 145°).",
           "Let steaks stand 5 minutes. Thinly slice across the grain."
         ]
       }
-    ],
-    "directions": []
+    ]
   }
 ] as ObsidianRecipe[];
 

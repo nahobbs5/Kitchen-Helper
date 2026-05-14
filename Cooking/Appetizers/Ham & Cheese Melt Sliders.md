@@ -1,13 +1,14 @@
 ## Servings: 12 Sliders
 ## Ingredients (12 sliders)
 
+### Base
 1 pack of 12 Hawaiian rolls (or any soft dinner rolls)
 12 slices deli ham (thin but not paper-thin)
 6 slices Swiss cheese (or cheddar/provolone), halved
 2 Tbsp mayonnaise (optional, for a light spread)
 
 
-For the buttery glaze:
+### Buttery Glaze:
 
 ½ cup (1 stick) unsalted butter, melted
 1 Tbsp Dijon mustard
@@ -26,7 +27,6 @@ Pinch of salt & pepper
 - Place ham slices evenly across.
 - Add cheese slices on top.
 - Set the top half of the rolls back on.
-
 4. Mix the glaze: whisk melted butter, Dijon, Worcestershire, poppy seeds, onion powder, salt & pepper.
 5. Brush or pour glaze evenly over the tops of the rolls (use it all — it soaks in deliciously).
 6. Cover with foil and bake 15 minutes.

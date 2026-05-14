@@ -24,6 +24,9 @@ const unicodeFractionChars = Object.keys(unicodeFractionMap).join('');
 const numberPattern =
   `(?:\\d+\\s+\\d+/\\d+|\\d+\\s+[${unicodeFractionChars}]|\\d+[${unicodeFractionChars}]|\\d+/\\d+|\\d+(?:\\.\\d+)?|[${unicodeFractionChars}])`;
 
+const qualitativeAmountPattern =
+  '(?:pinches|pinch|dashes|dash|sprinkles|sprinkle|splashes|splash|drizzles|drizzle|handfuls|handful|knobs|knob)';
+
 const unitWordMap: Record<string, { singular: string; plural: string }> = {
   teaspoon: { singular: 'teaspoon', plural: 'teaspoons' },
   teaspoons: { singular: 'teaspoon', plural: 'teaspoons' },
@@ -134,6 +137,21 @@ function formatScaledAmount(value: number): string {
   }
 
   return `${rounded}`;
+}
+
+function scaleQualitativeAmountText(text: string, multiplier: number): string | null {
+  const pattern = new RegExp(`^(\\s*)(?:(?:a|an)\\s+)?(${qualitativeAmountPattern})(\\b.*)$`, 'i');
+  const match = text.match(pattern);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, whitespace, qualitativeAmount, rest] = match;
+  return `${whitespace}(${formatScaledAmount(multiplier)}x) ${qualitativeAmount}${scaleParentheticalMeasurements(
+    rest,
+    multiplier
+  )}`;
 }
 
 function shouldUseSingular(quantity: number): boolean {
@@ -249,7 +267,19 @@ export function scaleIngredientLine(line: string, multiplier: number): string {
 
   if (optionalPrefixMatch) {
     const [, optionalPrefix, optionalText] = optionalPrefixMatch;
+    const scaledQualitativeText = scaleQualitativeAmountText(optionalText, multiplier);
+
+    if (scaledQualitativeText) {
+      return `${optionalPrefix}${scaledQualitativeText}`;
+    }
+
     return `${optionalPrefix}${scaleInlineMeasurements(optionalText, multiplier)}`;
+  }
+
+  const scaledQualitativeLine = scaleQualitativeAmountText(line, multiplier);
+
+  if (scaledQualitativeLine) {
+    return scaledQualitativeLine;
   }
 
   const trimmed = line.trim();

@@ -319,7 +319,7 @@ export default function UserRecipeScreen() {
                       isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                     ]}
                   >
-                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{value}</Text>
+                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{value}x</Text>
                   </Pressable>
                 );
               })}

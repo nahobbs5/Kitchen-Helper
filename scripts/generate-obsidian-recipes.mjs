@@ -32,11 +32,11 @@ function cleanSectionTitle(value) {
 }
 
 function isIngredientHeading(line) {
-  return /ingredients/i.test(stripMarkdown(line));
+  return /^ingredients?(?:\s*\([^)]*\))?$/i.test(stripMarkdown(line));
 }
 
 function isDirectionHeading(line) {
-  return /(directions|instructions)/i.test(stripMarkdown(line));
+  return /^(directions|instructions)$/i.test(stripMarkdown(line));
 }
 
 function isNoteHeading(line) {
@@ -64,6 +64,11 @@ function headingText(line) {
 
 function bracketHeadingText(line) {
   const match = line.trim().match(/^\[([^\]]+)]$/);
+  return match ? cleanSectionTitle(match[1]) : null;
+}
+
+function plainSectionTitle(line) {
+  const match = line.trim().match(/^(.+):$/);
   return match ? cleanSectionTitle(match[1]) : null;
 }
 
@@ -474,9 +479,17 @@ function parseRecipe(content) {
         continue;
       }
 
-      if (!/^(original recipe|submitted by|add photo)/i.test(cleaned)) {
-        ingredients.push({ title: cleanSectionTitle(cleaned), items: [] });
+      if (/^(original recipe|submitted by|add photo)/i.test(cleaned)) {
+        continue;
       }
+
+      const plainTitle = plainSectionTitle(line);
+      if (plainTitle) {
+        ingredients.push({ title: plainTitle, items: [] });
+        continue;
+      }
+
+      appendToLastSection(ingredients, line);
       continue;
     }
 
