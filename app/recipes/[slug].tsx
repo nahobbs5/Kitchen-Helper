@@ -303,7 +303,7 @@ export default function ObsidianRecipeScreen() {
             ]}
           >
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
-            <View style={styles.servingsRow}>
+            <View style={styles.numberGrid}>
               {servingButtons.map((button) => {
                 const isActive = Math.abs(multiplier - button.multiplier) < 0.001;
 
@@ -312,18 +312,17 @@ export default function ObsidianRecipeScreen() {
                     key={button.key}
                     onPress={() => setMultiplier(button.multiplier)}
                     style={[
-                      styles.servingsButton,
+                      styles.numberButton,
                       { borderColor: palette.borderAlt },
                       !isActive && { backgroundColor: palette.surface },
-                      isActive && styles.servingsButtonActive,
+                      isActive && styles.numberButtonActive,
                       isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                     ]}
                   >
                     <Text
                       style={[
-                        styles.servingsButtonText,
-                        { color: isActive ? palette.inverseText : palette.text },
-                        isActive && styles.servingsButtonTextActive,
+                        styles.numberButtonText,
+                        { color: palette.text },
                       ]}
                     >
                       {button.label}
