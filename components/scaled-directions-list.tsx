@@ -18,14 +18,12 @@ type ScaledDirectionsListProps = {
   stepOverrides?: Record<string, string>;
   scale: number;
   palette: AppPalette;
-  isWide: boolean;
   emptyMessage?: string;
 };
 
 type RecipeDirectionsListProps = {
   directions: RecipeSection[];
   palette: AppPalette;
-  isWide: boolean;
   emptyMessage: string;
 };
 
@@ -98,17 +96,10 @@ function HighlightedStepText({
 export function RecipeDirectionsList({
   directions,
   palette,
-  isWide,
   emptyMessage,
 }: RecipeDirectionsListProps) {
   if (directions.length === 0) {
-    return isWide ? (
-      <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>
-      </View>
-    ) : (
-      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>
-    );
+    return <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>;
   }
 
   return (
@@ -116,11 +107,7 @@ export function RecipeDirectionsList({
       {directions.map((section, sectionIndex) => (
         <View
           key={`${section.title ?? 'directions'}-${sectionIndex}`}
-          style={
-            isWide
-              ? [styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]
-              : styles.recipeFlatGroup
-          }
+          style={styles.recipeFlatGroup}
         >
           {section.title ? (
             <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text>
@@ -144,7 +131,6 @@ export function ScaledDirectionsList({
   stepOverrides,
   scale,
   palette,
-  isWide,
   emptyMessage = 'No directions were detected.',
 }: ScaledDirectionsListProps) {
   const { resetDirectionStep, updateDirectionStep } = useCustomRecipes();
@@ -163,13 +149,7 @@ export function ScaledDirectionsList({
   );
 
   if (steps.length === 0) {
-    return isWide ? (
-      <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>
-      </View>
-    ) : (
-      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>
-    );
+    return <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>;
   }
 
   return (
@@ -181,12 +161,9 @@ export function ScaledDirectionsList({
           <View
             key={step.id}
             style={[
-              isWide
-                ? styles.detailCard
-                : styles.recipeFlatGroup,
-              isWide && { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-              step.isEdited && (isWide ? styles.editedDirectionCard : styles.recipeFlatEditedGroup),
-              !isWide && step.isEdited && { borderLeftColor: palette.accentSoft },
+              styles.recipeFlatGroup,
+              step.isEdited && styles.recipeFlatEditedGroup,
+              step.isEdited && { borderLeftColor: palette.accentSoft },
             ]}
           >
             <View style={styles.directionStepHeader}>

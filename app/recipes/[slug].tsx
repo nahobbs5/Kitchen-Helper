@@ -305,6 +305,7 @@ export default function ObsidianRecipeScreen() {
           <View
             style={[
               styles.heroCard,
+              !isWide && styles.recipeServingControlsCardMobile,
               isWide && styles.recipeServingControlsCardWide,
               { backgroundColor: palette.elevatedDark },
             ]}
@@ -350,6 +351,7 @@ export default function ObsidianRecipeScreen() {
                     onPress={() => setMultiplier(value)}
                     style={[
                       styles.numberButton,
+                      !isWide && styles.customMultiplierButtonMobile,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                       isActive && styles.numberButtonActive,
                       isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
@@ -372,11 +374,7 @@ export default function ObsidianRecipeScreen() {
                   scaledIngredients.map((section, index) => (
                     <View
                       key={`${section.title ?? 'ingredients'}-${index}`}
-                      style={
-                        isWide
-                          ? [styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]
-                          : styles.recipeFlatGroup
-                      }
+                      style={styles.recipeFlatGroup}
                     >
                       {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
                       {section.items.map((item) => (
@@ -387,17 +385,9 @@ export default function ObsidianRecipeScreen() {
                     </View>
                   ))
                 ) : (
-                  isWide ? (
-                    <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                        No ingredients were detected in this note.
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      No ingredients were detected in this note.
-                    </Text>
-                  )
+                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                    No ingredients were detected in this note.
+                  </Text>
                 )}
               </View>
             </View>
@@ -410,7 +400,6 @@ export default function ObsidianRecipeScreen() {
                 <RecipeDirectionsList
                   directions={recipe.directions}
                   palette={palette}
-                  isWide={isWide}
                   emptyMessage="No directions were detected in this note."
                 />
               ) : (
@@ -422,7 +411,6 @@ export default function ObsidianRecipeScreen() {
                   stepOverrides={override?.directionStepOverrides ?? {}}
                   scale={multiplier}
                   palette={palette}
-                  isWide={isWide}
                   emptyMessage="No directions were detected in this note."
                 />
               )}

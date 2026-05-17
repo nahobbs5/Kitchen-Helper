@@ -90,6 +90,9 @@ export const kitchenStyles = StyleSheet.create({
   recipeServingControlsCardWide: {
     alignSelf: 'center',
   },
+  recipeServingControlsCardMobile: {
+    marginHorizontal: -12,
+  },
   heroCardLabel: {
     color: '#e4b66b',
     fontSize: 12,
@@ -649,6 +652,10 @@ export const kitchenStyles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     marginTop: 6,
+  },
+  customMultiplierButtonMobile: {
+    minWidth: 40,
+    paddingHorizontal: 10,
   },
   numberButton: {
     minWidth: 44,
