@@ -393,7 +393,7 @@ export default function UserRecipeScreen() {
               <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
                 <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Notes</Text>
                 <View style={styles.listStack}>
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                  <View style={styles.recipeFlatGroup}>
                     {recipe.cuisineRegion ? (
                       <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                         Cuisine region: {recipe.cuisineRegion}
