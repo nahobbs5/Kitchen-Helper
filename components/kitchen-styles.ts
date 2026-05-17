@@ -575,6 +575,13 @@ export const kitchenStyles = StyleSheet.create({
     lineHeight: 21,
     color: '#5b4c3b',
   },
+  recipeFlatGroup: {
+    gap: 6,
+  },
+  recipeFlatEditedGroup: {
+    borderLeftWidth: 3,
+    paddingLeft: 12,
+  },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

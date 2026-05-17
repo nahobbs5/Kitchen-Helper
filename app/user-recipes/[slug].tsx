@@ -335,7 +335,11 @@ export default function UserRecipeScreen() {
                   scaledIngredients.map((section, index) => (
                     <View
                       key={`${section.title ?? 'ingredients'}-${index}`}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                      style={
+                        isWide
+                          ? [styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]
+                          : styles.recipeFlatGroup
+                      }
                     >
                       {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
                       {section.items.map((item) => (
@@ -346,9 +350,13 @@ export default function UserRecipeScreen() {
                     </View>
                   ))
                 ) : (
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                  isWide ? (
+                    <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No ingredients were saved.</Text>
+                    </View>
+                  ) : (
                     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>No ingredients were saved.</Text>
-                  </View>
+                  )
                 )}
               </View>
             </View>
@@ -361,6 +369,7 @@ export default function UserRecipeScreen() {
                 <RecipeDirectionsList
                   directions={recipe.directions}
                   palette={palette}
+                  isWide={isWide}
                   emptyMessage="No directions were saved."
                 />
               ) : (
@@ -372,6 +381,7 @@ export default function UserRecipeScreen() {
                   stepOverrides={recipe.directionStepOverrides}
                   scale={multiplier}
                   palette={palette}
+                  isWide={isWide}
                   emptyMessage="No directions were saved."
                 />
               )}

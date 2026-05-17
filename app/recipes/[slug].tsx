@@ -365,7 +365,11 @@ export default function ObsidianRecipeScreen() {
                   scaledIngredients.map((section, index) => (
                     <View
                       key={`${section.title ?? 'ingredients'}-${index}`}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                      style={
+                        isWide
+                          ? [styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]
+                          : styles.recipeFlatGroup
+                      }
                     >
                       {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
                       {section.items.map((item) => (
@@ -376,11 +380,17 @@ export default function ObsidianRecipeScreen() {
                     </View>
                   ))
                 ) : (
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                  isWide ? (
+                    <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                        No ingredients were detected in this note.
+                      </Text>
+                    </View>
+                  ) : (
                     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
                       No ingredients were detected in this note.
                     </Text>
-                  </View>
+                  )
                 )}
               </View>
             </View>
@@ -393,6 +403,7 @@ export default function ObsidianRecipeScreen() {
                 <RecipeDirectionsList
                   directions={recipe.directions}
                   palette={palette}
+                  isWide={isWide}
                   emptyMessage="No directions were detected in this note."
                 />
               ) : (
@@ -404,6 +415,7 @@ export default function ObsidianRecipeScreen() {
                   stepOverrides={override?.directionStepOverrides ?? {}}
                   scale={multiplier}
                   palette={palette}
+                  isWide={isWide}
                   emptyMessage="No directions were detected in this note."
                 />
               )}
