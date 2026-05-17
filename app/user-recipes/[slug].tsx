@@ -3,6 +3,8 @@ import { useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
+import { DeleteIcon } from '../../components/delete-icon';
+import { EditIcon } from '../../components/edit-icon';
 import { RecipeShareCard, recipeShareCardWidth } from '../../components/recipe-share-card';
 import { RecipeDirectionsList, ScaledDirectionsList } from '../../components/scaled-directions-list';
 import { ShareIcon } from '../../components/share-icon';
@@ -175,12 +177,14 @@ export default function UserRecipeScreen() {
             <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
             <View style={styles.actionRow}>
               <Pressable
+                accessibilityLabel="Share recipe"
                 onPress={handleShare}
                 style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
               >
                 <ShareIcon color={palette.accentText} />
               </Pressable>
               <Pressable
+                accessibilityLabel={isFavorite(recipe.slug) ? 'Remove from favorites' : 'Add to favorites'}
                 onPress={() => toggleFavorite(recipe.slug)}
                 style={[
                   styles.starButton,
@@ -192,19 +196,19 @@ export default function UserRecipeScreen() {
                   {isFavorite(recipe.slug) ? '★' : '☆'}
                 </Text>
               </Pressable>
-            </View>
-            <View style={styles.actionRow}>
               <Pressable
+                accessibilityLabel="Edit recipe"
                 onPress={() => router.push({ pathname: '/edit-recipe/[slug]', params: { slug: recipe.slug } })}
-                style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
               >
-                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>✏️ Edit Recipe</Text>
+                <EditIcon color={palette.accentText} />
               </Pressable>
               <Pressable
+                accessibilityLabel="Delete recipe"
                 onPress={handleDeletePress}
-                style={styles.dangerButton}
+                style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
               >
-                <Text style={styles.dangerButtonText}>🗑 Delete Recipe</Text>
+                <DeleteIcon color="#a33821" />
               </Pressable>
             </View>
             {showDeleteConfirm ? (
