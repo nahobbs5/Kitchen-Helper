@@ -92,6 +92,10 @@ export const kitchenStyles = StyleSheet.create({
   },
   recipeServingControlsCardMobile: {
     marginHorizontal: -12,
+    gap: 6,
+  },
+  servingControlsNumberGridMobile: {
+    marginTop: 0,
   },
   heroCardLabel: {
     color: '#e4b66b',

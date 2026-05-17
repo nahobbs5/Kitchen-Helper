@@ -74,6 +74,12 @@ export default function UserRecipeScreen() {
     ],
     []
   );
+  const visibleServingButtons = isWide
+    ? servingButtons
+    : servingButtons.filter((button) => button.multiplier < 1 || button.multiplier === 1);
+  const visibleCustomServingOptions = isWide
+    ? customServingOptions
+    : customServingOptions.filter((value) => value !== 1);
 
   const scaledIngredients = useMemo(() => {
     if (!recipe) {
@@ -278,8 +284,8 @@ export default function UserRecipeScreen() {
             ]}
           >
             <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Serving controls</Text>
-            <View style={styles.numberGrid}>
-              {servingButtons.map((button) => {
+            <View style={[styles.numberGrid, !isWide && styles.servingControlsNumberGridMobile]}>
+              {visibleServingButtons.map((button) => {
                 const isActive = Math.abs(multiplier - button.multiplier) < 0.001;
 
                 return (
@@ -307,9 +313,11 @@ export default function UserRecipeScreen() {
               })}
             </View>
 
-            <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Custom multiplier</Text>
-            <View style={styles.numberGrid}>
-              {customServingOptions.map((value) => {
+            {isWide ? (
+              <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Custom multiplier</Text>
+            ) : null}
+            <View style={[styles.numberGrid, !isWide && styles.servingControlsNumberGridMobile]}>
+              {visibleCustomServingOptions.map((value) => {
                 const isActive = Math.abs(multiplier - value) < 0.001;
 
                 return (
