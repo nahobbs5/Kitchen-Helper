@@ -676,6 +676,11 @@ export const kitchenStyles = StyleSheet.create({
     minWidth: 40,
     paddingHorizontal: 10,
   },
+  dictionaryLetterButtonMobile: {
+    minWidth: 0,
+    width: '14%',
+    paddingHorizontal: 0,
+  },
   numberButton: {
     minWidth: 44,
     alignItems: 'center',

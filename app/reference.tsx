@@ -57,7 +57,7 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
 
 const allergyTags = Array.from(new Set(allergySubstitutions.map((item) => item.allergy))).sort();
 const letterOptions = ['All', ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
-const convOptions = ['All', ...conversionSections.map((s) => s.title)];
+const convOptions = ['All', 'Liquid measure', 'Dry measure', 'Oven temperatures', 'Butter sticks', 'Butter to olive oil'];
 const OVEN_TEMPERATURE_SECTION = 'Oven temperatures';
 const OVEN_TEMP_MIN = 200;
 const OVEN_TEMP_MAX = 550;
@@ -483,7 +483,7 @@ export default function ReferenceScreen() {
             onLayout={(event) => {
               heroCardLayoutYRef.current = event.nativeEvent.layout.y;
             }}
-            style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}
+            style={[styles.heroCard, isMobile && styles.recipeFilterCardMobile, { backgroundColor: palette.elevatedDark }]}
           >
             {activeTab === 'conversions' && (
               <>
@@ -592,7 +592,7 @@ export default function ReferenceScreen() {
                   {visibleDictEntries.length} terms shown
                 </Text>
                 {renderSearchInput('inline')}
-                <View style={styles.numberGrid}>
+                <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
                   {DICT_TABS.map((tab) => {
                     const isActive = dictTab === tab.key;
                     return (
@@ -604,12 +604,22 @@ export default function ReferenceScreen() {
                           setDictSearch('');
                         }}
                         style={[
-                          styles.numberButton,
+                          isMobile ? styles.servingsButton : styles.numberButton,
+                          isMobile && styles.recipeFilterButtonMobile,
                           { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                          isActive && (isMobile ? styles.servingsButtonActive : styles.numberButtonActive),
                           isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                         ]}
                       >
-                        <Text style={[styles.numberButtonText, { color: palette.text }]}>{tab.label}</Text>
+                        <Text
+                          style={[
+                            isMobile ? styles.servingsButtonText : styles.numberButtonText,
+                            { color: palette.text },
+                            isActive && isMobile && styles.servingsButtonTextActive,
+                          ]}
+                        >
+                          {tab.label}
+                        </Text>
                       </Pressable>
                     );
                   })}
@@ -625,6 +635,7 @@ export default function ReferenceScreen() {
                         disabled={!isAvailable}
                         style={[
                           styles.numberButton,
+                          isMobile && styles.dictionaryLetterButtonMobile,
                           { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                           !isAvailable && styles.numberButtonDisabled,
                           !isAvailable && { backgroundColor: palette.elevated, borderColor: palette.border },
