@@ -16,6 +16,7 @@ import { ClearableSearchInput } from '../components/clearable-search-input';
 import { RecipeShareCard, recipeShareCardWidth } from '../components/recipe-share-card';
 import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
+import { FryingPanIcon, MultiSelectIcon } from '../components/recipe-action-icons';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
@@ -71,6 +72,7 @@ export default function MyRecipesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
+  const isMobile = width < 768;
   const { palette } = useAppSettings();
   const scrollOffsetRef = useRef(0);
   const heroLayoutYRef = useRef(0);
@@ -584,25 +586,64 @@ export default function MyRecipesScreen() {
               </View>
             ) : null}
 
-            <View style={styles.actionRow}>
-              <Pressable
-                onPress={() => router.push('/add-recipe')}
-                style={[styles.primaryButton, { backgroundColor: palette.accent }]}
-              >
-                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>
-              </Pressable>
-              <Pressable
-                onPress={toggleSelectionMode}
-                style={[
-                  styles.secondaryButton,
-                  { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                ]}
-              >
-                <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
-                  {selectionMode ? 'Done Selecting' : 'Select Recipes'}
-                </Text>
-              </Pressable>
-            </View>
+            {isMobile ? (
+              <View style={styles.mobileRecipeActionRow}>
+                <Pressable
+                  accessibilityLabel="Add recipe"
+                  onPress={() => router.push('/add-recipe')}
+                  style={[
+                    styles.mobileRecipeActionButton,
+                    { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+                  ]}
+                >
+                  <View style={styles.mobileRecipePanIconWrap}>
+                    <FryingPanIcon size={34} />
+                    <View
+                      style={[
+                        styles.mobileRecipeActionPlusBadge,
+                        { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+                      ]}
+                    >
+                      <Text style={[styles.mobileRecipeActionPlusText, { color: '#4a2d63' }]}>+</Text>
+                    </View>
+                  </View>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={selectionMode ? 'Done selecting recipes' : 'Select recipes'}
+                  accessibilityState={{ selected: selectionMode }}
+                  onPress={toggleSelectionMode}
+                  style={[
+                    styles.mobileRecipeActionButton,
+                    {
+                      backgroundColor: selectionMode ? palette.accentSoft : palette.surface,
+                      borderColor: selectionMode ? palette.accentSoft : palette.borderAlt,
+                    },
+                  ]}
+                >
+                  <MultiSelectIcon active={selectionMode} size={30} />
+                </Pressable>
+              </View>
+            ) : (
+              <View style={styles.actionRow}>
+                <Pressable
+                  onPress={() => router.push('/add-recipe')}
+                  style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                >
+                  <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>
+                </Pressable>
+                <Pressable
+                  onPress={toggleSelectionMode}
+                  style={[
+                    styles.secondaryButton,
+                    { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                  ]}
+                >
+                  <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                    {selectionMode ? 'Done Selecting' : 'Select Recipes'}
+                  </Text>
+                </Pressable>
+              </View>
+            )}
 
             {selectionMode ? (
               <View
