@@ -167,9 +167,6 @@ function RootNavigator() {
         options={topLevelScreenOptions('Kitchen Helper')}
       />
       <Stack.Screen name="reference" options={topLevelScreenOptions('Kitchen Reference')} />
-      <Stack.Screen name="conversions" options={{ title: 'Conversions' }} />
-      <Stack.Screen name="cooking-dictionary" options={{ title: 'Cooking Dictionary' }} />
-      <Stack.Screen name="allergy-substitutions" options={{ title: 'Substitutions' }} />
       <Stack.Screen name="my-recipes" options={topLevelScreenOptions('My Recipes')} />
       <Stack.Screen name="add-recipe" options={{ title: 'Add Recipe' }} />
       <Stack.Screen name="edit-recipe/[slug]" options={{ title: 'Edit Recipe' }} />
