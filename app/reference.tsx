@@ -530,7 +530,7 @@ export default function ReferenceScreen() {
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Substitutions</Text>
                 {renderSearchInput('inline')}
-                <View style={styles.numberGrid}>
+                <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
                   {SUB_SECTION_TABS.map((tab) => {
                     const isActive = subSection === tab.key;
                     return (
@@ -542,12 +542,22 @@ export default function ReferenceScreen() {
                           setSubSearch('');
                         }}
                         style={[
-                          styles.numberButton,
+                          isMobile ? styles.servingsButton : styles.numberButton,
+                          isMobile && styles.recipeFilterButtonMobile,
                           { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                          isActive && (isMobile ? styles.servingsButtonActive : styles.numberButtonActive),
                           isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                         ]}
                       >
-                        <Text style={[styles.numberButtonText, { color: palette.text }]}>{tab.label}</Text>
+                        <Text
+                          style={[
+                            isMobile ? styles.servingsButtonText : styles.numberButtonText,
+                            { color: palette.text },
+                            isActive && isMobile && styles.servingsButtonTextActive,
+                          ]}
+                        >
+                          {tab.label}
+                        </Text>
                       </Pressable>
                     );
                   })}
