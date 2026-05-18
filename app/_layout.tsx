@@ -14,7 +14,6 @@ import type { AppPalette } from '../components/app-theme';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
 
 const headerLogo = require('../assets/kitchen-helper-logo-icon.png');
-
 export default function RootLayout() {
   useAndroidImmersiveNavigation();
 
@@ -122,6 +121,10 @@ function RootNavigator() {
   const { width } = useWindowDimensions();
   const isCompact = width < 768;
   const desktopTitleMaxWidth = Math.max(180, width - 430);
+  const topLevelScreenOptions = (title: string) => ({
+    title: isCompact ? '' : title,
+    headerBackVisible: false,
+  });
 
   return (
     <Stack
@@ -160,19 +163,19 @@ function RootNavigator() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: 'Kitchen Helper', headerBackVisible: false }}
+        options={topLevelScreenOptions('Kitchen Helper')}
       />
-      <Stack.Screen name="reference" options={{ title: 'Kitchen Reference' }} />
+      <Stack.Screen name="reference" options={topLevelScreenOptions('Kitchen Reference')} />
       <Stack.Screen name="conversions" options={{ title: 'Conversions' }} />
       <Stack.Screen name="cooking-dictionary" options={{ title: 'Cooking Dictionary' }} />
       <Stack.Screen name="allergy-substitutions" options={{ title: 'Substitutions' }} />
-      <Stack.Screen name="my-recipes" options={{ title: 'My Recipes' }} />
+      <Stack.Screen name="my-recipes" options={topLevelScreenOptions('My Recipes')} />
       <Stack.Screen name="add-recipe" options={{ title: 'Add Recipe' }} />
       <Stack.Screen name="edit-recipe/[slug]" options={{ title: 'Edit Recipe' }} />
       <Stack.Screen name="user-recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipe" options={{ title: 'Sample Recipes' }} />
-      <Stack.Screen name="account" options={{ title: 'Account' }} />
+      <Stack.Screen name="account" options={topLevelScreenOptions('Account')} />
     </Stack>
   );
 }
