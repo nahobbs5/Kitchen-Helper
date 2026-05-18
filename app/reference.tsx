@@ -489,7 +489,7 @@ export default function ReferenceScreen() {
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Conversions</Text>
                 {renderSearchInput('inline')}
-                <View style={styles.numberGrid}>
+                <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
                   {convOptions.map((opt) => {
                     const isActive = convSection === opt;
                     return (
@@ -497,12 +497,28 @@ export default function ReferenceScreen() {
                         key={opt}
                         onPress={() => setConvSection(opt)}
                         style={[
-                          styles.numberButton,
+                          isMobile ? styles.servingsButton : styles.numberButton,
+                          isMobile && styles.recipeFilterButtonMobile,
                           { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                          isActive && (isMobile ? styles.servingsButtonActive : styles.numberButtonActive),
                           isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                         ]}
                       >
-                        <Text style={[styles.numberButtonText, { color: palette.text }]}>{opt}</Text>
+                        <Text
+                          style={[
+                            isMobile ? styles.servingsButtonText : styles.numberButtonText,
+                            { color: palette.text },
+                            isActive && isMobile && styles.servingsButtonTextActive,
+                          ]}
+                        >
+                          {isMobile && opt === 'Liquid measure'
+                            ? 'Liquid'
+                            : isMobile && opt === 'Dry measure'
+                              ? 'Dry'
+                              : isMobile && opt === 'Oven temperatures'
+                                ? 'Oven temps'
+                                : opt}
+                        </Text>
                       </Pressable>
                     );
                   })}

@@ -62,6 +62,10 @@ export const conversionSections: ConversionSection[] = [
       { from: '1 qt', result: '4 cups' },
       { from: '1 cup', result: '8 fl oz' },
       { from: '1/2 cup', result: '4 fl oz' },
+      { from: '8 ounces', result: '227 ml' },
+      { from: '14 ounces', result: '398 ml' },
+      { from: '28 ounces', result: '796 ml' },
+      { from: '1 liter', result: '4 1/4 cups' },
     ],
   },
   {
@@ -111,16 +115,6 @@ export const conversionSections: ConversionSection[] = [
       ],
       note: '1 US stick = 8 tbsp = 1/2 cup = 4 oz = 113 g',
     },
-  },
-  {
-    title: 'Can and bottle sizes',
-    description: 'Handy metric equivalents for common can sizes.',
-    entries: [
-      { from: '8 ounces', result: '227 ml' },
-      { from: '14 ounces', result: '398 ml' },
-      { from: '28 ounces', result: '796 ml' },
-      { from: '1 liter', result: '4 1/4 cups' },
-    ],
   },
 ];
 
