@@ -94,6 +94,17 @@ export const kitchenStyles = StyleSheet.create({
     marginHorizontal: -12,
     gap: 6,
   },
+  recipeFilterCardMobile: {
+    marginHorizontal: -12,
+  },
+  recipeFilterRowMobile: {
+    gap: 8,
+    marginTop: 4,
+  },
+  recipeFilterButtonMobile: {
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+  },
   servingControlsNumberGridMobile: {
     marginTop: 0,
   },
@@ -192,6 +203,10 @@ export const kitchenStyles = StyleSheet.create({
   },
   servingsButtonTextActive: {
     color: '#2a2118',
+  },
+  favoriteFilterChipText: {
+    fontSize: 18,
+    lineHeight: 18,
   },
   ingredientList: {
     gap: 12,

@@ -850,13 +850,17 @@ export default function MyRecipesScreen() {
             onLayout={(event) => {
               heroCardLayoutYRef.current = event.nativeEvent.layout.y;
             }}
-            style={[styles.heroCard, { backgroundColor: palette.elevatedDark }]}
+            style={[
+              styles.heroCard,
+              !isWide && styles.recipeFilterCardMobile,
+              { backgroundColor: palette.elevatedDark },
+            ]}
           >
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
 
             {renderRecipeSearchInput('inline')}
 
-            <View style={styles.servingsRow}>
+            <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
               {categoryFilters.map((category) => {
                 const isActive =
                   category.name === 'All'
@@ -869,6 +873,7 @@ export default function MyRecipesScreen() {
                     onPress={() => toggleCategoryFilter(category.name)}
                     style={[
                       styles.servingsButton,
+                      !isWide && styles.recipeFilterButtonMobile,
                       { borderColor: palette.borderAlt },
                       !isActive && { backgroundColor: palette.surface },
                       isActive && styles.servingsButtonActive,
@@ -878,11 +883,18 @@ export default function MyRecipesScreen() {
                     <Text
                       style={[
                         styles.servingsButtonText,
+                        category.name === 'Favorites' && styles.favoriteFilterChipText,
                         { color: isActive ? palette.inverseText : palette.text },
                         isActive && styles.servingsButtonTextActive,
                       ]}
                     >
-                      {category.name}
+                      {category.name === 'Favorites'
+                        ? isActive
+                          ? '★'
+                          : '☆'
+                        : !isWide && category.name === 'Appetizers'
+                          ? 'Apps'
+                          : category.name}
                     </Text>
                   </Pressable>
                 );
@@ -892,7 +904,7 @@ export default function MyRecipesScreen() {
             {cuisineFilters.length > 1 ? (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Cuisine region</Text>
-                <View style={styles.servingsRow}>
+                <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
                   {cuisineFilters.map((cuisine) => {
                     const isActive =
                       cuisine.name === 'All'
@@ -905,6 +917,7 @@ export default function MyRecipesScreen() {
                         onPress={() => toggleCuisineFilter(cuisine.name)}
                         style={[
                           styles.servingsButton,
+                          !isWide && styles.recipeFilterButtonMobile,
                           { borderColor: palette.borderAlt },
                           !isActive && { backgroundColor: palette.surface },
                           isActive && styles.servingsButtonActive,
@@ -930,7 +943,7 @@ export default function MyRecipesScreen() {
             {visibleAllergenFilters.length > 1 ? (
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Allergen tags</Text>
-                <View style={styles.servingsRow}>
+                <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
                   {visibleAllergenFilters.map((filter) => {
                     const isActive =
                       filter.name === 'All'
@@ -943,6 +956,7 @@ export default function MyRecipesScreen() {
                         onPress={() => toggleAllergenFilter(filter.name)}
                         style={[
                           styles.servingsButton,
+                          !isWide && styles.recipeFilterButtonMobile,
                           { borderColor: palette.borderAlt },
                           !isActive && { backgroundColor: palette.surface },
                           isActive && styles.servingsButtonActive,
