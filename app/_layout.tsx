@@ -124,6 +124,7 @@ function RootNavigator() {
   const topLevelScreenOptions = (title: string) => ({
     title: isCompact ? '' : title,
     headerBackVisible: false,
+    headerLeft: () => null,
   });
 
   return (
