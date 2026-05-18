@@ -17,7 +17,7 @@ import { useAppSettings } from '../contexts/settings-context';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 
-const sampleRecipeCategories = ['Appetizers', 'Dessert', 'Entree', 'Breakfast'] as const;
+const sampleRecipeCategories = ['Entree', 'Appetizers', 'Breakfast', 'Dessert'] as const;
 
 export default function SampleRecipesScreen() {
   const router = useRouter();
@@ -175,7 +175,7 @@ export default function SampleRecipesScreen() {
             </Text>
             {renderRecipeSearchInput('inline')}
 
-            <View style={styles.servingsRow}>
+            <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
               {['All', ...sampleRecipeCategories].map((category) => {
                 const isActive = category === 'All' ? activeCategoryFilters.length === 0 : activeCategoryFilters.includes(category);
 
@@ -185,6 +185,7 @@ export default function SampleRecipesScreen() {
                     onPress={() => toggleCategoryFilter(category)}
                     style={[
                       styles.servingsButton,
+                      !isWide && styles.recipeFilterButtonMobile,
                       { borderColor: palette.borderAlt },
                       !isActive && { backgroundColor: palette.surface },
                       isActive && styles.servingsButtonActive,
@@ -198,7 +199,7 @@ export default function SampleRecipesScreen() {
                         isActive && styles.servingsButtonTextActive,
                       ]}
                     >
-                      {category}
+                      {!isWide && category === 'Appetizers' ? 'Apps' : category}
                     </Text>
                   </Pressable>
                 );
