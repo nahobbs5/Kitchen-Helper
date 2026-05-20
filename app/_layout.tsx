@@ -1,4 +1,5 @@
 import * as NavigationBar from 'expo-navigation-bar';
+import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { AppState, Image, Platform, Text, View, useWindowDimensions } from 'react-native';
@@ -117,7 +118,7 @@ function HeaderBrand({ compact, palette, title, titleMaxWidth }: HeaderBrandProp
 }
 
 function RootNavigator() {
-  const { palette } = useAppSettings();
+  const { darkModeEnabled, palette } = useAppSettings();
   const { width } = useWindowDimensions();
   const isCompact = width < 768;
   const desktopTitleMaxWidth = Math.max(180, width - 430);
@@ -128,7 +129,13 @@ function RootNavigator() {
   });
 
   return (
-    <Stack
+    <>
+      <StatusBar
+        backgroundColor={darkModeEnabled ? '#1d1712' : '#ffffff'}
+        style={darkModeEnabled ? 'light' : 'dark'}
+        translucent={false}
+      />
+      <Stack
       screenOptions={{
         headerStyle: {
           backgroundColor: palette.headerBackground,
@@ -174,6 +181,7 @@ function RootNavigator() {
       <Stack.Screen name="recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipe" options={{ title: 'Sample Recipes' }} />
       <Stack.Screen name="account" options={topLevelScreenOptions('Account')} />
-    </Stack>
+      </Stack>
+    </>
   );
 }
