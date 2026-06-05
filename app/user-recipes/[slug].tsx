@@ -12,7 +12,7 @@ import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
 import { useAppSettings } from '../../contexts/settings-context';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
-import { scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -91,6 +91,14 @@ export default function UserRecipeScreen() {
       items: section.items.map((item) => scaleIngredientLine(item, multiplier)),
     }));
   }, [multiplier, recipe]);
+  const scaledServingsLabel = useMemo(() => {
+    if (!recipe?.servings) return null;
+    if (multiplier === 1) return recipe.servings;
+    const base = extractBaseServings(recipe.servings);
+    if (base === null) return recipe.servings;
+    return String(Math.round(base * multiplier));
+  }, [recipe?.servings, multiplier]);
+
   const isOriginalScale = Math.abs(multiplier - 1) < 0.001;
 
   async function handleDelete() {
@@ -267,9 +275,9 @@ export default function UserRecipeScreen() {
                   </Text>
                 </View>
               ) : null}
-              {recipe.servings ? (
+              {scaledServingsLabel ? (
                 <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                  <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
+                  <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {scaledServingsLabel}</Text>
                 </View>
               ) : null}
             </View>
