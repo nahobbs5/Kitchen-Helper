@@ -57,26 +57,12 @@ export const conversionSections: ConversionSection[] = [
   {
     title: 'Liquid measure',
     description: 'General kitchen liquid conversions from the Shamrock conversion chart.',
-    entries: [
-      { from: '1 gal', result: '16 cups' },
-      { from: '1 qt', result: '4 cups' },
-      { from: '1 cup', result: '8 fl oz' },
-      { from: '1/2 cup', result: '4 fl oz' },
-      { from: '8 ounces', result: '227 ml' },
-      { from: '14 ounces', result: '398 ml' },
-      { from: '28 ounces', result: '796 ml' },
-      { from: '1 liter', result: '4 1/4 cups' },
-    ],
+    entries: [],
   },
   {
     title: 'Dry measure',
     description: 'Dry measuring references pulled from the same chart set.',
-    entries: [
-      { from: '1 cup', result: '8 fl oz' },
-      { from: '3/4 cup', result: '6 fl oz' },
-      { from: '1/3 cup', result: '2 2/3 fl oz' },
-      { from: '1 tsp', result: '5 ml' },
-    ],
+    entries: [],
   },
   {
     title: 'Oven temperatures',
@@ -91,12 +77,7 @@ export const conversionSections: ConversionSection[] = [
   {
     title: 'Butter to olive oil',
     description: 'Useful when baking substitutions are needed.',
-    entries: [
-      { from: '1 tsp butter', result: '3/4 tsp olive oil' },
-      { from: '1 tbsp butter', result: '2 1/4 tsp olive oil' },
-      { from: '1/2 cup butter', result: '1/4 cup + 2 tbsp olive oil' },
-      { from: '1 cup butter', result: '3/4 cup olive oil' },
-    ],
+    entries: [],
   },
   {
     title: 'Butter sticks',

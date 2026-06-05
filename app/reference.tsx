@@ -64,8 +64,72 @@ const OVEN_TEMP_MAX = 550;
 const OVEN_TEMP_SEARCH_INTERVAL = 25;
 const OVEN_TEMP_PRESETS = [300, 325, 350, 375, 400, 425, 450];
 
+const OZ_TO_ML_SECTION = 'Liquid measure';
+const OZ_MIN = 1;
+const OZ_MAX = 32;
+const OZ_PRESETS = [8, 14, 16, 28];
+
+const CUP_TO_OZ_SECTION = 'Dry measure';
+const CUP_MIN = 0.25;
+const CUP_MAX = 4;
+const CUP_PRESETS = [1 / 3, 0.5, 0.75, 1, 2];
+
+const BUTTER_OLIVE_SECTION = 'Butter to olive oil';
+const BUTTER_MIN_TSP = 1;
+const BUTTER_MAX_TSP = 48;
+const BUTTER_PRESETS_TSP = [1, 3, 12, 24, 48];
+const BUTTER_RATIO = 0.75;
+
+const GAL_MIN = 0.25;
+const GAL_MAX = 4;
+const GAL_PRESETS = [0.25, 0.5, 1, 2, 4];
+
+const QT_MIN = 0.25;
+const QT_MAX = 8;
+const QT_PRESETS = [0.25, 0.5, 1, 2, 4];
+
+const LITER_MIN = 0.25;
+const LITER_MAX = 4;
+const LITER_PRESETS = [0.5, 1, 1.5, 2, 4];
+
+const TSP_ML_MIN = 1;
+const TSP_ML_MAX = 16;
+const TSP_ML_PRESETS = [1, 2, 3, 6, 12];
+
 function fahrenheitToCelsius(fahrenheit: number) {
   return Math.round((fahrenheit - 32) * 5 / 9);
+}
+
+function formatCups(cups: number): string {
+  const fractions: [number, string][] = [
+    [0.25, '1/4'], [1 / 3, '1/3'], [0.5, '1/2'], [2 / 3, '2/3'], [0.75, '3/4'],
+  ];
+  const whole = Math.floor(cups);
+  const remainder = cups - whole;
+  const fracStr = fractions.find(([v]) => Math.abs(remainder - v) < 0.01)?.[1] ?? null;
+  if (whole === 0) return fracStr ?? `${cups.toFixed(2)}`;
+  if (Math.abs(remainder) < 0.01) return `${whole}`;
+  if (fracStr) return `${whole} ${fracStr}`;
+  return `${cups.toFixed(2)}`;
+}
+
+function formatVolume(tsp: number): string {
+  const rounded = Math.round(tsp);
+  if (rounded < 3) return `${rounded} tsp`;
+  const tbsp = Math.floor(rounded / 3);
+  const remTsp = rounded % 3;
+  if (rounded === 12) return '1/4 cup';
+  if (rounded === 16) return '1/3 cup';
+  if (rounded === 24) return '1/2 cup';
+  if (rounded === 32) return '2/3 cup';
+  if (rounded === 36) return '3/4 cup';
+  if (rounded === 48) return '1 cup';
+  if (rounded > 48) {
+    const cups = rounded / 48;
+    return `${formatCups(cups)} cup${cups > 1 ? 's' : ''}`;
+  }
+  if (remTsp === 0) return `${tbsp} tbsp`;
+  return `${tbsp} tbsp + ${remTsp} tsp`;
 }
 
 function buildOvenTemperatureSearchText() {
@@ -92,7 +156,57 @@ function buildOvenTemperatureSearchText() {
   return values.join(' ').toLowerCase();
 }
 
+function buildOzToMlSearchText() {
+  const values = [
+    OZ_TO_ML_SECTION.toLowerCase(),
+    'ounce', 'ounces', 'oz', 'ml', 'milliliter', 'milliliters', 'millilitre', 'liquid', 'measure',
+    'gallon', 'gallons', 'gal', 'quart', 'quarts', 'qt', 'liter', 'liters', 'litre', 'litres',
+    'cup', 'cups',
+  ];
+  for (let oz = OZ_MIN; oz <= OZ_MAX; oz++) {
+    values.push(`${oz}`, `${oz} oz`, `${oz} ounce`, `${Math.round(oz * 29.5735)} ml`);
+  }
+  for (let g = GAL_MIN; g <= GAL_MAX; g += GAL_MIN) {
+    values.push(`${g} gal`, `${Math.round(g * 16)} cups`);
+  }
+  for (let q = QT_MIN; q <= QT_MAX; q += QT_MIN) {
+    values.push(`${q} qt`, `${Math.round(q * 4)} cups`);
+  }
+  for (let l = LITER_MIN; l <= LITER_MAX; l += LITER_MIN) {
+    values.push(`${l} liter`, `${l} l`, `${(Math.round(l * 4.22675 * 10) / 10)} cups`);
+  }
+  return values.join(' ').toLowerCase();
+}
+
+function buildCupToOzSearchText() {
+  const values = [
+    CUP_TO_OZ_SECTION.toLowerCase(),
+    'cup', 'cups', 'fl oz', 'fluid ounce', 'fluid ounces', 'dry', 'measure',
+    '1/4 cup', '1/3 cup', '1/2 cup', '2/3 cup', '3/4 cup',
+    'tsp', 'teaspoon', 'teaspoons', 'ml', 'milliliter', 'milliliters',
+  ];
+  for (let i = 1; i <= 16; i++) {
+    const c = i * 0.25;
+    values.push(`${c}`, `${c} cup`, `${Math.round(c * 8 * 10) / 10} fl oz`);
+  }
+  for (let t = TSP_ML_MIN; t <= TSP_ML_MAX; t++) {
+    values.push(`${t} tsp`, `${Math.round(t * 4.92892)} ml`);
+  }
+  return values.join(' ').toLowerCase();
+}
+
+function buildButterOliveSearchText() {
+  return [
+    BUTTER_OLIVE_SECTION.toLowerCase(),
+    'butter', 'olive', 'oil', 'substitute', 'substitution', 'baking', 'tsp', 'tbsp', 'cup',
+    '1 tsp', '1 tbsp', '1/4 cup', '1/2 cup', '1 cup',
+  ].join(' ').toLowerCase();
+}
+
 const ovenTemperatureSearchText = buildOvenTemperatureSearchText();
+const ozToMlSearchText = buildOzToMlSearchText();
+const cupToOzSearchText = buildCupToOzSearchText();
+const butterOliveSearchText = buildButterOliveSearchText();
 
 export default function ReferenceScreen() {
   const { palette } = useAppSettings();
@@ -101,10 +215,24 @@ export default function ReferenceScreen() {
   const isMobile = width < 768;
   const scrollRef = useRef<ScrollView>(null);
   const ovenSliderRef = useRef<View>(null);
+  const ozSliderRef = useRef<View>(null);
+  const cupSliderRef = useRef<View>(null);
+  const butterSliderRef = useRef<View>(null);
+  const galSliderRef = useRef<View>(null);
+  const qtSliderRef = useRef<View>(null);
+  const literSliderRef = useRef<View>(null);
+  const tspMlSliderRef = useRef<View>(null);
   const scrollOffsetRef = useRef(0);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
   const ovenSliderPageXRef = useRef(0);
+  const ozSliderPageXRef = useRef(0);
+  const cupSliderPageXRef = useRef(0);
+  const butterSliderPageXRef = useRef(0);
+  const galSliderPageXRef = useRef(0);
+  const qtSliderPageXRef = useRef(0);
+  const literSliderPageXRef = useRef(0);
+  const tspMlSliderPageXRef = useRef(0);
 
   const [activeTab, setActiveTab] = useState<MainTab>('conversions');
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -116,6 +244,20 @@ export default function ReferenceScreen() {
   const [convSearch, setConvSearch] = useState('');
   const [ovenFahrenheit, setOvenFahrenheit] = useState(350);
   const [ovenSliderWidth, setOvenSliderWidth] = useState(0);
+  const [ozValue, setOzValue] = useState(14);
+  const [ozSliderWidth, setOzSliderWidth] = useState(0);
+  const [cupValue, setCupValue] = useState(0.5);
+  const [cupSliderWidth, setCupSliderWidth] = useState(0);
+  const [butterTsp, setButterTsp] = useState(3);
+  const [butterSliderWidth, setButterSliderWidth] = useState(0);
+  const [galValue, setGalValue] = useState(1);
+  const [galSliderWidth, setGalSliderWidth] = useState(0);
+  const [qtValue, setQtValue] = useState(1);
+  const [qtSliderWidth, setQtSliderWidth] = useState(0);
+  const [literValue, setLiterValue] = useState(1);
+  const [literSliderWidth, setLiterSliderWidth] = useState(0);
+  const [tspMlValue, setTspMlValue] = useState(3);
+  const [tspMlSliderWidth, setTspMlSliderWidth] = useState(0);
 
   // Substitutions state
   const [subSection, setSubSection] = useState<SubSection>('all');
@@ -154,11 +296,24 @@ export default function ReferenceScreen() {
           const ovenSectionMatchesSearch =
             s.title === OVEN_TEMPERATURE_SECTION &&
             (!convNormalized || ovenTemperatureSearchText.includes(convNormalized));
+          const ozSectionMatchesSearch =
+            s.title === OZ_TO_ML_SECTION &&
+            (!convNormalized || ozToMlSearchText.includes(convNormalized));
+          const cupSectionMatchesSearch =
+            s.title === CUP_TO_OZ_SECTION &&
+            (!convNormalized || cupToOzSearchText.includes(convNormalized));
+          const butterSectionMatchesSearch =
+            s.title === BUTTER_OLIVE_SECTION &&
+            (!convNormalized || butterOliveSearchText.includes(convNormalized));
+
+          const sliderSectionMatchesSearch =
+            ovenSectionMatchesSearch || ozSectionMatchesSearch ||
+            cupSectionMatchesSearch || butterSectionMatchesSearch;
 
           return {
             ...s,
             entries: convNormalized
-              ? ovenSectionMatchesSearch
+              ? sliderSectionMatchesSearch
                 ? s.entries
                 : s.entries.filter((e) =>
                     `${s.title} ${s.description} ${e.from} ${e.result}`
@@ -169,12 +324,19 @@ export default function ReferenceScreen() {
             table: tableMatchesSearch ? s.table : undefined,
           };
         })
-        .filter(
-          (s) =>
+        .filter((s) => {
+          const sliderVisible =
+            (!convNormalized || ovenTemperatureSearchText.includes(convNormalized)) && s.title === OVEN_TEMPERATURE_SECTION ||
+            (!convNormalized || ozToMlSearchText.includes(convNormalized)) && s.title === OZ_TO_ML_SECTION ||
+            (!convNormalized || cupToOzSearchText.includes(convNormalized)) && s.title === CUP_TO_OZ_SECTION ||
+            (!convNormalized || butterOliveSearchText.includes(convNormalized)) && s.title === BUTTER_OLIVE_SECTION;
+          return (
             s.entries.length > 0 ||
             s.table ||
+            sliderVisible ||
             (!convNormalized && (convSection === 'All' || s.title === convSection))
-        ),
+          );
+        }),
     [convSection, convNormalized]
   );
 
@@ -214,6 +376,255 @@ export default function ReferenceScreen() {
         },
       }),
     [measureOvenSlider, setOvenTemperatureFromPageX]
+  );
+
+  const ozMl = Math.round(ozValue * 29.5735);
+  const ozProgress = (ozValue - OZ_MIN) / (OZ_MAX - OZ_MIN);
+  const ozProgressWidth = ozSliderWidth * ozProgress;
+  const measureOzSlider = useCallback(() => {
+    ozSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      ozSliderPageXRef.current = x;
+      setOzSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setOzValueFromPageX = useCallback(
+    (pageX: number) => {
+      if (ozSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - ozSliderPageXRef.current, ozSliderWidth));
+      const rawValue = OZ_MIN + (boundedX / ozSliderWidth) * (OZ_MAX - OZ_MIN);
+      setOzValue(Math.max(OZ_MIN, Math.min(Math.round(rawValue), OZ_MAX)));
+    },
+    [ozSliderWidth]
+  );
+  const ozSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureOzSlider();
+          setOzValueFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setOzValueFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureOzSlider, setOzValueFromPageX]
+  );
+
+  const cupOz = Math.round(cupValue * 8 * 10) / 10;
+  const cupProgress = (cupValue - CUP_MIN) / (CUP_MAX - CUP_MIN);
+  const cupProgressWidth = cupSliderWidth * cupProgress;
+  const measureCupSlider = useCallback(() => {
+    cupSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      cupSliderPageXRef.current = x;
+      setCupSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setCupValueFromPageX = useCallback(
+    (pageX: number) => {
+      if (cupSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - cupSliderPageXRef.current, cupSliderWidth));
+      const rawValue = CUP_MIN + (boundedX / cupSliderWidth) * (CUP_MAX - CUP_MIN);
+      const snapped = Math.round(rawValue / 0.25) * 0.25;
+      setCupValue(Math.max(CUP_MIN, Math.min(snapped, CUP_MAX)));
+    },
+    [cupSliderWidth]
+  );
+  const cupSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureCupSlider();
+          setCupValueFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setCupValueFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureCupSlider, setCupValueFromPageX]
+  );
+
+  const oliveOilTsp = butterTsp * BUTTER_RATIO;
+  const butterProgress = (butterTsp - BUTTER_MIN_TSP) / (BUTTER_MAX_TSP - BUTTER_MIN_TSP);
+  const butterProgressWidth = butterSliderWidth * butterProgress;
+  const measureButterSlider = useCallback(() => {
+    butterSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      butterSliderPageXRef.current = x;
+      setButterSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setButterTspFromPageX = useCallback(
+    (pageX: number) => {
+      if (butterSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - butterSliderPageXRef.current, butterSliderWidth));
+      const rawValue = BUTTER_MIN_TSP + (boundedX / butterSliderWidth) * (BUTTER_MAX_TSP - BUTTER_MIN_TSP);
+      setButterTsp(Math.max(BUTTER_MIN_TSP, Math.min(Math.round(rawValue), BUTTER_MAX_TSP)));
+    },
+    [butterSliderWidth]
+  );
+  const butterSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureButterSlider();
+          setButterTspFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setButterTspFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureButterSlider, setButterTspFromPageX]
+  );
+
+  const galCups = Math.round(galValue * 16 * 10) / 10;
+  const galProgress = (galValue - GAL_MIN) / (GAL_MAX - GAL_MIN);
+  const galProgressWidth = galSliderWidth * galProgress;
+  const measureGalSlider = useCallback(() => {
+    galSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      galSliderPageXRef.current = x;
+      setGalSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setGalValueFromPageX = useCallback(
+    (pageX: number) => {
+      if (galSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - galSliderPageXRef.current, galSliderWidth));
+      const rawValue = GAL_MIN + (boundedX / galSliderWidth) * (GAL_MAX - GAL_MIN);
+      const snapped = Math.round(rawValue / 0.25) * 0.25;
+      setGalValue(Math.max(GAL_MIN, Math.min(snapped, GAL_MAX)));
+    },
+    [galSliderWidth]
+  );
+  const galSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureGalSlider();
+          setGalValueFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setGalValueFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureGalSlider, setGalValueFromPageX]
+  );
+
+  const qtCups = Math.round(qtValue * 4 * 10) / 10;
+  const qtProgress = (qtValue - QT_MIN) / (QT_MAX - QT_MIN);
+  const qtProgressWidth = qtSliderWidth * qtProgress;
+  const measureQtSlider = useCallback(() => {
+    qtSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      qtSliderPageXRef.current = x;
+      setQtSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setQtValueFromPageX = useCallback(
+    (pageX: number) => {
+      if (qtSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - qtSliderPageXRef.current, qtSliderWidth));
+      const rawValue = QT_MIN + (boundedX / qtSliderWidth) * (QT_MAX - QT_MIN);
+      const snapped = Math.round(rawValue / 0.25) * 0.25;
+      setQtValue(Math.max(QT_MIN, Math.min(snapped, QT_MAX)));
+    },
+    [qtSliderWidth]
+  );
+  const qtSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureQtSlider();
+          setQtValueFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setQtValueFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureQtSlider, setQtValueFromPageX]
+  );
+
+  const literCups = Math.round(literValue * 4.22675 * 10) / 10;
+  const literProgress = (literValue - LITER_MIN) / (LITER_MAX - LITER_MIN);
+  const literProgressWidth = literSliderWidth * literProgress;
+  const measureLiterSlider = useCallback(() => {
+    literSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      literSliderPageXRef.current = x;
+      setLiterSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setLiterValueFromPageX = useCallback(
+    (pageX: number) => {
+      if (literSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - literSliderPageXRef.current, literSliderWidth));
+      const rawValue = LITER_MIN + (boundedX / literSliderWidth) * (LITER_MAX - LITER_MIN);
+      const snapped = Math.round(rawValue / 0.25) * 0.25;
+      setLiterValue(Math.max(LITER_MIN, Math.min(snapped, LITER_MAX)));
+    },
+    [literSliderWidth]
+  );
+  const literSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureLiterSlider();
+          setLiterValueFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setLiterValueFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureLiterSlider, setLiterValueFromPageX]
+  );
+
+  const tspMl = Math.round(tspMlValue * 4.92892);
+  const tspMlProgress = (tspMlValue - TSP_ML_MIN) / (TSP_ML_MAX - TSP_ML_MIN);
+  const tspMlProgressWidth = tspMlSliderWidth * tspMlProgress;
+  const measureTspMlSlider = useCallback(() => {
+    tspMlSliderRef.current?.measureInWindow((x, _y, measuredWidth) => {
+      tspMlSliderPageXRef.current = x;
+      setTspMlSliderWidth(measuredWidth);
+    });
+  }, []);
+  const setTspMlValueFromPageX = useCallback(
+    (pageX: number) => {
+      if (tspMlSliderWidth <= 0) return;
+      const boundedX = Math.max(0, Math.min(pageX - tspMlSliderPageXRef.current, tspMlSliderWidth));
+      const rawValue = TSP_ML_MIN + (boundedX / tspMlSliderWidth) * (TSP_ML_MAX - TSP_ML_MIN);
+      setTspMlValue(Math.max(TSP_ML_MIN, Math.min(Math.round(rawValue), TSP_ML_MAX)));
+    },
+    [tspMlSliderWidth]
+  );
+  const tspMlSliderResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => {
+          measureTspMlSlider();
+          setTspMlValueFromPageX(event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          setTspMlValueFromPageX(gestureState.moveX);
+        },
+      }),
+    [measureTspMlSlider, setTspMlValueFromPageX]
   );
 
   // Substitutions filtering
@@ -422,6 +833,398 @@ export default function ReferenceScreen() {
                 ]}
               >
                 <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset}F</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderOzToMlConverter() {
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Ounces</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ozValue} oz</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Milliliters</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ozMl} ml</Text>
+          </View>
+        </View>
+
+        <View
+          ref={ozSliderRef}
+          onLayout={(event) => {
+            setOzSliderWidth(event.nativeEvent.layout.width);
+            measureOzSlider();
+          }}
+          style={styles.ovenSliderHitArea}
+          {...ozSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: ozProgressWidth }]} />
+            <View
+              style={[
+                styles.ovenSliderThumb,
+                { backgroundColor: palette.accent, borderColor: palette.surface, left: ozProgressWidth },
+              ]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OZ_MIN} oz</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OZ_MAX} oz</Text>
+        </View>
+
+        <View style={styles.ovenPresetRow}>
+          {OZ_PRESETS.map((preset) => {
+            const isActive = preset === ozValue;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setOzValue(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset} oz</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderCupToOzConverter() {
+    const cupLabel = `${formatCups(cupValue)} cup${cupValue > 1 ? 's' : ''}`;
+    const ozLabel = `${cupOz} fl oz`;
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupLabel}</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Fl oz</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ozLabel}</Text>
+          </View>
+        </View>
+
+        <View
+          ref={cupSliderRef}
+          onLayout={(event) => {
+            setCupSliderWidth(event.nativeEvent.layout.width);
+            measureCupSlider();
+          }}
+          style={styles.ovenSliderHitArea}
+          {...cupSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: cupProgressWidth }]} />
+            <View
+              style={[
+                styles.ovenSliderThumb,
+                { backgroundColor: palette.accent, borderColor: palette.surface, left: cupProgressWidth },
+              ]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 cup</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>4 cups</Text>
+        </View>
+
+        <View style={styles.ovenPresetRow}>
+          {CUP_PRESETS.map((preset) => {
+            const isActive = Math.abs(preset - cupValue) < 0.01;
+            const label = `${formatCups(preset)} cup${preset > 1 ? 's' : ''}`;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setCupValue(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderButterOliveOilConverter() {
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Butter</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{formatVolume(butterTsp)}</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Olive oil</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{formatVolume(oliveOilTsp)}</Text>
+          </View>
+        </View>
+
+        <View
+          ref={butterSliderRef}
+          onLayout={(event) => {
+            setButterSliderWidth(event.nativeEvent.layout.width);
+            measureButterSlider();
+          }}
+          style={styles.ovenSliderHitArea}
+          {...butterSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: butterProgressWidth }]} />
+            <View
+              style={[
+                styles.ovenSliderThumb,
+                { backgroundColor: palette.accent, borderColor: palette.surface, left: butterProgressWidth },
+              ]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1 tsp</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1 cup</Text>
+        </View>
+
+        <View style={styles.ovenPresetRow}>
+          {BUTTER_PRESETS_TSP.map((preset) => {
+            const isActive = preset === butterTsp;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setButterTsp(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatVolume(preset)}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderGalToCupConverter() {
+    const galLabel = `${formatCups(galValue)} gal`;
+    const cupsLabel = `${galCups} cups`;
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Gallons</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{galLabel}</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupsLabel}</Text>
+          </View>
+        </View>
+        <View
+          ref={galSliderRef}
+          onLayout={(event) => { setGalSliderWidth(event.nativeEvent.layout.width); measureGalSlider(); }}
+          style={styles.ovenSliderHitArea}
+          {...galSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: galProgressWidth }]} />
+            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: galProgressWidth }]} />
+          </View>
+        </View>
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 gal</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{GAL_MAX} gal</Text>
+        </View>
+        <View style={styles.ovenPresetRow}>
+          {GAL_PRESETS.map((preset) => {
+            const isActive = Math.abs(preset - galValue) < 0.01;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setGalValue(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatCups(preset)} gal</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderQtToCupConverter() {
+    const qtLabel = `${formatCups(qtValue)} qt`;
+    const cupsLabel = `${qtCups} cups`;
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Quarts</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{qtLabel}</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupsLabel}</Text>
+          </View>
+        </View>
+        <View
+          ref={qtSliderRef}
+          onLayout={(event) => { setQtSliderWidth(event.nativeEvent.layout.width); measureQtSlider(); }}
+          style={styles.ovenSliderHitArea}
+          {...qtSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: qtProgressWidth }]} />
+            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: qtProgressWidth }]} />
+          </View>
+        </View>
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 qt</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{QT_MAX} qt</Text>
+        </View>
+        <View style={styles.ovenPresetRow}>
+          {QT_PRESETS.map((preset) => {
+            const isActive = Math.abs(preset - qtValue) < 0.01;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setQtValue(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatCups(preset)} qt</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderLiterToCupConverter() {
+    const literLabel = `${formatCups(literValue)} L`;
+    const cupsLabel = `${literCups} cups`;
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Liters</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{literLabel}</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupsLabel}</Text>
+          </View>
+        </View>
+        <View
+          ref={literSliderRef}
+          onLayout={(event) => { setLiterSliderWidth(event.nativeEvent.layout.width); measureLiterSlider(); }}
+          style={styles.ovenSliderHitArea}
+          {...literSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: literProgressWidth }]} />
+            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: literProgressWidth }]} />
+          </View>
+        </View>
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 L</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{LITER_MAX} L</Text>
+        </View>
+        <View style={styles.ovenPresetRow}>
+          {LITER_PRESETS.map((preset) => {
+            const isActive = Math.abs(preset - literValue) < 0.01;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setLiterValue(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatCups(preset)} L</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  function renderTspToMlConverter() {
+    return (
+      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+        <View style={styles.ovenConverterValueRow}>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Teaspoons</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{tspMlValue} tsp</Text>
+          </View>
+          <View style={styles.ovenConverterValueBlock}>
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Milliliters</Text>
+            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{tspMl} ml</Text>
+          </View>
+        </View>
+        <View
+          ref={tspMlSliderRef}
+          onLayout={(event) => { setTspMlSliderWidth(event.nativeEvent.layout.width); measureTspMlSlider(); }}
+          style={styles.ovenSliderHitArea}
+          {...tspMlSliderResponder.panHandlers}
+        >
+          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: tspMlProgressWidth }]} />
+            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: tspMlProgressWidth }]} />
+          </View>
+        </View>
+        <View style={styles.ovenSliderRangeRow}>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{TSP_ML_MIN} tsp</Text>
+          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{TSP_ML_MAX} tsp</Text>
+        </View>
+        <View style={styles.ovenPresetRow}>
+          {TSP_ML_PRESETS.map((preset) => {
+            const isActive = preset === tspMlValue;
+            return (
+              <Pressable
+                key={preset}
+                onPress={() => setTspMlValue(preset)}
+                style={[
+                  styles.ovenPresetButton,
+                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                ]}
+              >
+                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset} tsp</Text>
               </Pressable>
             );
           })}
@@ -733,18 +1536,29 @@ export default function ReferenceScreen() {
                   ) : null}
                   {section.title === OVEN_TEMPERATURE_SECTION
                     ? renderOvenTemperatureConverter()
-                    : section.entries.map((entry) => (
-                        <View
-                          key={`${section.title}-${entry.from}-${entry.result}`}
-                          style={[
-                            styles.detailCard,
-                            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                          ]}
-                        >
-                          <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
-                          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
-                        </View>
-                      ))}
+                    : (
+                      <>
+                        {section.entries.map((entry) => (
+                          <View
+                            key={`${section.title}-${entry.from}-${entry.result}`}
+                            style={[
+                              styles.detailCard,
+                              { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                            ]}
+                          >
+                            <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
+                            <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
+                          </View>
+                        ))}
+                        {section.title === OZ_TO_ML_SECTION && renderOzToMlConverter()}
+                        {section.title === OZ_TO_ML_SECTION && renderGalToCupConverter()}
+                        {section.title === OZ_TO_ML_SECTION && renderQtToCupConverter()}
+                        {section.title === OZ_TO_ML_SECTION && renderLiterToCupConverter()}
+                        {section.title === CUP_TO_OZ_SECTION && renderCupToOzConverter()}
+                        {section.title === CUP_TO_OZ_SECTION && renderTspToMlConverter()}
+                        {section.title === BUTTER_OLIVE_SECTION && renderButterOliveOilConverter()}
+                      </>
+                    )}
                 </View>
               ))}
               {visibleConvSections.length === 0 ? (
