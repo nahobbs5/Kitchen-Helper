@@ -131,7 +131,7 @@ function RootNavigator() {
   return (
     <>
       <StatusBar
-        backgroundColor={darkModeEnabled ? '#1d1712' : '#ffffff'}
+        backgroundColor={darkModeEnabled ? '#1d1712' : '#fff7ea'}
         style={darkModeEnabled ? 'light' : 'dark'}
         translucent={false}
       />
