@@ -658,6 +658,10 @@ export default function ReferenceScreen() {
     [subNormalized]
   );
 
+  const subResultCount =
+    (showAllergy ? filteredAllergySubstitutions.length : 0) +
+    (showPantry ? filteredChartSubstitutions.length : 0);
+
   // Dictionary filtering
   const dictNormalized = dictSearch.trim().toLowerCase();
   const dictSourceEntries = useMemo(() => {
@@ -1333,6 +1337,11 @@ export default function ReferenceScreen() {
               <>
                 <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Substitutions</Text>
                 {renderSearchInput('inline')}
+                {subNormalized ? (
+                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                    {subResultCount} {subResultCount === 1 ? 'result' : 'results'}
+                  </Text>
+                ) : null}
                 <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
                   {SUB_SECTION_TABS.map((tab) => {
                     const isActive = subSection === tab.key;
@@ -1365,7 +1374,7 @@ export default function ReferenceScreen() {
                     );
                   })}
                 </View>
-                {showAllergy ? (
+                {subSection === 'allergy' ? (
                   <View style={styles.numberGrid}>
                     {allergyTags.map((tag) => {
                       const isActive = subTag === tag;
@@ -1379,7 +1388,15 @@ export default function ReferenceScreen() {
                             isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
                           ]}
                         >
-                          <Text style={[styles.numberButtonText, { color: palette.text }]}>{tag}</Text>
+                          <Text
+                            style={[
+                              styles.numberButtonText,
+                              { color: palette.text },
+                              isActive && styles.servingsButtonTextActive,
+                            ]}
+                          >
+                            {tag}
+                          </Text>
                         </Pressable>
                       );
                     })}
@@ -1584,10 +1601,10 @@ export default function ReferenceScreen() {
                   key={`${item.allergy}-${item.avoid}`}
                   style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                 >
-                  <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{item.allergy}</Text>
+                  {!subTag && <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{item.allergy}</Text>}
                   <Text style={[styles.detailCardTitle, { color: palette.text }]}>{`${item.avoid} → ${item.swap}`}</Text>
                   {item.ratio !== '1 egg replacement' ? (
-                    <Text style={[styles.infoCardMeta, { color: palette.text, fontSize: 22 }]}>{item.ratio}</Text>
+                    <Text style={[styles.infoCardMeta, { color: palette.text }]}>{item.ratio}</Text>
                   ) : null}
                   <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{item.notes}</Text>
                 </View>
@@ -1615,7 +1632,7 @@ export default function ReferenceScreen() {
                 >
                   <Text style={[styles.infoCardTitle, { color: palette.accentText }]}>{item.ingredient}</Text>
                   <Text style={[styles.infoCardSwap, { color: palette.text }]}>{item.swap}</Text>
-                  <Text style={[styles.infoCardMeta, { color: palette.text, fontSize: 22 }]}>{item.ratio}</Text>
+                  <Text style={[styles.infoCardMeta, { color: palette.text }]}>{item.ratio}</Text>
                   <Text style={[styles.infoCardBody, { color: palette.textMuted }]}>{item.note}</Text>
                 </View>
               ))}

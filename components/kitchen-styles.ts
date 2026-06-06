@@ -371,7 +371,7 @@ export const kitchenStyles = StyleSheet.create({
     fontWeight: '800',
   },
   infoCardMeta: {
-    fontSize: 33,
+    fontSize: 22,
     color: '#845726',
     fontWeight: '700',
   },

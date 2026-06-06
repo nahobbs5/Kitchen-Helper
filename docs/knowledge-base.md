@@ -403,7 +403,7 @@ Current capabilities:
 - shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH`
 - a `Sample Recipes` screen for imported-only browsing of the sample Obsidian recipe set
-- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and an interactive oven temperature slider
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and interactive conversion sliders for oven temperature, liquid measure, dry measure, butter/olive oil substitution, gallons, quarts, liters, and tsp/ml
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - sticky search bars on recipe and reference browsing screens, with clear buttons when search text is entered
 - a `My Recipes` page backed by real Obsidian recipe notes
@@ -428,7 +428,7 @@ Current capabilities:
 - clickable recipe detail pages generated from Markdown
 - parsed ingredients and directions from recipe notes
 - prep, cook, and total time where the note supports it
-- ingredient scaling controls including `1/4x`, `1/2x`, preset servings, and a custom `1-10` selector
+- ingredient scaling controls including `1/4x`, `1/2x`, preset servings, and a custom `1-10` selector, with the serving count tag updating dynamically as the multiplier changes
 - allergen and allergy-friendly tags on recipes
 - auto-detected allergen tags that remain editable
 - cuisine-region tags and filters
@@ -530,12 +530,13 @@ Current behavior:
 - scale-related warnings are generated per step rather than rewriting recipe prose
 - edited steps are stored as local per-step overrides
 - reset returns the step to the original source text and re-enables automatic annotations
+- highlighted time mentions in direction steps are tappable — tapping one calls `loadTimerSlot` on the cook timer context with the parsed duration and recipe name as the label, then opens the timer popup if a slot was successfully loaded
 
 Important product decision:
 
-- timers stay visible as original times
-- temperatures are highlighted, not scaled
-- doneness cues are emphasized because they remain more reliable than the timer when scale changes
+- timers stay visible as original times and highlighted time spans are tappable to open the timer
+- temperatures are highlighted using palette-aware theme colors (not hardcoded hex), not scaled
+- doneness cues are emphasized using palette-aware theme colors because they remain more reliable than the timer when scale changes
 - once a step is edited, the app stops auto-appending annotations to that step until it is reset
 
 ## Cooking Dictionary
@@ -558,7 +559,15 @@ Recent cleanup details that mattered here:
 - sorting was adjusted to behave more like a real glossary
 - dictionary tabs now include focused views for `Cheeses` and `Breads` in addition to the existing general, spice, oil, alcohol, and instrument groups
 
-The Kitchen Reference conversions tab also includes an interactive `Oven temperatures` converter. It uses a Fahrenheit slider from `200F` to `550F`, shows the rounded Celsius equivalent, and provides common preset buttons for values like `325F`, `350F`, and `400F`.
+The Kitchen Reference conversions tab is now fully interactive. Every measurement section uses a custom slider built from pan gesture handlers, with preset buttons for common values:
+
+- `Oven temperatures` — Fahrenheit slider from `200F` to `550F` with presets like `325F`, `350F`, `400F`
+- `Liquid measure` — fluid ounces (`1–32 oz`) to milliliters, with presets at common pour sizes
+- `Dry measure` — cups (`1/4–4 cups`) to fluid ounces
+- `Butter to olive oil` — teaspoon-based substitution using a `0.75` ratio
+- Gallons, quarts, liters, and tsp/ml sections with their own ranges and presets
+
+All sliders were converted from the original static card layout. The `components/sample-data.ts` static conversion entries were trimmed accordingly.
 
 ## Sticky Search
 
@@ -841,6 +850,7 @@ Current behavior:
 - optional vibration on supported native devices when `Allow vibration` is enabled
 - `Start`, `Pause`, and `Resume` labels that track real timer state
 - `Reset` stays disabled until the timer has actually been started
+- `loadTimerSlot(label, durationMs)` is a context API that finds the first available slot (preferring unused over paused), sets its label and duration, and returns `true` if successful; direction step links use this to pre-load a timer from a tapped time highlight
 
 The timer popup is global, which keeps it accessible while moving around the app.
 
@@ -1044,6 +1054,10 @@ High-level sequence of what has happened:
 43. added cheese and bread dictionary categories and cleaned up sample recipe data
 44. normalized Obsidian servings import and omitted empty or metadata-only note content
 45. scaled the Android app logo assets to fit better
+46. converted all Kitchen Reference conversion cards to interactive sliders with presets (liquid measure, dry measure, butter/olive oil, gallons, quarts, liters, tsp/ml join the oven temperature slider)
+47. serving count tag now scales dynamically with the ingredient multiplier on recipe detail pages
+48. tappable time highlights in recipe directions that pre-load the cook timer with the parsed duration and recipe name, then open the popup
+49. fixed Android status bar visibility in light mode by adding a `values-night/styles.xml` override
 
 ## How To Grow This File
 

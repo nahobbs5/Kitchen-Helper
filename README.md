@@ -26,14 +26,14 @@ The app currently includes:
 - shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH` on smaller screens
 - a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
-- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and an interactive oven temperature slider
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and interactive conversion sliders for oven temperature, liquid measure, dry measure, butter/olive oil substitution, gallons, quarts, liters, and tsp/ml
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - sticky search bars on recipe and reference browsing screens, with clear buttons when search text is entered
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
 - cloud-synced user recipes and recipe overrides backed by Supabase-compatible auth and database APIs
 - clickable recipe detail pages generated from Markdown
 - editable recipe detail pages for both local recipes and Obsidian-backed recipes through local overrides
-- ingredient scaling controls on recipe pages
+- ingredient scaling controls on recipe pages, with the serving count tag updating dynamically as the multiplier changes
 - single-recipe share cards and bulk `Share Selected` from `My Recipes`
 - favorites saved locally
 - category, cuisine-region, allergen, and favorites filtering
@@ -46,7 +46,7 @@ The app currently includes:
 - a global shared cook timer popup/modal with a configurable number of timer slots
 - photo-based recipe import with local OCR-assisted prefill
 - website-based recipe import with source attribution
-- scaled directions with per-step warnings, cue highlights, and local step edits
+- scaled directions with per-step warnings, cue highlights, local step edits, and tappable time highlights that pre-load the cook timer
 
 ## Stack
 
@@ -257,7 +257,15 @@ The cooking dictionary page is generated from:
 
 The dictionary generator parses that glossary format into searchable app data in [`data/cooking-dictionary.ts`].
 
-The current reference UI includes dictionary category tabs for general terms, spices, oils, `Cheeses`, `Breads`, alcohol, and instruments. The `Oven temperatures` conversion replaces the old static list with an interactive Fahrenheit slider from `200F` to `550F` plus common preset buttons.
+The current reference UI includes dictionary category tabs for general terms, spices, oils, `Cheeses`, `Breads`, alcohol, and instruments.
+
+The conversions tab is fully interactive. Every measurement section uses a slider with preset buttons:
+
+- `Oven temperatures` — Fahrenheit slider from `200F` to `550F` with common presets
+- `Liquid measure` — fluid ounces to milliliters
+- `Dry measure` — cups to fluid ounces
+- `Butter to olive oil` — teaspoon-based substitution slider
+- Gallons, quarts, liters, and teaspoon/milliliter sections each have their own slider
 
 ## Scripts
 
@@ -520,6 +528,7 @@ Current behavior:
 - scaled-up baking or roasting steps can show depth warnings
 - vessel-size references can show equipment-check notes
 - users can edit and reset individual steps directly on recipe pages
+- highlighted time mentions in direction steps are tappable — tapping one pre-loads the cook timer with that duration and the recipe name as the timer label, then opens the timer popup
 
 Important files:
 
@@ -540,6 +549,7 @@ Current timer behavior:
 - selectable completion sound at zero, defaulting to a looping `Beep Beep` pattern, and optional mobile vibration when `Allow vibration` is enabled
 - button labels that correctly distinguish `Start` from `Resume`
 - `Reset` is disabled until a timer has actually been started
+- timer slots can be pre-loaded from tappable time highlights in recipe directions, which sets the duration and label automatically and opens the popup
 
 Important files:
 
@@ -640,5 +650,5 @@ Natural next steps from here:
 1. add more bulk actions like unfavorite or bulk tag removal
 2. improve dictionary formatting for very long entries
 3. standardize more recipe note formats so more metadata can be parsed cleanly
-4. add richer timer presets or recipe-step-linked timers
+4. build a dedicated step-linked cook mode that sequences directions and links timers per step
 
