@@ -382,6 +382,7 @@ export default function UserRecipeScreen() {
                   directions={recipe.directions}
                   palette={palette}
                   emptyMessage="No directions were saved."
+                  recipeName={recipe.title}
                 />
               ) : (
                 <ScaledDirectionsList
@@ -393,6 +394,7 @@ export default function UserRecipeScreen() {
                   scale={multiplier}
                   palette={palette}
                   emptyMessage="No directions were saved."
+                  recipeName={recipe.title}
                 />
               )}
             </View>

@@ -203,15 +203,36 @@ function addHighlightRanges(text: string, regex: RegExp, type: DirectionHighligh
   }
 }
 
-function normalizeHighlights(text: string, scale: number) {
-  if (scale === 1) {
-    return [];
-  }
-
+export function getTimeHighlights(text: string): DirectionHighlightRange[] {
   const ranges: DirectionHighlightRange[] = [];
   addHighlightRanges(text, timeRegex, 'time', ranges);
-  addHighlightRanges(text, temperatureRegex, 'temperature', ranges);
-  addHighlightRanges(text, donenessCueRegex, 'doneness', ranges);
+  return ranges;
+}
+
+export function parseHighlightedTimeMs(text: string): number {
+  const rangeMatch = /(\d+)\s*[–—-]\s*(\d+)\s*(minutes?|mins?|hours?|hrs?)/i.exec(text);
+  if (rangeMatch) {
+    const upper = parseInt(rangeMatch[2], 10);
+    return upper * (/^h/i.test(rangeMatch[3]) ? 3600000 : 60000);
+  }
+
+  const singleMatch = /(\d+)\s*(minutes?|mins?|hours?|hrs?)/i.exec(text);
+  if (singleMatch) {
+    const value = parseInt(singleMatch[1], 10);
+    return value * (/^h/i.test(singleMatch[2]) ? 3600000 : 60000);
+  }
+
+  return 0;
+}
+
+function normalizeHighlights(text: string, scale: number) {
+  const ranges: DirectionHighlightRange[] = [];
+  addHighlightRanges(text, timeRegex, 'time', ranges);
+
+  if (scale !== 1) {
+    addHighlightRanges(text, temperatureRegex, 'temperature', ranges);
+    addHighlightRanges(text, donenessCueRegex, 'doneness', ranges);
+  }
 
   ranges.sort((left, right) => left.start - right.start || left.end - right.end);
 

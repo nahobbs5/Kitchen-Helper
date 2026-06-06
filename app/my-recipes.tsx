@@ -593,18 +593,18 @@ export default function MyRecipesScreen() {
                   onPress={() => router.push('/add-recipe')}
                   style={[
                     styles.mobileRecipeActionButton,
-                    { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+                    { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
                   ]}
                 >
                   <View style={styles.mobileRecipePanIconWrap}>
-                    <FryingPanIcon size={34} />
+                    <FryingPanIcon size={34} palette={palette} />
                     <View
                       style={[
                         styles.mobileRecipeActionPlusBadge,
-                        { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+                        { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
                       ]}
                     >
-                      <Text style={[styles.mobileRecipeActionPlusText, { color: '#4a2d63' }]}>+</Text>
+                      <Text style={[styles.mobileRecipeActionPlusText, { color: palette.addButtonText }]}>+</Text>
                     </View>
                   </View>
                 </Pressable>
@@ -620,7 +620,7 @@ export default function MyRecipesScreen() {
                     },
                   ]}
                 >
-                  <MultiSelectIcon active={selectionMode} size={30} />
+                  <MultiSelectIcon active={selectionMode} size={30} palette={palette} />
                 </Pressable>
               </View>
             ) : (

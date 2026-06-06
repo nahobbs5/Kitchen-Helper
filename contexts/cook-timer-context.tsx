@@ -31,6 +31,7 @@ type CookTimerContextValue = {
   updateTimerDurationInput: (id: number, value: string) => void;
   toggleTimer: (id: number) => void;
   resetTimer: (id: number) => void;
+  loadTimerSlot: (label: string, durationMs: number) => boolean;
 };
 
 function makeTimers(count: number): CookTimerSlot[] {
@@ -47,6 +48,23 @@ function makeTimers(count: number): CookTimerSlot[] {
 }
 
 const CookTimerContext = createContext<CookTimerContextValue | undefined>(undefined);
+
+function msToTimerInput(ms: number): string {
+  const totalSeconds = Math.round(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  if (seconds > 0) {
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  return String(minutes);
+}
 
 function parseDurationInput(value: string) {
   const trimmed = value.trim().replace(/\./g, ':');
@@ -281,6 +299,21 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
               : timer
           )
         );
+      },
+      loadTimerSlot: (label: string, durationMs: number) => {
+        const target =
+          timers.find((t) => !t.active && !t.hasStarted) ?? timers.find((t) => !t.active);
+        if (!target) return false;
+
+        const input = msToTimerInput(durationMs);
+        setTimers((current) =>
+          current.map((t) =>
+            t.id === target.id
+              ? { ...t, label, durationInput: input, durationMs, remainingMs: durationMs }
+              : t
+          )
+        );
+        return true;
       },
     }),
     [completedEventCount, finishedTimerAlerts, isCookTimerOpen, timers]

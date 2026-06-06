@@ -417,6 +417,7 @@ export default function ObsidianRecipeScreen() {
                   directions={recipe.directions}
                   palette={palette}
                   emptyMessage="No directions were detected in this note."
+                  recipeName={recipe.title}
                 />
               ) : (
                 <ScaledDirectionsList
@@ -428,6 +429,7 @@ export default function ObsidianRecipeScreen() {
                   scale={multiplier}
                   palette={palette}
                   emptyMessage="No directions were detected in this note."
+                  recipeName={recipe.title}
                 />
               )}
             </View>

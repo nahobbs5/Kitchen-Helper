@@ -19,6 +19,13 @@ export type AppPalette = {
   tagText: string;
   searchPlaceholder: string;
   headerBackground: string;
+  highlightTemp: string;
+  highlightTempText: string;
+  highlightDoneness: string;
+  highlightDonenessText: string;
+  addButtonBg: string;
+  addButtonBorder: string;
+  addButtonText: string;
 };
 
 export const lightPalette: AppPalette = {
@@ -42,6 +49,13 @@ export const lightPalette: AppPalette = {
   tagText: '#6f4817',
   searchPlaceholder: '#8f775b',
   headerBackground: '#fff7ea',
+  highlightTemp: '#f9d6c4',
+  highlightTempText: '#7a2f1d',
+  highlightDoneness: '#dce9c9',
+  highlightDonenessText: '#33511c',
+  addButtonBg: '#fff8ef',
+  addButtonBorder: '#edca88',
+  addButtonText: '#4a2d63',
 };
 
 export const darkPalette: AppPalette = {
@@ -65,4 +79,11 @@ export const darkPalette: AppPalette = {
   tagText: '#f5d8aa',
   searchPlaceholder: '#a88d74',
   headerBackground: '#1d1712',
+  highlightTemp: '#4a2520',
+  highlightTempText: '#f9c4ad',
+  highlightDoneness: '#2a3a1f',
+  highlightDonenessText: '#b8d49a',
+  addButtonBg: '#2d2318',
+  addButtonBorder: '#5c4736',
+  addButtonText: '#c4aadf',
 };

@@ -31,10 +31,9 @@ function HeaderTooltip({ label, children }: { label: string; children: React.Rea
   return (
     <View
       style={{ position: 'relative', overflow: 'visible' }}
-      {...({
-        onMouseEnter: () => setHovered(true),
-        onMouseLeave: () => setHovered(false),
-      } as any)}
+      // @ts-expect-error React Native Web hover events are not in the RN type definitions
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {children}
       {hovered && (

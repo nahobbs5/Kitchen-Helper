@@ -40,23 +40,23 @@ export default function HomeScreen() {
       style={[
         styles.homeAddRecipeButton,
         isMobile ? styles.homeAddRecipeButtonFloating : styles.homeAddRecipeButtonDesktop,
-        { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+        { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
       ]}
     >
       <View style={[styles.homeAddRecipeIconWrap, isMobile && styles.homeAddRecipeIconWrapFloating]}>
-        <FryingPanIcon size={isMobile ? 66 : 38} />
+        <FryingPanIcon size={isMobile ? 66 : 38} palette={palette} />
         <View
           style={[
             styles.homeAddRecipePlusBadge,
             isMobile && styles.homeAddRecipePlusBadgeFloating,
-            { backgroundColor: '#fff8ef', borderColor: '#edca88' },
+            { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
           ]}
         >
           <Text
             style={[
               styles.homeAddRecipePlusText,
               isMobile && styles.homeAddRecipePlusTextFloating,
-              { color: '#4a2d63' },
+              { color: palette.addButtonText },
             ]}
           >
             +
@@ -64,7 +64,7 @@ export default function HomeScreen() {
         </View>
       </View>
       {!isMobile ? (
-        <Text style={[styles.homeAddRecipeLabel, { color: '#4a2d63' }]}>Add Recipe</Text>
+        <Text style={[styles.homeAddRecipeLabel, { color: palette.addButtonText }]}>Add Recipe</Text>
       ) : null}
     </Pressable>
   );

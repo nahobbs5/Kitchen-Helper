@@ -3,11 +3,14 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 
 import type { AppPalette } from './app-theme';
 import { kitchenStyles as styles } from './kitchen-styles';
+import { useCookTimer } from '../contexts/cook-timer-context';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import type { RecipeSection } from '../data/obsidian-recipes';
 import {
   analyzeScaledDirections,
   type DirectionHighlightRange,
+  getTimeHighlights,
+  parseHighlightedTimeMs,
 } from '../utils/scaled-directions';
 
 type ScaledDirectionsListProps = {
@@ -19,12 +22,14 @@ type ScaledDirectionsListProps = {
   scale: number;
   palette: AppPalette;
   emptyMessage?: string;
+  recipeName?: string;
 };
 
 type RecipeDirectionsListProps = {
   directions: RecipeSection[];
   palette: AppPalette;
   emptyMessage: string;
+  recipeName?: string;
 };
 
 function highlightStyle(type: DirectionHighlightRange['type'], palette: AppPalette) {
@@ -32,9 +37,9 @@ function highlightStyle(type: DirectionHighlightRange['type'], palette: AppPalet
     case 'time':
       return { backgroundColor: palette.tag, color: palette.tagText };
     case 'temperature':
-      return { backgroundColor: '#f9d6c4', color: '#7a2f1d' };
+      return { backgroundColor: palette.highlightTemp, color: palette.highlightTempText };
     case 'doneness':
-      return { backgroundColor: '#dce9c9', color: '#33511c' };
+      return { backgroundColor: palette.highlightDoneness, color: palette.highlightDonenessText };
     default:
       return { color: palette.textMuted };
   }
@@ -44,13 +49,21 @@ function HighlightedStepText({
   text,
   highlights,
   palette,
+  onTimeTap,
+  prefix,
 }: {
   text: string;
   highlights: DirectionHighlightRange[];
   palette: AppPalette;
+  onTimeTap?: (highlightText: string) => void;
+  prefix?: string;
 }) {
   if (highlights.length === 0) {
-    return <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{text}</Text>;
+    return (
+      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+        {prefix}{text}
+      </Text>
+    );
   }
 
   const segments: Array<{ text: string; type?: DirectionHighlightRange['type'] }> = [];
@@ -74,21 +87,28 @@ function HighlightedStepText({
 
   return (
     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-      {segments.map((segment, index) => (
-        <Text
-          key={`${segment.text}-${index}`}
-          style={
-            segment.type
-              ? [
-                  styles.directionHighlight,
-                  highlightStyle(segment.type, palette),
-                ]
-              : undefined
-          }
-        >
-          {segment.text}
-        </Text>
-      ))}
+      {prefix}
+      {segments.map((segment, index) => {
+        const isTappableTime = segment.type === 'time' && !!onTimeTap;
+        return (
+          <Text
+            key={`${segment.text}-${index}`}
+            style={
+              segment.type
+                ? [
+                    styles.directionHighlight,
+                    highlightStyle(segment.type, palette),
+                    isTappableTime && { textDecorationLine: 'underline' },
+                  ]
+                : undefined
+            }
+            onPress={isTappableTime ? () => onTimeTap(segment.text) : undefined}
+            suppressHighlighting={!isTappableTime}
+          >
+            {segment.text}
+          </Text>
+        );
+      })}
     </Text>
   );
 }
@@ -97,10 +117,23 @@ export function RecipeDirectionsList({
   directions,
   palette,
   emptyMessage,
+  recipeName,
 }: RecipeDirectionsListProps) {
+  const { loadTimerSlot, openCookTimer } = useCookTimer();
+
+  function handleTimeTap(highlightText: string, stepNumber: number) {
+    const durationMs = parseHighlightedTimeMs(highlightText);
+    if (durationMs <= 0) return;
+    const label = recipeName ? `${recipeName} · Step ${stepNumber}` : `Step ${stepNumber}`;
+    const loaded = loadTimerSlot(label, durationMs);
+    if (loaded) openCookTimer();
+  }
+
   if (directions.length === 0) {
     return <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{emptyMessage}</Text>;
   }
+
+  let overallStep = 0;
 
   return (
     <View style={styles.listStack}>
@@ -112,11 +145,21 @@ export function RecipeDirectionsList({
           {section.title ? (
             <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text>
           ) : null}
-          {section.items.map((item, itemIndex) => (
-            <Text key={`${itemIndex}-${item}`} style={[styles.detailCardBody, { color: palette.textMuted }]}>
-              {itemIndex + 1}. {item}
-            </Text>
-          ))}
+          {section.items.map((item, itemIndex) => {
+            overallStep += 1;
+            const stepNumber = overallStep;
+            const highlights = getTimeHighlights(item);
+            return (
+              <HighlightedStepText
+                key={`${itemIndex}-${item}`}
+                prefix={`${itemIndex + 1}. `}
+                text={item}
+                highlights={highlights}
+                palette={palette}
+                onTimeTap={(t) => handleTimeTap(t, stepNumber)}
+              />
+            );
+          })}
         </View>
       ))}
     </View>
@@ -132,10 +175,20 @@ export function ScaledDirectionsList({
   scale,
   palette,
   emptyMessage = 'No directions were detected.',
+  recipeName,
 }: ScaledDirectionsListProps) {
   const { resetDirectionStep, updateDirectionStep } = useCustomRecipes();
+  const { loadTimerSlot, openCookTimer } = useCookTimer();
   const [editingStepId, setEditingStepId] = useState<string | null>(null);
   const [draftText, setDraftText] = useState('');
+
+  function handleTimeTap(highlightText: string, stepNumber: number) {
+    const durationMs = parseHighlightedTimeMs(highlightText);
+    if (durationMs <= 0) return;
+    const label = recipeName ? `${recipeName} · Step ${stepNumber}` : `Step ${stepNumber}`;
+    const loaded = loadTimerSlot(label, durationMs);
+    if (loaded) openCookTimer();
+  }
 
   const steps = useMemo(
     () =>
@@ -259,7 +312,12 @@ export function ScaledDirectionsList({
                 </View>
               </View>
             ) : (
-              <HighlightedStepText text={step.displayText} highlights={step.highlights} palette={palette} />
+              <HighlightedStepText
+                text={step.displayText}
+                highlights={step.highlights}
+                palette={palette}
+                onTimeTap={(highlightText) => handleTimeTap(highlightText, step.stepNumber)}
+              />
             )}
 
             {!isEditing && step.annotations.length > 0 ? (
