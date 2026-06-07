@@ -21,7 +21,7 @@ const menuItems = [
   },
   {
     title: 'Kitchen Guides',
-    body: 'Conversions, substitutions, and cooking dictionary tools collected in one quick-reference space.',
+    body: 'Conversions, substitutions, and a cooking dictionary in one place.',
     href: '/reference' as const,
   },
 ];
@@ -94,7 +94,7 @@ export default function HomeScreen() {
             <Text style={[styles.subtitle, { color: palette.textMuted }]}>
               {configured
                 ? user
-                  ? null
+                  ? `Welcome back, ${user.email?.split('@')[0] ?? user.email}.`
                   : 'Sign in on the account page to sync your recipe library across mobile and web.'
                 : 'Add Supabase sync config to enable a shared recipe library across devices.'}
             </Text>
@@ -109,17 +109,17 @@ export default function HomeScreen() {
                   <Pressable
                     key={item.title}
                     onPress={() => router.push(item.href)}
-                    style={[
+                    android_ripple={{ color: palette.borderAlt }}
+                    style={({ pressed }) => [
                       styles.menuCard,
-                      isMobile && item.title === 'Kitchen Guides' && styles.homeKitchenGuidesCardMobile,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                      pressed && { opacity: 0.75 },
                     ]}
                   >
                     <Text style={[styles.menuCardTitle, { color: palette.text }]}>{item.title}</Text>
                     <Text
                       style={[
                         styles.menuCardBody,
-                        isMobile && item.title === 'Kitchen Guides' && styles.homeKitchenGuidesBodyMobile,
                         { color: palette.textMuted },
                       ]}
                     >

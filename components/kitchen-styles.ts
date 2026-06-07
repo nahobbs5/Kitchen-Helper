@@ -16,6 +16,7 @@ export const kitchenStyles = StyleSheet.create({
   },
   homePageWithFloatingAction: {
     paddingBottom: 116,
+    flexGrow: 1,
   },
   hero: {
     backgroundColor: '#fff7ea',
