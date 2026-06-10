@@ -24,10 +24,17 @@ import {
   toggleAllergenSelection,
   toggleFriendlySelection,
 } from '../utils/allergen-tags';
+import {
+  type AiImportedRecipe,
+  type AiImportTier,
+  type AiRecipePhoto,
+  importRecipeFromPhotos,
+} from '../utils/ai-recipe-import';
 import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
 import { extractRecipeMetadata, formatCookTimeTag } from '../utils/recipe-metadata';
 import {
   formatRecipeSections,
+  normalizeRecipeSections,
   parseRecipeSectionsText,
   recipeSectionsHaveItems,
 } from '../utils/recipe-sections';
@@ -42,12 +49,15 @@ const categoryOptions = [
 ] as const;
 
 type EntryMode = 'manual' | 'photo' | 'website';
+type PhotoMethod = 'ai' | 'ocr';
 type OcrState = 'idle' | 'recognizing' | 'done' | 'error';
+type AiImportState = 'idle' | 'extracting' | 'done' | 'error';
 type WebsiteImportState = 'idle' | 'loading' | 'done' | 'error';
 type SelectedRecipePhoto = {
   uri: string;
   ocrText: string;
 };
+type SelectedAiPhoto = AiRecipePhoto & { uri: string };
 
 export default function AddRecipeScreen() {
   const router = useRouter();
@@ -57,6 +67,11 @@ export default function AddRecipeScreen() {
   const { addRecipe, syncBusy } = useCustomRecipes();
 
   const [entryMode, setEntryMode] = useState<EntryMode>('manual');
+  const [photoMethod, setPhotoMethod] = useState<PhotoMethod>('ai');
+  const [aiState, setAiState] = useState<AiImportState>('idle');
+  const [aiError, setAiError] = useState('');
+  const [aiPhotos, setAiPhotos] = useState<SelectedAiPhoto[]>([]);
+  const [lastAiTier, setLastAiTier] = useState<AiImportTier>('fast');
   const [ocrState, setOcrState] = useState<OcrState>('idle');
   const [ocrError, setOcrError] = useState('');
   const [ocrRawText, setOcrRawText] = useState('');
@@ -387,6 +402,125 @@ export default function AddRecipeScreen() {
     }
   }
 
+  function applyAiResult(recipe: AiImportedRecipe) {
+    if (recipe.title) {
+      setRecipeName(recipe.title);
+    }
+
+    const ingredients = normalizeRecipeSections(recipe.ingredientSections ?? []);
+    if (ingredients.length > 0) {
+      setIngredientsSections(ingredients);
+    }
+
+    const directions = normalizeRecipeSections(recipe.directionSections ?? []);
+    if (directions.length > 0) {
+      setDirectionsSections(directions);
+    }
+
+    if (recipe.prepTime) {
+      setPrepTime(recipe.prepTime);
+    }
+
+    if (recipe.cookTime) {
+      setCookTime(recipe.cookTime);
+    }
+
+    if (recipe.servings) {
+      setServings(recipe.servings);
+    }
+
+    if (recipe.notes) {
+      setNotes(recipe.notes);
+    }
+
+    if (
+      recipe.suggestedCategory
+      && categoryOptions.some((option) => option.value === recipe.suggestedCategory)
+    ) {
+      setCategory(recipe.suggestedCategory);
+    }
+
+    if (recipe.cuisineRegion) {
+      setCuisineRegion(recipe.cuisineRegion);
+    }
+
+    const aiAllergens = (recipe.allergenTags ?? []).filter((tag) =>
+      (allergenTagOptions as readonly string[]).includes(tag)
+    );
+    const aiFriendly = (recipe.allergyFriendlyTags ?? []).filter((tag) =>
+      (allergyFriendlyTagOptions as readonly string[]).includes(tag)
+    );
+
+    if (aiAllergens.length > 0 || aiFriendly.length > 0) {
+      setAllergenTouched(true);
+      setFriendlyTouched(true);
+      setAllergenTags(aiAllergens);
+      setAllergyFriendlyTags(aiFriendly);
+    }
+  }
+
+  async function runAiExtraction(photos: SelectedAiPhoto[], tier: AiImportTier) {
+    setAiState('extracting');
+    setAiError('');
+    setLastAiTier(tier);
+
+    try {
+      const recipe = await importRecipeFromPhotos(
+        photos.map(({ base64, mediaType }) => ({ base64, mediaType })),
+        tier
+      );
+      applyAiResult(recipe);
+      setAiState('done');
+    } catch (error) {
+      setAiState('error');
+      setAiError(error instanceof Error ? error.message : 'AI recipe import failed.');
+    }
+  }
+
+  async function handlePickPhotosForAi() {
+    setAiError('');
+
+    const ImagePicker = await import('expo-image-picker');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setAiState('error');
+      setAiError('Photo access is needed to import a recipe from an image.');
+      return;
+    }
+
+    const selection = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 2,
+      orderedSelection: true,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (selection.canceled) {
+      return;
+    }
+
+    const photos = selection.assets
+      .filter((asset) => asset.base64)
+      .slice(0, 2)
+      .map((asset) => ({
+        uri: asset.uri,
+        base64: asset.base64 as string,
+        mediaType: asset.mimeType ?? 'image/jpeg',
+      }));
+
+    if (photos.length === 0) {
+      setAiState('error');
+      setAiError('Could not read the selected image(s). Try different photos.');
+      return;
+    }
+
+    setAiPhotos(photos);
+    await runAiExtraction(photos, 'fast');
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
@@ -456,59 +590,166 @@ export default function AddRecipeScreen() {
 
                 {entryMode === 'photo' ? (
                   <View style={styles.formField}>
-                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe photo(s)</Text>
-                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                      Pick up to two recipe images from your device. We will run local OCR in selection order, then prefill the
-                      form below so you can review it before saving. The local OCR path is meant to reduce typing, especially for printed recipes or clean screenshots. It will not perfectly understand every recipe layout. Best results usually come from straight, high-contrast photos with clear section headings like Ingredients and Directions.
-                    </Text>
-                    {!supportsLocalOcr ? (
-                      <Text style={[styles.formHint, { color: palette.accent }]}>
-                        Local OCR is currently configured for native builds. On web, use manual
-                        entry for now.
-                      </Text>
-                    ) : (
-                      <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                        This OCR path uses a native ML Kit module, so it is intended for a dev
-                        build rather than Expo Go.
-                      </Text>
-                    )}
-                    <View style={styles.actionRow}>
-                      <Pressable
-                        onPress={handlePickRecipePhoto}
-                        style={[styles.primaryButton, { backgroundColor: palette.accent }]}
-                      >
-                        <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                          Select Recipe Photos
-                        </Text>
-                      </Pressable>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Import method</Text>
+                    <View style={styles.servingsRow}>
+                      {[
+                        { label: 'AI extract', value: 'ai' as const },
+                        { label: 'Offline OCR', value: 'ocr' as const },
+                      ].map((option) => {
+                        const isActive = photoMethod === option.value;
+
+                        return (
+                          <Pressable
+                            key={option.value}
+                            onPress={() => setPhotoMethod(option.value)}
+                            style={[
+                              styles.servingsButton,
+                              { borderColor: palette.borderAlt },
+                              !isActive && { backgroundColor: palette.surface },
+                              isActive && styles.servingsButtonActive,
+                              isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.servingsButtonText,
+                                { color: isActive ? palette.inverseText : palette.text },
+                                isActive && styles.servingsButtonTextActive,
+                              ]}
+                            >
+                              {option.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
                     </View>
-                    {ocrState === 'recognizing' ? (
-                      <Text style={[styles.formHint, { color: palette.accentText }]}>
-                        Reading the selected recipe image(s) and filling the form...
-                      </Text>
-                    ) : null}
-                    {ocrError ? (
-                      <Text style={[styles.formHint, { color: palette.accent }]}>{ocrError}</Text>
-                    ) : null}
-                    {selectedRecipePhotos.length > 0 ? (
-                      <View style={styles.formStack}>
-                        {selectedRecipePhotos.map((photo, index) => (
-                          <View key={`${photo.uri}-${index}`} style={styles.formField}>
-                            <Text style={[styles.formHint, { color: palette.accentText }]}>Photo {index + 1}</Text>
-                            <Image
-                              source={{ uri: photo.uri }}
-                              style={{
-                                width: '100%',
-                                height: 220,
-                                borderRadius: 18,
-                                marginTop: 8,
+
+                    {photoMethod === 'ai' ? (
+                      <>
+                        <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                          Pick up to two recipe photos. They are sent to your private import service, read by AI, and used to
+                          prefill the form below — including category, cuisine, and allergy tags — so you can review everything
+                          before saving. Handles handwriting and multi-column layouts much better than offline OCR. Typical cost
+                          is well under a cent per recipe.
+                        </Text>
+                        <View style={styles.actionRow}>
+                          <Pressable
+                            onPress={() => {
+                              void handlePickPhotosForAi();
+                            }}
+                            style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                          >
+                            <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                              Select Recipe Photos
+                            </Text>
+                          </Pressable>
+                          {aiPhotos.length > 0 && aiState !== 'extracting' && lastAiTier === 'fast' ? (
+                            <Pressable
+                              onPress={() => {
+                                void runAiExtraction(aiPhotos, 'accurate');
                               }}
-                              resizeMode="cover"
-                            />
+                              style={[
+                                styles.secondaryButton,
+                                { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                              ]}
+                            >
+                              <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                                Retry with Better Model
+                              </Text>
+                            </Pressable>
+                          ) : null}
+                        </View>
+                        {aiState === 'extracting' ? (
+                          <Text style={[styles.formHint, { color: palette.accentText }]}>
+                            {lastAiTier === 'accurate'
+                              ? 'Re-reading the photo(s) with the more accurate model...'
+                              : 'Reading the recipe photo(s) and filling the form...'}
+                          </Text>
+                        ) : null}
+                        {aiState === 'done' ? (
+                          <Text style={[styles.formHint, { color: palette.accentText }]}>
+                            Done — review the prefilled form below before saving. If something looks off, try the better model.
+                          </Text>
+                        ) : null}
+                        {aiError ? (
+                          <Text style={[styles.formHint, { color: palette.accent }]}>{aiError}</Text>
+                        ) : null}
+                        {aiPhotos.length > 0 ? (
+                          <View style={styles.formStack}>
+                            {aiPhotos.map((photo, index) => (
+                              <View key={`${photo.uri}-${index}`} style={styles.formField}>
+                                <Text style={[styles.formHint, { color: palette.accentText }]}>Photo {index + 1}</Text>
+                                <Image
+                                  source={{ uri: photo.uri }}
+                                  style={{
+                                    width: '100%',
+                                    height: 220,
+                                    borderRadius: 18,
+                                    marginTop: 8,
+                                  }}
+                                  resizeMode="cover"
+                                />
+                              </View>
+                            ))}
                           </View>
-                        ))}
-                      </View>
-                    ) : null}
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                          Free, on-device text recognition — no photo leaves your phone. Works best on straight, high-contrast
+                          photos of printed recipes with clear section headings like Ingredients and Directions. For handwriting
+                          or busy layouts, AI extract is far more reliable.
+                        </Text>
+                        {!supportsLocalOcr ? (
+                          <Text style={[styles.formHint, { color: palette.accent }]}>
+                            Local OCR is currently configured for native builds. On web, use AI extract or manual entry.
+                          </Text>
+                        ) : (
+                          <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                            This OCR path uses a native ML Kit module, so it is intended for a dev
+                            build rather than Expo Go.
+                          </Text>
+                        )}
+                        <View style={styles.actionRow}>
+                          <Pressable
+                            onPress={handlePickRecipePhoto}
+                            style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                          >
+                            <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                              Select Recipe Photos
+                            </Text>
+                          </Pressable>
+                        </View>
+                        {ocrState === 'recognizing' ? (
+                          <Text style={[styles.formHint, { color: palette.accentText }]}>
+                            Reading the selected recipe image(s) and filling the form...
+                          </Text>
+                        ) : null}
+                        {ocrError ? (
+                          <Text style={[styles.formHint, { color: palette.accent }]}>{ocrError}</Text>
+                        ) : null}
+                        {selectedRecipePhotos.length > 0 ? (
+                          <View style={styles.formStack}>
+                            {selectedRecipePhotos.map((photo, index) => (
+                              <View key={`${photo.uri}-${index}`} style={styles.formField}>
+                                <Text style={[styles.formHint, { color: palette.accentText }]}>Photo {index + 1}</Text>
+                                <Image
+                                  source={{ uri: photo.uri }}
+                                  style={{
+                                    width: '100%',
+                                    height: 220,
+                                    borderRadius: 18,
+                                    marginTop: 8,
+                                  }}
+                                  resizeMode="cover"
+                                />
+                              </View>
+                            ))}
+                          </View>
+                        ) : null}
+                      </>
+                    )}
                   </View>
                 ) : null}
 
