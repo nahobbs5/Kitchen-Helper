@@ -35,15 +35,27 @@ From the repo root:
 
 No app config is needed — the app builds the function URL and auth from the `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` values already in `.env`.
 
-## If you get 401s
+## Known deployment requirements
 
-The function gateway validates your Supabase API key. If your project uses the newer `sb_publishable_...` keys and the gateway rejects them as "invalid JWT", redeploy with gateway verification off:
+### Always deploy with `--no-verify-jwt`
+
+This project uses Supabase's newer `sb_publishable_...` anon key format, which the Edge Function gateway rejects as an invalid JWT. Deploy with:
 
 ```sh
 supabase functions deploy recipe-import --no-verify-jwt
 ```
 
-The function is then protected by URL obscurity plus your Anthropic spend cap — the same trust level as a shared secret embedded in the app binary.
+If you forget and deploy without the flag, the app will get no response (not even an error in the function logs, because the request is blocked at the gateway before reaching the function). The spend cap is your real protection.
+
+### JSON schema: use `anyOf` for nullable fields
+
+Anthropic's structured output validator does not accept `type: ['string', 'null']` (array types). All nullable fields in the schema must use:
+
+```json
+{ "anyOf": [{ "type": "string" }, { "type": "null" }] }
+```
+
+The deployed schema already uses this pattern. If you extend the schema, follow the same convention or you'll get a 400 `invalid_request_error` from the Anthropic API.
 
 ## Smoke test
 

@@ -252,9 +252,11 @@ export function SettingsMenuModal() {
     palette,
     resetToDefaults,
     setTimerSound,
+    showRatingsInCardExports,
     timerCount,
     timerSound,
     toggleConfirmDelete,
+    toggleShowRatingsInCardExports,
     toggleDarkMode,
     toggleKeepScreenAwake,
     toggleAllowVibration,
@@ -613,6 +615,34 @@ export function SettingsMenuModal() {
                   ]}
                 >
                   {confirmDeleteEnabled ? 'On' : 'Off'}
+                </Text>
+              </Pressable>
+            </View>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsCopy}>
+                <Text style={[styles.settingsLabel, { color: palette.text }]}>Show ratings in exports</Text>
+                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                  Include your star ratings on shared recipe cards and PDF exports. Off by default.
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => toggleShowRatingsInCardExports()}
+                style={[
+                  styles.numberButton,
+                  {
+                    minWidth: 72,
+                    backgroundColor: showRatingsInCardExports ? palette.accentSoft : palette.elevatedAlt,
+                    borderColor: showRatingsInCardExports ? palette.accentSoft : palette.borderAlt,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.numberButtonText,
+                    { color: showRatingsInCardExports ? palette.accentContrastText : palette.text },
+                  ]}
+                >
+                  {showRatingsInCardExports ? 'On' : 'Off'}
                 </Text>
               </Pressable>
             </View>

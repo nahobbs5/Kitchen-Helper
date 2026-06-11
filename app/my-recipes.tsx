@@ -20,6 +20,8 @@ import { FryingPanIcon, MultiSelectIcon } from '../components/recipe-action-icon
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
+import { useRatings } from '../contexts/ratings-context';
+import { StarRating } from '../components/star-rating';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
@@ -38,7 +40,8 @@ type LibraryRecipe = (typeof obsidianRecipes)[number] | ReturnType<typeof useCus
 
 function toExportRecipe(
   recipe: LibraryRecipe,
-  recipeOverrideMap: ReturnType<typeof useCustomRecipes>['recipeOverrideMap']
+  recipeOverrideMap: ReturnType<typeof useCustomRecipes>['recipeOverrideMap'],
+  rating: number | null = null
 ): ExportRecipe {
   const override = recipeOverrideMap[recipe.slug];
   const sourceInfo = 'sourceInfo' in recipe ? recipe.sourceInfo : override?.sourceInfo ?? null;
@@ -59,6 +62,7 @@ function toExportRecipe(
     directions: recipe.directions,
     notes: 'notes' in recipe && typeof recipe.notes === 'string' ? recipe.notes : null,
     sourceInfo,
+    rating,
   };
 }
 
@@ -73,7 +77,7 @@ export default function MyRecipesScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const isMobile = width < 768;
-  const { palette } = useAppSettings();
+  const { palette, showRatingsInCardExports } = useAppSettings();
   const scrollOffsetRef = useRef(0);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
@@ -110,6 +114,7 @@ export default function MyRecipesScreen() {
     syncError,
   } = useCustomRecipes();
   const { favoriteRecipes, favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
+  const { getRating, setRating } = useRatings();
   const allRecipes = useMemo(
     () => [
       ...customRecipes,
@@ -372,7 +377,11 @@ export default function MyRecipesScreen() {
   }
 
   async function handleShareRecipe(recipe: LibraryRecipe) {
-    const exportRecipe = toExportRecipe(recipe, recipeOverrideMap);
+    const exportRecipe = toExportRecipe(
+      recipe,
+      recipeOverrideMap,
+      showRatingsInCardExports ? getRating(recipe.slug) : null
+    );
 
     setRecipesPendingShare([exportRecipe]);
 
@@ -392,7 +401,9 @@ export default function MyRecipesScreen() {
     const exportRecipes = selectedRecipeSlugs
       .map((slug) => recipeBySlug.get(slug))
       .filter((recipe): recipe is LibraryRecipe => Boolean(recipe))
-      .map((recipe) => toExportRecipe(recipe, recipeOverrideMap));
+      .map((recipe) =>
+        toExportRecipe(recipe, recipeOverrideMap, showRatingsInCardExports ? getRating(recipe.slug) : null)
+      );
 
     if (exportRecipes.length === 0) {
       return;
@@ -1183,6 +1194,12 @@ export default function MyRecipesScreen() {
                         ) : null}
                       </View>
                     ) : null}
+                    <View style={styles.detailCardRatingRow}>
+                      <StarRating
+                        value={getRating(recipe.slug)}
+                        onRate={(next) => setRating(recipe.slug, next)}
+                      />
+                    </View>
                   </Pressable>
                 ))}
                 {filteredRecipes.length === 0 ? (

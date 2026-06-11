@@ -26,6 +26,7 @@ type SettingsContextValue = {
   keepScreenAwake: boolean;
   allowVibration: boolean;
   confirmDeleteEnabled: boolean;
+  showRatingsInCardExports: boolean;
   timerCount: number;
   timerSound: TimerSoundId;
   loaded: boolean;
@@ -37,6 +38,7 @@ type SettingsContextValue = {
   toggleKeepScreenAwake: (value?: boolean) => void;
   toggleAllowVibration: (value?: boolean) => void;
   toggleConfirmDelete: (value?: boolean) => void;
+  toggleShowRatingsInCardExports: (value?: boolean) => void;
   setTimerCount: (value: number) => void;
   setTimerSound: (value: TimerSoundId) => void;
   resetToDefaults: () => void;
@@ -51,6 +53,7 @@ const DEFAULT_SETTINGS: {
   keepScreenAwake: boolean;
   allowVibration: boolean;
   confirmDeleteEnabled: boolean;
+  showRatingsInCardExports: boolean;
   timerCount: number;
   timerSound: TimerSoundId;
 } = {
@@ -58,6 +61,7 @@ const DEFAULT_SETTINGS: {
   keepScreenAwake: false,
   allowVibration: true,
   confirmDeleteEnabled: true,
+  showRatingsInCardExports: false,
   timerCount: 3,
   timerSound: 'beep-beep',
 };
@@ -77,6 +81,7 @@ type StoredSettings = {
   keepScreenAwake?: boolean;
   allowVibration?: boolean;
   confirmDeleteEnabled?: boolean;
+  showRatingsInCardExports?: boolean;
   timerCount?: number;
   timerSound?: string;
 };
@@ -86,6 +91,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
   const [keepScreenAwake, setKeepScreenAwake] = useState(DEFAULT_SETTINGS.keepScreenAwake);
   const [allowVibration, setAllowVibration] = useState(DEFAULT_SETTINGS.allowVibration);
   const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(DEFAULT_SETTINGS.confirmDeleteEnabled);
+  const [showRatingsInCardExports, setShowRatingsInCardExports] = useState(
+    DEFAULT_SETTINGS.showRatingsInCardExports
+  );
   const [timerCount, setTimerCount] = useState(DEFAULT_SETTINGS.timerCount);
   const [timerSound, setTimerSound] = useState<TimerSoundId>(DEFAULT_SETTINGS.timerSound);
   const [loaded, setLoaded] = useState(false);
@@ -112,6 +120,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           setKeepScreenAwake(parsed.keepScreenAwake ?? DEFAULT_SETTINGS.keepScreenAwake);
           setAllowVibration(parsed.allowVibration ?? DEFAULT_SETTINGS.allowVibration);
           setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? DEFAULT_SETTINGS.confirmDeleteEnabled);
+          setShowRatingsInCardExports(
+            parsed.showRatingsInCardExports ?? DEFAULT_SETTINGS.showRatingsInCardExports
+          );
           setTimerSound(isTimerSoundId(parsed.timerSound) ? parsed.timerSound : DEFAULT_SETTINGS.timerSound);
           if (typeof parsed.timerCount === 'number' && parsed.timerCount >= MIN_TIMER_COUNT) {
             setTimerCount(clampTimerCount(parsed.timerCount));
@@ -145,11 +156,21 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         keepScreenAwake,
         allowVibration,
         confirmDeleteEnabled,
+        showRatingsInCardExports,
         timerCount,
         timerSound,
       } satisfies StoredSettings)
     ).catch(() => {});
-  }, [allowVibration, confirmDeleteEnabled, darkModeEnabled, keepScreenAwake, timerCount, timerSound, loaded]);
+  }, [
+    allowVibration,
+    confirmDeleteEnabled,
+    showRatingsInCardExports,
+    darkModeEnabled,
+    keepScreenAwake,
+    timerCount,
+    timerSound,
+    loaded,
+  ]);
 
   useEffect(() => {
     if (!loaded) {
@@ -185,6 +206,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       keepScreenAwake,
       allowVibration,
       confirmDeleteEnabled,
+      showRatingsInCardExports,
       timerCount,
       timerSound,
       loaded,
@@ -200,6 +222,8 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setAllowVibration((current) => (typeof value === 'boolean' ? value : !current)),
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
+      toggleShowRatingsInCardExports: (value?: boolean) =>
+        setShowRatingsInCardExports((current) => (typeof value === 'boolean' ? value : !current)),
       setTimerCount: (value: number) => setTimerCount(clampTimerCount(value)),
       setTimerSound,
       resetToDefaults: () => {
@@ -207,6 +231,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
         setAllowVibration(DEFAULT_SETTINGS.allowVibration);
         setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
+        setShowRatingsInCardExports(DEFAULT_SETTINGS.showRatingsInCardExports);
         setTimerCount(DEFAULT_SETTINGS.timerCount);
         setTimerSound(DEFAULT_SETTINGS.timerSound);
       },
@@ -214,6 +239,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     [
       allowVibration,
       confirmDeleteEnabled,
+      showRatingsInCardExports,
       darkModeEnabled,
       keepScreenAwake,
       timerCount,

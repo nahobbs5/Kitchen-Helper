@@ -4,6 +4,7 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-na
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { useAuth } from '../contexts/auth-context';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
+import { useRatings } from '../contexts/ratings-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { buildExportRecipes, exportRecipesToPdf } from '../utils/export-recipes';
 import { parseRecipeTimeMinutes } from '../utils/recipe-metadata';
@@ -11,7 +12,8 @@ import { parseRecipeTimeMinutes } from '../utils/recipe-metadata';
 const timeThresholdOptions = [15, 30, 60] as const;
 
 export default function AccountScreen() {
-  const { palette } = useAppSettings();
+  const { palette, showRatingsInCardExports } = useAppSettings();
+  const { ratings } = useRatings();
   const webAccountControlWidth = Platform.OS === 'web' ? ({ width: '30%' } as const) : null;
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -53,8 +55,14 @@ export default function AccountScreen() {
   } = useCustomRecipes();
 
   const exportRecipes = useMemo(
-    () => buildExportRecipes({ customRecipes, recipeOverrideMap }),
-    [customRecipes, recipeOverrideMap]
+    () =>
+      buildExportRecipes({
+        customRecipes,
+        recipeOverrideMap,
+        ratings,
+        showRatings: showRatingsInCardExports,
+      }),
+    [customRecipes, recipeOverrideMap, ratings, showRatingsInCardExports]
   );
   const exportCategoryOptions = useMemo(
     () => buildCountOptions(exportRecipes.map((recipe) => recipe.category)),

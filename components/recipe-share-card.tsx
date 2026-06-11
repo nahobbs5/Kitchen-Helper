@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { StarRating } from './star-rating';
 import { type ExportRecipe } from '../utils/export-recipes';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 
@@ -55,6 +56,12 @@ export function RecipeShareCard({ onLayout, recipe }: Props) {
       <View style={shareStyles.card}>
         <Text style={shareStyles.category}>{recipe.category}</Text>
         <Text style={shareStyles.title}>{recipe.title}</Text>
+
+        {recipe.rating && recipe.rating > 0 ? (
+          <View style={shareStyles.ratingRow}>
+            <StarRating value={recipe.rating} color="#d8920f" emptyColor="#e2d2b4" size={22} />
+          </View>
+        ) : null}
 
         {metadata.length > 0 ? (
           <View style={shareStyles.chipRow}>
@@ -143,6 +150,10 @@ export const shareStyles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 34,
     marginBottom: 16,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    marginBottom: 14,
   },
   chipRow: {
     flexDirection: 'row',

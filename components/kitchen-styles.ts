@@ -587,6 +587,11 @@ export const kitchenStyles = StyleSheet.create({
     flexShrink: 0,
     gap: 8,
   },
+  detailCardRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
   detailCardMeta: {
     fontSize: 13,
     color: '#8a5a24',
@@ -610,6 +615,11 @@ export const kitchenStyles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     marginTop: 2,
+  },
+  recipeRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
   },
   tag: {
     paddingHorizontal: 10,

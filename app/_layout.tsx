@@ -11,6 +11,7 @@ import { AuthProvider } from '../contexts/auth-context';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
+import { RatingsProvider } from '../contexts/ratings-context';
 import type { AppPalette } from '../components/app-theme';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
 
@@ -28,10 +29,12 @@ export default function RootLayout() {
           <CookTimerProvider>
             <CustomRecipesProvider>
               <FavoritesProvider>
-                <RootNavigator />
-                <SettingsMenuModal />
-                <CookTimerModal />
-                <CookTimerFinishedAlerts />
+                <RatingsProvider>
+                  <RootNavigator />
+                  <SettingsMenuModal />
+                  <CookTimerModal />
+                  <CookTimerFinishedAlerts />
+                </RatingsProvider>
               </FavoritesProvider>
             </CustomRecipesProvider>
           </CookTimerProvider>

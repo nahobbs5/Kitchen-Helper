@@ -25,12 +25,17 @@ export type ExportRecipe = {
   directions: RecipeSection[];
   notes: string | null;
   sourceInfo: RecipeSource;
+  rating?: number | null;
 };
 
 type ExportBuildInput = {
   customRecipes: UserRecipe[];
   recipeOverrideMap: Record<string, RecipeOverride>;
+  ratings?: Record<string, number>;
+  showRatings?: boolean;
 };
+
+const MAX_EXPORT_RATING = 5;
 
 type ExportResult = {
   filename: string;
@@ -114,6 +119,17 @@ function renderSourceInfo(sourceInfo: RecipeSource) {
   }
 
   return `<section class="recipe-source">${rows}</section>`;
+}
+
+function renderRating(recipe: ExportRecipe) {
+  if (!recipe.rating || recipe.rating <= 0) {
+    return '';
+  }
+
+  const filled = Math.max(0, Math.min(MAX_EXPORT_RATING, Math.round(recipe.rating)));
+  const stars = '★'.repeat(filled) + '☆'.repeat(MAX_EXPORT_RATING - filled);
+
+  return `<div class="recipe-rating" aria-label="Rating: ${filled} of ${MAX_EXPORT_RATING} stars">${stars}</div>`;
 }
 
 function renderMetadata(recipe: ExportRecipe) {
@@ -228,6 +244,13 @@ function renderRecipesPdfCss() {
       margin: 0 0 14px;
     }
 
+    .recipe-rating {
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #f0a500;
+      margin: 0 0 14px;
+    }
+
     .meta-chip,
     .tag-chip {
       border-radius: 999px;
@@ -307,6 +330,7 @@ function renderRecipeCards(recipes: ExportRecipe[]) {
           <header class="recipe-header">
             <p class="recipe-category">${escapeHtml(recipe.category)}</p>
             <h2 class="recipe-title">${escapeHtml(recipe.title)}</h2>
+            ${renderRating(recipe)}
             ${renderMetadata(recipe)}
             ${renderTags(recipe)}
             ${renderSourceInfo(recipe.sourceInfo)}
@@ -362,7 +386,14 @@ function renderRecipesPdfBody(recipes: ExportRecipe[], includeCover = true) {
   `;
 }
 
-export function buildExportRecipes({ customRecipes, recipeOverrideMap }: ExportBuildInput): ExportRecipe[] {
+export function buildExportRecipes({
+  customRecipes,
+  recipeOverrideMap,
+  ratings,
+  showRatings = false,
+}: ExportBuildInput): ExportRecipe[] {
+  const ratingFor = (slug: string) => (showRatings ? ratings?.[slug] ?? null : null);
+
   const effectiveObsidianRecipes: ExportRecipe[] = obsidianRecipes.map((recipe: ObsidianRecipe) => {
     const override = recipeOverrideMap[recipe.slug];
 
@@ -382,6 +413,7 @@ export function buildExportRecipes({ customRecipes, recipeOverrideMap }: ExportB
       directions: override?.directions ?? recipe.directions,
       notes: override ? override.notes : recipe.notes,
       sourceInfo: override?.sourceInfo ?? null,
+      rating: ratingFor(recipe.slug),
     };
   });
 
@@ -401,6 +433,7 @@ export function buildExportRecipes({ customRecipes, recipeOverrideMap }: ExportB
     directions: recipe.directions,
     notes: recipe.notes,
     sourceInfo: recipe.sourceInfo,
+    rating: ratingFor(recipe.slug),
   }));
 
   return [...customExportRecipes, ...effectiveObsidianRecipes].sort(compareRecipes);

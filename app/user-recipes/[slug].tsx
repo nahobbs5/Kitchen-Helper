@@ -10,6 +10,8 @@ import { RecipeDirectionsList, ScaledDirectionsList } from '../../components/sca
 import { ShareIcon } from '../../components/share-icon';
 import { useCustomRecipes } from '../../contexts/custom-recipes-context';
 import { useFavorites } from '../../contexts/favorites-context';
+import { useRatings } from '../../contexts/ratings-context';
+import { StarRating } from '../../components/star-rating';
 import { useAppSettings } from '../../contexts/settings-context';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
@@ -24,9 +26,10 @@ export default function UserRecipeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { confirmDeleteEnabled, palette } = useAppSettings();
+  const { confirmDeleteEnabled, palette, showRatingsInCardExports } = useAppSettings();
   const { customRecipeMap, deleteRecipe, loaded } = useCustomRecipes();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { getRating, setRating } = useRatings();
   const shareCardRef = useRef<View>(null);
 
   function handleShare() {
@@ -54,6 +57,7 @@ export default function UserRecipeScreen() {
       directions: recipe.directions,
       notes: recipe.notes,
       sourceInfo: recipe.sourceInfo,
+      rating: showRatingsInCardExports ? getRating(recipe.slug) : null,
     }
     : null;
   const headerTitle = isWide ? `My Recipes / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
@@ -280,6 +284,12 @@ export default function UserRecipeScreen() {
                   <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {scaledServingsLabel}</Text>
                 </View>
               ) : null}
+            </View>
+            <View style={styles.recipeRatingRow}>
+              <StarRating
+                value={getRating(recipe.slug)}
+                onRate={(next) => setRating(recipe.slug, next)}
+              />
             </View>
           </View>
 
