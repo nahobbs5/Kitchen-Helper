@@ -573,6 +573,20 @@ async function captureRecipeCardNative(cardRef: RefObject<View | null>) {
   });
 }
 
+async function captureRecipeCardDataUriNative(cardRef: RefObject<View | null>) {
+  if (!cardRef.current) {
+    throw new Error('Recipe share card is not ready yet.');
+  }
+
+  await waitForRecipeCardPaint();
+
+  return captureRef(cardRef, {
+    format: 'jpg',
+    quality: 0.95,
+    result: 'data-uri',
+  });
+}
+
 async function captureRecipeCardWeb(cardRef: RefObject<View | null>) {
   if (!cardRef.current) {
     throw new Error('Recipe share card is not ready yet.');
@@ -688,14 +702,20 @@ async function shareRecipeImagesWeb(recipes: ExportRecipe[], cardRefs: RefObject
   }
 
   const filenames = nextRecipeShareFilenames(recipes);
-  const files = await Promise.all(
-    recipes.map(async (recipe, index) => {
-      const dataUri = await captureRecipeCardWeb(cardRefs[index]);
-      const blob = await fetch(dataUri).then((response) => response.blob());
+  const files: File[] = [];
 
-      return new File([blob], filenames[index], { type: 'image/jpeg' });
-    })
-  );
+  // Capture one card at a time: concurrent html2canvas runs each clone the
+  // whole document and can produce blank canvases.
+  for (const [index, recipe] of recipes.entries()) {
+    const dataUri = await captureRecipeCardWeb(cardRefs[index]);
+    const blob = await fetch(dataUri).then((response) => response.blob());
+
+    if (blob.size === 0) {
+      throw new Error(`Could not capture a share image for "${recipe.title}".`);
+    }
+
+    files.push(new File([blob], filenames[index], { type: 'image/jpeg' }));
+  }
   const nav = navigator as Navigator & {
     canShare?: (data: ShareData) => boolean;
     share?: (data: ShareData) => Promise<void>;
@@ -735,19 +755,24 @@ async function shareRecipeImagesWeb(recipes: ExportRecipe[], cardRefs: RefObject
 
 async function shareRecipeImagesNative(recipes: ExportRecipe[], cardRefs: RefObject<View | null>[]) {
   const filenames = nextRecipeShareFilenames(recipes);
-  const shareUris = await Promise.all(
-    recipes.map((_recipe, index) => captureRecipeShareUriNative(filenames[index], cardRefs[index]))
-  );
 
   try {
     const ReactNativeShare = (await import('react-native-share')).default;
+    const dataUris: string[] = [];
 
+    for (const cardRef of cardRefs) {
+      dataUris.push(await captureRecipeCardDataUriNative(cardRef));
+    }
+
+    // Pass data URIs, not file:// cache paths: receiving apps cannot read this
+    // app's private files on Android. RNShare materializes data URIs itself and
+    // shares readable content:// URIs through its FileProvider.
     await ReactNativeShare.open({
       failOnCancel: false,
       filenames,
       title: recipes.length === 1 ? recipes[0].title : `${recipes.length} Kitchen Helper recipes`,
       type: 'image/jpeg',
-      urls: shareUris,
+      urls: dataUris,
       useInternalStorage: true,
     });
     return;
@@ -756,7 +781,9 @@ async function shareRecipeImagesNative(recipes: ExportRecipe[], cardRefs: RefObj
   }
 
   for (const [index, recipe] of recipes.entries()) {
-    await Sharing.shareAsync(shareUris[index], {
+    const shareUri = await captureRecipeShareUriNative(filenames[index], cardRefs[index]);
+
+    await Sharing.shareAsync(shareUri, {
       mimeType: 'image/jpeg',
       dialogTitle: `Share ${index + 1} of ${recipes.length}: ${recipe.title}`,
       UTI: 'public.jpeg',
