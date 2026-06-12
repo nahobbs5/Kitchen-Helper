@@ -4,7 +4,13 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-na
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
-import { MAX_TIMER_COUNT, MIN_TIMER_COUNT, TIMER_SOUND_OPTIONS, useAppSettings } from '../contexts/settings-context';
+import {
+  MAX_TIMER_COUNT,
+  MIN_TIMER_COUNT,
+  REFERENCE_TAB_OPTIONS,
+  TIMER_SOUND_OPTIONS,
+  useAppSettings,
+} from '../contexts/settings-context';
 
 const TIMER_COUNT_ERROR_MESSAGE = `Enter a number from ${MIN_TIMER_COUNT} to ${MAX_TIMER_COUNT}.`;
 
@@ -247,10 +253,12 @@ export function SettingsMenuModal() {
     closeSettings,
     confirmDeleteEnabled,
     darkModeEnabled,
+    defaultReferenceTab,
     isSettingsOpen,
     keepScreenAwake,
     palette,
     resetToDefaults,
+    setDefaultReferenceTab,
     setTimerSound,
     showRatingsInCardExports,
     timerCount,
@@ -266,7 +274,10 @@ export function SettingsMenuModal() {
   const [timerCountError, setTimerCountError] = useState('');
   const [resetDefaultsChecked, setResetDefaultsChecked] = useState(false);
   const [soundDropdownOpen, setSoundDropdownOpen] = useState(false);
+  const [viewDropdownOpen, setViewDropdownOpen] = useState(false);
   const selectedTimerSound = TIMER_SOUND_OPTIONS.find((option) => option.id === timerSound) ?? TIMER_SOUND_OPTIONS[0];
+  const selectedReferenceTab =
+    REFERENCE_TAB_OPTIONS.find((option) => option.id === defaultReferenceTab) ?? REFERENCE_TAB_OPTIONS[0];
 
   useEffect(() => {
     setTimerCountInput(String(timerCount));
@@ -283,6 +294,7 @@ export function SettingsMenuModal() {
     setTimerCountInput('3');
     setTimerCountError('');
     setSoundDropdownOpen(false);
+    setViewDropdownOpen(false);
     setTimeout(() => {
       setResetDefaultsChecked(false);
     }, 0);
@@ -309,6 +321,11 @@ export function SettingsMenuModal() {
   function handleTimerSoundSelect(nextTimerSound: typeof TIMER_SOUND_OPTIONS[number]['id']) {
     setTimerSound(nextTimerSound);
     setSoundDropdownOpen(false);
+  }
+
+  function handleReferenceTabSelect(nextReferenceTab: typeof REFERENCE_TAB_OPTIONS[number]['id']) {
+    setDefaultReferenceTab(nextReferenceTab);
+    setViewDropdownOpen(false);
   }
 
   return (
@@ -537,6 +554,93 @@ export function SettingsMenuModal() {
                 {timerCountError}
               </Text>
             ) : null}
+          </View>
+
+          <View
+            style={[
+              styles.settingsSection,
+              viewDropdownOpen ? styles.settingsSectionDropdownOpen : null,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+              },
+            ]}
+          >
+            <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Kitchen Guides</Text>
+            <View
+              style={[
+                styles.settingsRow,
+                viewDropdownOpen ? styles.settingsDropdownRowOpen : styles.settingsDropdownRow,
+              ]}
+            >
+              <View style={styles.settingsCopy}>
+                <Text style={[styles.settingsLabel, { color: palette.text }]}>Default view</Text>
+                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                  Choose which tab opens first on the Kitchen Reference screen.
+                </Text>
+              </View>
+              <View style={styles.settingsDropdown}>
+                <Pressable
+                  onPress={() => setViewDropdownOpen((current) => !current)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Choose default Kitchen Reference view"
+                  style={[
+                    styles.settingsDropdownButton,
+                    {
+                      backgroundColor: palette.elevatedAlt,
+                      borderColor: viewDropdownOpen ? palette.accentSoft : palette.borderAlt,
+                    },
+                  ]}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.settingsDropdownText, { color: palette.text }]}
+                  >
+                    {selectedReferenceTab.label}
+                  </Text>
+                  <Text style={[styles.settingsDropdownChevron, { color: palette.textMuted }]}>
+                    {viewDropdownOpen ? '⌃' : '⌄'}
+                  </Text>
+                </Pressable>
+                {viewDropdownOpen ? (
+                  <View
+                    style={[
+                      styles.settingsDropdownMenu,
+                      {
+                        backgroundColor: palette.elevated,
+                        borderColor: palette.borderAlt,
+                      },
+                    ]}
+                  >
+                    {REFERENCE_TAB_OPTIONS.map((option) => {
+                      const isSelected = option.id === defaultReferenceTab;
+
+                      return (
+                        <Pressable
+                          key={option.id}
+                          onPress={() => handleReferenceTabSelect(option.id)}
+                          style={[
+                            styles.settingsDropdownOption,
+                            {
+                              backgroundColor: isSelected ? palette.accentSoft : palette.elevated,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.settingsDropdownOptionText,
+                              { color: isSelected ? palette.accentContrastText : palette.text },
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : null}
+              </View>
+            </View>
           </View>
 
           <View

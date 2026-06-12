@@ -21,6 +21,15 @@ export const TIMER_SOUND_OPTIONS = [
 
 export type TimerSoundId = (typeof TIMER_SOUND_OPTIONS)[number]['id'];
 
+export const REFERENCE_TAB_OPTIONS = [
+  { id: 'conversions', label: 'Conversions' },
+  { id: 'substitutions', label: 'Substitutions' },
+  { id: 'dictionary', label: 'Dictionary' },
+  { id: 'tips', label: 'Tips' },
+] as const;
+
+export type ReferenceTabId = (typeof REFERENCE_TAB_OPTIONS)[number]['id'];
+
 type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
@@ -29,6 +38,7 @@ type SettingsContextValue = {
   showRatingsInCardExports: boolean;
   timerCount: number;
   timerSound: TimerSoundId;
+  defaultReferenceTab: ReferenceTabId;
   loaded: boolean;
   palette: AppPalette;
   isSettingsOpen: boolean;
@@ -41,6 +51,7 @@ type SettingsContextValue = {
   toggleShowRatingsInCardExports: (value?: boolean) => void;
   setTimerCount: (value: number) => void;
   setTimerSound: (value: TimerSoundId) => void;
+  setDefaultReferenceTab: (value: ReferenceTabId) => void;
   resetToDefaults: () => void;
 };
 
@@ -56,6 +67,7 @@ const DEFAULT_SETTINGS: {
   showRatingsInCardExports: boolean;
   timerCount: number;
   timerSound: TimerSoundId;
+  defaultReferenceTab: ReferenceTabId;
 } = {
   darkModeEnabled: false,
   keepScreenAwake: false,
@@ -64,6 +76,7 @@ const DEFAULT_SETTINGS: {
   showRatingsInCardExports: false,
   timerCount: 3,
   timerSound: 'beep-beep',
+  defaultReferenceTab: 'conversions',
 };
 
 function clampTimerCount(value: number) {
@@ -72,6 +85,10 @@ function clampTimerCount(value: number) {
 
 function isTimerSoundId(value: unknown): value is TimerSoundId {
   return TIMER_SOUND_OPTIONS.some((option) => option.id === value);
+}
+
+function isReferenceTabId(value: unknown): value is ReferenceTabId {
+  return REFERENCE_TAB_OPTIONS.some((option) => option.id === value);
 }
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -84,6 +101,7 @@ type StoredSettings = {
   showRatingsInCardExports?: boolean;
   timerCount?: number;
   timerSound?: string;
+  defaultReferenceTab?: string;
 };
 
 export function SettingsProvider({ children }: PropsWithChildren) {
@@ -96,6 +114,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
   );
   const [timerCount, setTimerCount] = useState(DEFAULT_SETTINGS.timerCount);
   const [timerSound, setTimerSound] = useState<TimerSoundId>(DEFAULT_SETTINGS.timerSound);
+  const [defaultReferenceTab, setDefaultReferenceTab] = useState<ReferenceTabId>(
+    DEFAULT_SETTINGS.defaultReferenceTab
+  );
   const [loaded, setLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const wakeLockActiveRef = useRef(false);
@@ -124,6 +145,11 @@ export function SettingsProvider({ children }: PropsWithChildren) {
             parsed.showRatingsInCardExports ?? DEFAULT_SETTINGS.showRatingsInCardExports
           );
           setTimerSound(isTimerSoundId(parsed.timerSound) ? parsed.timerSound : DEFAULT_SETTINGS.timerSound);
+          setDefaultReferenceTab(
+            isReferenceTabId(parsed.defaultReferenceTab)
+              ? parsed.defaultReferenceTab
+              : DEFAULT_SETTINGS.defaultReferenceTab
+          );
           if (typeof parsed.timerCount === 'number' && parsed.timerCount >= MIN_TIMER_COUNT) {
             setTimerCount(clampTimerCount(parsed.timerCount));
           } else {
@@ -159,6 +185,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         showRatingsInCardExports,
         timerCount,
         timerSound,
+        defaultReferenceTab,
       } satisfies StoredSettings)
     ).catch(() => {});
   }, [
@@ -169,6 +196,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     keepScreenAwake,
     timerCount,
     timerSound,
+    defaultReferenceTab,
     loaded,
   ]);
 
@@ -209,6 +237,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       showRatingsInCardExports,
       timerCount,
       timerSound,
+      defaultReferenceTab,
       loaded,
       palette: darkModeEnabled ? darkPalette : lightPalette,
       isSettingsOpen,
@@ -226,6 +255,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setShowRatingsInCardExports((current) => (typeof value === 'boolean' ? value : !current)),
       setTimerCount: (value: number) => setTimerCount(clampTimerCount(value)),
       setTimerSound,
+      setDefaultReferenceTab,
       resetToDefaults: () => {
         setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
         setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
@@ -234,6 +264,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setShowRatingsInCardExports(DEFAULT_SETTINGS.showRatingsInCardExports);
         setTimerCount(DEFAULT_SETTINGS.timerCount);
         setTimerSound(DEFAULT_SETTINGS.timerSound);
+        setDefaultReferenceTab(DEFAULT_SETTINGS.defaultReferenceTab);
       },
     }),
     [
@@ -244,6 +275,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       keepScreenAwake,
       timerCount,
       timerSound,
+      defaultReferenceTab,
       loaded,
       isSettingsOpen,
     ]

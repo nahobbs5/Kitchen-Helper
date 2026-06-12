@@ -4485,6 +4485,164 @@ export const breadsDictionaryEntries: DictionaryEntry[] = [
   }
 ];
 
+export const pastaRiceDictionaryEntries: DictionaryEntry[] = [
+  {
+    "term": "Angel Hair (Capellini)",
+    "letter": "A",
+    "definition": "Origin: Italy. Type: Long pasta. The thinnest of the long pastas — delicate strands (capellini means \"little hairs\") that cook in just two to three minutes. Best paired with light, simple sauces such as olive oil, garlic, or a thin tomato sauce, since heavy sauces overwhelm the fine strands."
+  },
+  {
+    "term": "Basmati Rice",
+    "letter": "B",
+    "definition": "Origin: India & Pakistan. Type: Long-grain aromatic rice. A slender long-grain rice prized for its nutty aroma and fluffy, separate grains that lengthen as they cook. The staple rice for biryani and pilaf. Rinse before cooking and use roughly a 1:1.5 rice-to-water ratio."
+  },
+  {
+    "term": "Black (Forbidden) Rice",
+    "letter": "B",
+    "definition": "Origin: China. Type: Whole-grain rice. A deep purple-black whole-grain rice once reserved for Chinese royalty, hence \"forbidden rice.\" Nutty and slightly sweet, rich in antioxidants, it turns a striking dark purple when cooked. Used in both savoury dishes and desserts."
+  },
+  {
+    "term": "Bomba",
+    "letter": "B",
+    "definition": "Origin: Spain (Valencia). Type: Short-grain rice. A round, short-grain rice grown in the Valencia region and the gold-standard choice for authentic paella. Unlike most rice, Bomba absorbs two to three times its volume in liquid without turning mushy, and the grains stay separate even when fully cooked. Its exceptional capacity to soak up flavour without sticking makes it highly prized for all Spanish rice dishes."
+  },
+  {
+    "term": "Brown Rice",
+    "letter": "B",
+    "definition": "Origin: Asia (cultivated worldwide). Type: Whole-grain rice. Rice with only the inedible hull removed, leaving the bran and germ intact. Chewier, nuttier, and more nutritious than white rice, but slower to cook and shorter-lived. Available in long-, medium-, and short-grain forms."
+  },
+  {
+    "term": "Carnaroli",
+    "letter": "C",
+    "definition": "Origin: Italy. Type: Short-grain rice. A short-grain Italian rice considered the finest choice for risotto. Its high starch content and firm core release creaminess while the grains stay distinct and resist overcooking, making it more forgiving than Arborio."
+  },
+  {
+    "term": "Farfalle",
+    "letter": "F",
+    "definition": "Origin: Italy. Type: Short pasta. Bow-tie or butterfly-shaped pasta (farfalle means \"butterflies\") with a ruffled edge and a pinched centre. The thinner wings cook faster than the dense middle, giving a pleasant contrast in texture. Popular in cold pasta salads and with creamy or vegetable sauces."
+  },
+  {
+    "term": "Fettuccine",
+    "letter": "F",
+    "definition": "Origin: Italy (Rome & Tuscany). Type: Long pasta. Flat, thick ribbons of egg pasta, wider than linguine. Its broad surface carries rich, clingy sauces well — classically served with butter and Parmesan (fettuccine Alfredo) or hearty meat ragùs."
+  },
+  {
+    "term": "Fried Rice",
+    "letter": "F",
+    "definition": "Origin: China. Type: Cooked rice dish. A technique of stir-frying pre-cooked rice in a hot wok with oil, aromatics, soy sauce, egg, vegetables, and protein. The key is using day-old rice that has dried out, as freshly cooked rice is too moist and turns the dish soggy. Found across Chinese and broader Asian cooking in countless regional forms."
+  },
+  {
+    "term": "Fusilli",
+    "letter": "F",
+    "definition": "Origin: Italy. Type: Short pasta. Corkscrew or spring-shaped pasta whose spirals trap chunky sauces and bits of meat or vegetable. A versatile all-rounder used in baked dishes, pasta salads, and tomato- or pesto-based sauces."
+  },
+  {
+    "term": "Jasmine Rice",
+    "letter": "J",
+    "definition": "Origin: Thailand. Type: Long-grain aromatic rice. A fragrant long-grain rice with a subtle floral aroma and soft, slightly sticky grains that cling gently together. The everyday rice of Thai and Southeast Asian cooking, ideal alongside curries and stir-fries."
+  },
+  {
+    "term": "Lasagna",
+    "letter": "L",
+    "definition": "Origin: Italy. Type: Sheet pasta. Wide, flat sheets layered with sauce, cheese, and fillings, then baked — one of the oldest known pasta shapes. The plural lasagne refers to the finished layered dish. Sheets may have straight or ruffled edges; some are no-boil and soften in the oven."
+  },
+  {
+    "term": "Linguine",
+    "letter": "L",
+    "definition": "Origin: Italy (Liguria). Type: Long pasta. Narrow, flattened strands — like a flattened spaghetti (linguine means \"little tongues\"). Pairs especially well with seafood and oil- or cream-based sauces, classically linguine alle vongole (with clams)."
+  },
+  {
+    "term": "Long-Grain White Rice",
+    "letter": "L",
+    "definition": "Origin: Asia (grown worldwide). Type: Long-grain rice. Milled rice whose grains are three to four times longer than they are wide, cooking up light, dry, and fluffy with separate grains. An all-purpose everyday rice for sides, pilafs, and stir-fries."
+  },
+  {
+    "term": "Macaroni",
+    "letter": "M",
+    "definition": "Origin: Italy. Type: Short pasta. Short, curved hollow tubes, best known in North America as the base for macaroni and cheese. The hollow shape holds onto creamy and cheesy sauces. Also common in pasta salads and baked casseroles."
+  },
+  {
+    "term": "Orzo",
+    "letter": "O",
+    "definition": "Origin: Italy. Type: Short pasta. Small rice-shaped pasta (orzo means \"barley\"), also called risoni. Used in soups, salads, and pilaf-style dishes, and can be cooked risotto-style. Despite resembling a grain, it is wheat pasta."
+  },
+  {
+    "term": "Parboiled (Converted) Rice",
+    "letter": "P",
+    "definition": "Origin: Indian subcontinent. Type: Processed long-grain rice. Rice partially boiled in the husk before milling, which drives nutrients into the grain and yields firm, separate grains that resist clumping and overcooking. Sold as \"converted\" rice; it takes a little longer to cook than regular white rice."
+  },
+  {
+    "term": "Penne",
+    "letter": "P",
+    "definition": "Origin: Italy. Type: Short pasta. Cylindrical tubes cut diagonally at both ends into a quill or pen shape (penne means \"pens\"). The ridged variety (penne rigate) grips sauce well. A workhorse pasta for baked dishes, tomato sauces, and arrabbiata."
+  },
+  {
+    "term": "Ravioli",
+    "letter": "R",
+    "definition": "Origin: Italy. Type: Filled pasta. Square or round pockets of pasta enclosing a filling such as ricotta, spinach, meat, or squash. Usually sealed in pairs and served with a simple butter, sage, or tomato sauce so the filling shines."
+  },
+  {
+    "term": "Red Rice",
+    "letter": "R",
+    "definition": "Origin: Bhutan, Camargue (France), South Carolina (US). Type: Whole-grain rice. An unmilled rice whose red bran layer gives it a nutty, earthy flavour and a pleasantly chewy bite. Used in Bhutanese cooking, Camargue-style risottos, and American heirloom preparations. Cooks similarly to brown rice and takes 35–45 minutes."
+  },
+  {
+    "term": "Rigatoni",
+    "letter": "R",
+    "definition": "Origin: Italy. Type: Short pasta. Large, ridged tubes, wider than penne and cut straight rather than diagonally. The ridges and wide opening capture thick, meaty, or chunky sauces, making rigatoni a favourite for baked pasta dishes."
+  },
+  {
+    "term": "Rotini",
+    "letter": "R",
+    "definition": "Origin: Italy. Type: Short pasta. Tight corkscrew spirals, slightly more compact than fusilli. The twists hold light and chunky sauces alike and keep their shape well, making rotini a staple of pasta salads."
+  },
+  {
+    "term": "Short-Grain White Rice",
+    "letter": "S",
+    "definition": "Origin: East Asia. Type: Short-grain rice. Almost round grains, high in starch, that cook up soft and sticky and cling together. The base for many East Asian dishes and the foundation of sushi rice and rice puddings."
+  },
+  {
+    "term": "Spaghetti",
+    "letter": "S",
+    "definition": "Origin: Italy. Type: Long pasta. The most iconic pasta — long, thin, round strands (spaghetti means \"little strings\"). Endlessly versatile, paired with everything from tomato sauce and meatballs to garlic and oil (aglio e olio) or carbonara."
+  },
+  {
+    "term": "Spanish Rice",
+    "letter": "S",
+    "definition": "Origin: Mexico (Spanish colonial influence). Type: Cooked rice dish. Also called Mexican rice — long-grain white rice toasted in oil until golden, then simmered in tomato broth with onion, garlic, and spices until the grains are tender and deeply flavoured. A standard side dish in Mexican and Tex-Mex cooking, distinguished by its reddish colour and slightly dry, fluffy texture."
+  },
+  {
+    "term": "Sticky (Glutinous) Rice",
+    "letter": "S",
+    "definition": "Origin: Southeast & East Asia. Type: Short-grain rice. A very starchy short-grain rice that turns chewy and translucent and clumps together when steamed; despite the name \"glutinous,\" it contains no gluten. Central to Thai, Lao, and Japanese dishes, sweet and savoury alike, and usually soaked then steamed rather than boiled."
+  },
+  {
+    "term": "Sushi Rice",
+    "letter": "S",
+    "definition": "Origin: Japan. Type: Short-grain rice. A short-grain Japanese rice cooked until tender and sticky, then seasoned with rice vinegar, sugar, and salt so it holds together for sushi. The seasoning step is what turns plain cooked rice into sushi rice."
+  },
+  {
+    "term": "Tagliatelle",
+    "letter": "T",
+    "definition": "Origin: Italy (Emilia-Romagna). Type: Long pasta. Long, flat ribbons of egg pasta, traditionally about 6–7 mm wide. Closely associated with Bologna, where it is the classic partner for a slow-cooked meat ragù (ragù alla bolognese)."
+  },
+  {
+    "term": "Tortellini",
+    "letter": "T",
+    "definition": "Origin: Italy (Emilia-Romagna). Type: Filled pasta. Small ring-shaped stuffed pasta, traditionally filled with pork, prosciutto, and Parmesan. Often served in a clear broth (in brodo) or with a light cream or butter sauce."
+  },
+  {
+    "term": "Wild Rice",
+    "letter": "W",
+    "definition": "Origin: North America. Type: Aquatic grass seed. Not a true rice but the long, dark seed of an aquatic grass native to North America. Chewy with a nutty, earthy flavour, it takes longer to cook than white rice and is often blended with other rices. Traditionally harvested by Indigenous peoples of the Great Lakes region."
+  },
+  {
+    "term": "Ziti",
+    "letter": "Z",
+    "definition": "Origin: Italy (Southern Italy). Type: Short pasta. Long, straight, hollow tubes, wider than penne and cut straight across. Most famous in the American-Italian baked dish \"baked ziti,\" layered with sauce and cheese and baked until bubbling."
+  }
+];
+
 export const cookingDictionaryEntries: DictionaryEntry[] = [
   {
     "term": "À la carte",
@@ -4640,6 +4798,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Añejo",
     "letter": "A",
     "definition": "Spanish for \"aged\"; refers to spirits matured in barrels for at least one year."
+  },
+  {
+    "term": "Angel Hair (Capellini)",
+    "letter": "A",
+    "definition": "Origin: Italy. Type: Long pasta. The thinnest of the long pastas — delicate strands (capellini means \"little hairs\") that cook in just two to three minutes. Best paired with light, simple sauces such as olive oil, garlic, or a thin tomato sauce, since heavy sauces overwhelm the fine strands."
   },
   {
     "term": "Angelica",
@@ -4892,6 +5055,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Sweet, aromatic herb; cornerstone of Italian cuisine, especially pesto."
   },
   {
+    "term": "Basmati Rice",
+    "letter": "B",
+    "definition": "Origin: India & Pakistan. Type: Long-grain aromatic rice. A slender long-grain rice prized for its nutty aroma and fluffy, separate grains that lengthen as they cook. The staple rice for biryani and pilaf. Rinse before cooking and use roughly a 1:1.5 rice-to-water ratio."
+  },
+  {
     "term": "Baste",
     "letter": "B",
     "definition": "To spoon or brush pan juices over meat during cooking."
@@ -4997,6 +5165,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A concentrated flavoring made from botanicals; used in small amounts in cocktails."
   },
   {
+    "term": "Black (Forbidden) Rice",
+    "letter": "B",
+    "definition": "Origin: China. Type: Whole-grain rice. A deep purple-black whole-grain rice once reserved for Chinese royalty, hence \"forbidden rice.\" Nutty and slightly sweet, rich in antioxidants, it turns a striking dark purple when cooked. Used in both savoury dishes and desserts."
+  },
+  {
     "term": "Black and Tan",
     "letter": "B",
     "definition": "A layered beer drink of pale ale topped with stout."
@@ -5070,6 +5243,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Boil",
     "letter": "B",
     "definition": "To cook in liquid at 212°F (100°C), with vigorous bubbling."
+  },
+  {
+    "term": "Bomba",
+    "letter": "B",
+    "definition": "Origin: Spain (Valencia). Type: Short-grain rice. A round, short-grain rice grown in the Valencia region and the gold-standard choice for authentic paella. Unlike most rice, Bomba absorbs two to three times its volume in liquid without turning mushy, and the grains stay separate even when fully cooked. Its exceptional capacity to soak up flavour without sticking makes it highly prized for all Spanish rice dishes."
   },
   {
     "term": "Boning",
@@ -5170,6 +5348,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Brown ale",
     "letter": "B",
     "definition": "A malt-forward ale with notes of caramel, chocolate, and nuts."
+  },
+  {
+    "term": "Brown Rice",
+    "letter": "B",
+    "definition": "Origin: Asia (cultivated worldwide). Type: Whole-grain rice. Rice with only the inedible hull removed, leaving the bran and germ intact. Chewier, nuttier, and more nutritious than white rice, but slower to cook and shorter-lived. Available in long-, medium-, and short-grain forms."
   },
   {
     "term": "Brunoise",
@@ -5285,6 +5468,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Cardamom",
     "letter": "C",
     "definition": "Fragrant pods with floral, citrus notes; used in chai, curries, and pastries."
+  },
+  {
+    "term": "Carnaroli",
+    "letter": "C",
+    "definition": "Origin: Italy. Type: Short-grain rice. A short-grain Italian rice considered the finest choice for risotto. Its high starch content and firm core release creaminess while the grains stay distinct and resist overcooking, making it more forgiving than Arborio."
   },
   {
     "term": "Carve",
@@ -6082,6 +6270,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Forcemeat or stuffing used to fill poultry, fish, or vegetables."
   },
   {
+    "term": "Farfalle",
+    "letter": "F",
+    "definition": "Origin: Italy. Type: Short pasta. Bow-tie or butterfly-shaped pasta (farfalle means \"butterflies\") with a ruffled edge and a pinched centre. The thinner wings cook faster than the dense middle, giving a pleasant contrast in texture. Popular in cold pasta salads and with creamy or vegetable sauces."
+  },
+  {
     "term": "Fat separator",
     "letter": "F",
     "definition": "A measuring jug with a bottom spout to pour off fat-free liquid from below."
@@ -6110,6 +6303,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Feta",
     "letter": "F",
     "definition": "Greece | Sheep: Brined white PDO cheese, crumbly and tangy, made from sheep's (or mixed) milk."
+  },
+  {
+    "term": "Fettuccine",
+    "letter": "F",
+    "definition": "Origin: Italy (Rome & Tuscany). Type: Long pasta. Flat, thick ribbons of egg pasta, wider than linguine. Its broad surface carries rich, clingy sauces well — classically served with butter and Parmesan (fettuccine Alfredo) or hearty meat ragùs."
   },
   {
     "term": "File powder",
@@ -6277,6 +6475,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A white stew of sautéed meat in a cream sauce."
   },
   {
+    "term": "Fried Rice",
+    "letter": "F",
+    "definition": "Origin: China. Type: Cooked rice dish. A technique of stir-frying pre-cooked rice in a hot wok with oil, aromatics, soy sauce, egg, vegetables, and protein. The key is using day-old rice that has dried out, as freshly cooked rice is too moist and turns the dish soggy. Found across Chinese and broader Asian cooking in countless regional forms."
+  },
+  {
     "term": "Frittata",
     "letter": "F",
     "definition": "Italian open-faced omelette cooked on the stovetop and broiled."
@@ -6300,6 +6503,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Fumet",
     "letter": "F",
     "definition": "A concentrated fish stock used as a base for sauces."
+  },
+  {
+    "term": "Fusilli",
+    "letter": "F",
+    "definition": "Origin: Italy. Type: Short pasta. Corkscrew or spring-shaped pasta whose spirals trap chunky sauces and bits of meat or vegetable. A versatile all-rounder used in baked dishes, pasta salads, and tomato- or pesto-based sauces."
   },
   {
     "term": "Galangal",
@@ -6742,6 +6950,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Norway | Cow: Norwegian Swiss-style cheese with large holes and a mild, buttery-sweet taste."
   },
   {
+    "term": "Jasmine Rice",
+    "letter": "J",
+    "definition": "Origin: Thailand. Type: Long-grain aromatic rice. A fragrant long-grain rice with a subtle floral aroma and soft, slightly sticky grains that cling gently together. The everyday rice of Thai and Southeast Asian cooking, ideal alongside curries and stir-fries."
+  },
+  {
     "term": "Jigger",
     "letter": "J",
     "definition": "A bartender's measuring tool; typically 1 oz and 1.5 oz measures."
@@ -6932,6 +7145,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Small cubes or strips of bacon or pork fat, often used in stews."
   },
   {
+    "term": "Lasagna",
+    "letter": "L",
+    "definition": "Origin: Italy. Type: Sheet pasta. Wide, flat sheets layered with sauce, cheese, and fillings, then baked — one of the oldest known pasta shapes. The plural lasagne refers to the finished layered dish. Sheets may have straight or ruffled edges; some are no-boil and soften in the oven."
+  },
+  {
     "term": "Last Word",
     "letter": "L",
     "definition": "A classic equal-parts cocktail: gin, green Chartreuse, maraschino, and lime."
@@ -7007,6 +7225,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To cover the inside of a pan with pastry or parchment paper."
   },
   {
+    "term": "Linguine",
+    "letter": "L",
+    "definition": "Origin: Italy (Liguria). Type: Long pasta. Narrow, flattened strands — like a flattened spaghetti (linguine means \"little tongues\"). Pairs especially well with seafood and oil- or cream-based sauces, classically linguine alle vongole (with clams)."
+  },
+  {
     "term": "Loaf tin",
     "letter": "L",
     "definition": "A rectangular tin used for baking bread, meat loaf, and terrines."
@@ -7022,6 +7245,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Ancient spice with a complex, warm heat; precursor to black pepper in Europe."
   },
   {
+    "term": "Long-Grain White Rice",
+    "letter": "L",
+    "definition": "Origin: Asia (grown worldwide). Type: Long-grain rice. Milled rice whose grains are three to four times longer than they are wide, cooking up light, dry, and fluffy with separate grains. An all-purpose everyday rice for sides, pilafs, and stir-fries."
+  },
+  {
     "term": "Lovage",
     "letter": "L",
     "definition": "Herb with a strong celery-like flavor; used in soups and stocks."
@@ -7035,6 +7263,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Macadamia oil",
     "letter": "M",
     "definition": "Nut: Pressed from macadamia nuts. Rich, buttery, mild flavour. High in monounsaturated fats; good for cooking and finishing. High heat."
+  },
+  {
+    "term": "Macaroni",
+    "letter": "M",
+    "definition": "Origin: Italy. Type: Short pasta. Short, curved hollow tubes, best known in North America as the base for macaroni and cheese. The hollow shape holds onto creamy and cheesy sauces. Also common in pasta salads and baked casseroles."
   },
   {
     "term": "Mace",
@@ -7427,6 +7660,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Robust, peppery herb essential in Italian, Greek, and Mexican cooking."
   },
   {
+    "term": "Orzo",
+    "letter": "O",
+    "definition": "Origin: Italy. Type: Short pasta. Small rice-shaped pasta (orzo means \"barley\"), also called risoni. Used in soups, salads, and pilaf-style dishes, and can be cooked risotto-style. Despite resembling a grain, it is wheat pasta."
+  },
+  {
     "term": "Ossau-Iraty",
     "letter": "O",
     "definition": "France | Sheep: Basque Pyrenean cheese; firm, ivory paste with hazelnut and olive notes."
@@ -7490,6 +7728,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Parboil",
     "letter": "P",
     "definition": "To partially cook food by boiling before finishing another way."
+  },
+  {
+    "term": "Parboiled (Converted) Rice",
+    "letter": "P",
+    "definition": "Origin: Indian subcontinent. Type: Processed long-grain rice. Rice partially boiled in the husk before milling, which drives nutrients into the grain and yields firm, separate grains that resist clumping and overcooking. Sold as \"converted\" rice; it takes a little longer to cook than regular white rice."
   },
   {
     "term": "Parchment paper",
@@ -7595,6 +7838,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Peeler",
     "letter": "P",
     "definition": "A handheld tool for removing the skin from vegetables and fruit."
+  },
+  {
+    "term": "Penne",
+    "letter": "P",
+    "definition": "Origin: Italy. Type: Short pasta. Cylindrical tubes cut diagonally at both ends into a quill or pen shape (penne means \"pens\"). The ridged variety (penne rigate) grips sauce well. A workhorse pasta for baked dishes, tomato sauces, and arrabbiata."
   },
   {
     "term": "Pepper",
@@ -7852,6 +8100,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Provençal vegetable stew of eggplant, zucchini, peppers, and tomatoes."
   },
   {
+    "term": "Ravioli",
+    "letter": "R",
+    "definition": "Origin: Italy. Type: Filled pasta. Square or round pockets of pasta enclosing a filling such as ricotta, spinach, meat, or squash. Usually sealed in pairs and served with a simple butter, sage, or tomato sauce so the filling shines."
+  },
+  {
     "term": "Reblochon",
     "letter": "R",
     "definition": "France | Cow: Soft washed-rind Savoyard cheese with a nutty, creamy, woodsy character."
@@ -7860,6 +8113,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Red pepper flakes",
     "letter": "R",
     "definition": "Dried crushed red chilies used to add heat to sauces and pizzas."
+  },
+  {
+    "term": "Red Rice",
+    "letter": "R",
+    "definition": "Origin: Bhutan, Camargue (France), South Carolina (US). Type: Whole-grain rice. An unmilled rice whose red bran layer gives it a nutty, earthy flavour and a pleasantly chewy bite. Used in Bhutanese cooking, Camargue-style risottos, and American heirloom preparations. Cooks similarly to brown rice and takes 35–45 minutes."
   },
   {
     "term": "Red wine",
@@ -7905,6 +8163,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Ricotta Salata",
     "letter": "R",
     "definition": "Italy | Sheep: Pressed, salted, and dried ricotta; firm and salty for grating."
+  },
+  {
+    "term": "Rigatoni",
+    "letter": "R",
+    "definition": "Origin: Italy. Type: Short pasta. Large, ridged tubes, wider than penne and cut straight rather than diagonally. The ridges and wide opening capture thick, meaty, or chunky sauces, making rigatoni a favourite for baked pasta dishes."
   },
   {
     "term": "Roast",
@@ -7955,6 +8218,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Roti",
     "letter": "R",
     "definition": "Origin: South Asia. Type: Unleavened flatbread. One of the most widely eaten breads on earth — a simple, unleavened disc made from whole-wheat _atta_ flour, water, and a pinch of salt. Rolled thin and cooked on a flat _tawa_ griddle, then often held briefly over an open flame to puff up. Roti serves as both bread and utensil across India, Pakistan, Bangladesh, Sri Lanka, and beyond, scooping up curries, dals, and vegetables."
+  },
+  {
+    "term": "Rotini",
+    "letter": "R",
+    "definition": "Origin: Italy. Type: Short pasta. Tight corkscrew spirals, slightly more compact than fusilli. The twists hold light and chunky sauces alike and keep their shape well, making rotini a staple of pasta salads."
   },
   {
     "term": "Roux",
@@ -8147,6 +8415,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Japanese seven-spice blend including chili, sesame, and citrus peel."
   },
   {
+    "term": "Short-Grain White Rice",
+    "letter": "S",
+    "definition": "Origin: East Asia. Type: Short-grain rice. Almost round grains, high in starch, that cook up soft and sticky and cling together. The base for many East Asian dishes and the foundation of sushi rice and rice puddings."
+  },
+  {
     "term": "Shot",
     "letter": "S",
     "definition": "A small measure of spirits, typically 1 to 1.5 oz."
@@ -8267,6 +8540,16 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Legume: Pressed from soybeans. Very neutral flavour, inexpensive, and versatile. One of the most widely produced oils globally. High heat."
   },
   {
+    "term": "Spaghetti",
+    "letter": "S",
+    "definition": "Origin: Italy. Type: Long pasta. The most iconic pasta — long, thin, round strands (spaghetti means \"little strings\"). Endlessly versatile, paired with everything from tomato sauce and meatballs to garlic and oil (aglio e olio) or carbonara."
+  },
+  {
+    "term": "Spanish Rice",
+    "letter": "S",
+    "definition": "Origin: Mexico (Spanish colonial influence). Type: Cooked rice dish. Also called Mexican rice — long-grain white rice toasted in oil until golden, then simmered in tomato broth with onion, garlic, and spices until the grains are tender and deeply flavoured. A standard side dish in Mexican and Tex-Mex cooking, distinguished by its reddish colour and slightly dry, fluffy texture."
+  },
+  {
     "term": "Sparkling wine",
     "letter": "S",
     "definition": "Carbonated wine produced through secondary fermentation."
@@ -8337,6 +8620,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "To cook food slowly in a liquid, fully submerged."
   },
   {
+    "term": "Sticky (Glutinous) Rice",
+    "letter": "S",
+    "definition": "Origin: Southeast & East Asia. Type: Short-grain rice. A very starchy short-grain rice that turns chewy and translucent and clumps together when steamed; despite the name \"glutinous,\" it contains no gluten. Central to Thai, Lao, and Japanese dishes, sweet and savoury alike, and usually soaked then steamed rather than boiled."
+  },
+  {
     "term": "Stilton",
     "letter": "S",
     "definition": "England | Cow: PDO blue cheese with crumbly texture, rich flavour, and port-friendly character."
@@ -8402,6 +8690,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A woven bamboo mat used to roll sushi."
   },
   {
+    "term": "Sushi Rice",
+    "letter": "S",
+    "definition": "Origin: Japan. Type: Short-grain rice. A short-grain Japanese rice cooked until tender and sticky, then seasoned with rice vinegar, sugar, and salt so it holds together for sushi. The seasoning step is what turns plain cooked rice into sushi rice."
+  },
+  {
     "term": "Sweat",
     "letter": "S",
     "definition": "To cook aromatics gently in fat without browning."
@@ -8415,6 +8708,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Syrup",
     "letter": "S",
     "definition": "A sweet liquid base used to sweeten cocktails."
+  },
+  {
+    "term": "Tagliatelle",
+    "letter": "T",
+    "definition": "Origin: Italy (Emilia-Romagna). Type: Long pasta. Long, flat ribbons of egg pasta, traditionally about 6–7 mm wide. Closely associated with Bologna, where it is the classic partner for a slow-cooked meat ragù (ragù alla bolognese)."
   },
   {
     "term": "Taleggio",
@@ -8515,6 +8813,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "term": "Torte",
     "letter": "T",
     "definition": "A rich, dense cake, often made with little or no flour."
+  },
+  {
+    "term": "Tortellini",
+    "letter": "T",
+    "definition": "Origin: Italy (Emilia-Romagna). Type: Filled pasta. Small ring-shaped stuffed pasta, traditionally filled with pork, prosciutto, and Parmesan. Often served in a clear broth (in brodo) or with a light cream or butter sauce."
   },
   {
     "term": "Tortilla",
@@ -8777,6 +9080,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "Also called ramps; pungent leaves used in spring dishes across Europe and North America."
   },
   {
+    "term": "Wild Rice",
+    "letter": "W",
+    "definition": "Origin: North America. Type: Aquatic grass seed. Not a true rice but the long, dark seed of an aquatic grass native to North America. Chewy with a nutty, earthy flavour, it takes longer to cook than white rice and is often blended with other rices. Traditionally harvested by Indigenous peoples of the Great Lakes region."
+  },
+  {
     "term": "Wilt",
     "letter": "W",
     "definition": "To soften greens by applying gentle heat."
@@ -8927,6 +9235,11 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "definition": "A small tool with tiny sharp perforations for removing zest from citrus peel."
   },
   {
+    "term": "Ziti",
+    "letter": "Z",
+    "definition": "Origin: Italy (Southern Italy). Type: Short pasta. Long, straight, hollow tubes, wider than penne and cut straight across. Most famous in the American-Italian baked dish \"baked ziti,\" layered with sauce and cheese and baked until bubbling."
+  },
+  {
     "term": "Zmaj",
     "letter": "Z",
     "definition": "Serbia | Cow: Traditional Serbian semi-hard mountain cheese with a robust, tangy flavour."
@@ -8946,4 +9259,5 @@ export const cookingDictionaryEntries: DictionaryEntry[] = [
     "letter": "Z",
     "definition": "Versatile summer squash; used both raw and cooked in many cuisines."
   }
+
 ];

@@ -22,13 +22,15 @@ import {
   generalDictionaryEntries,
   instrumentsDictionaryEntries,
   oilsDictionaryEntries,
+  pastaRiceDictionaryEntries,
   spicesDictionaryEntries,
 } from '../data/cooking-dictionary';
+import { cookingTips } from '../data/cooking-tips';
 import { useAppSettings } from '../contexts/settings-context';
 
-type MainTab = 'conversions' | 'substitutions' | 'dictionary';
+type MainTab = 'conversions' | 'substitutions' | 'dictionary' | 'tips';
 type SubSection = 'all' | 'allergy' | 'pantry';
-type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'breads' | 'alcohol' | 'instruments';
+type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'breads' | 'pasta-rice' | 'alcohol' | 'instruments';
 
 const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
@@ -36,6 +38,7 @@ const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'conversions', label: 'Conversions' },
   { key: 'substitutions', label: 'Substitutions' },
   { key: 'dictionary', label: 'Dictionary' },
+  { key: 'tips', label: 'Tips' },
 ];
 
 const SUB_SECTION_TABS: { key: SubSection; label: string }[] = [
@@ -51,6 +54,7 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
   { key: 'oils', label: 'Oils' },
   { key: 'cheeses', label: 'Cheeses' },
   { key: 'breads', label: 'Breads' },
+  { key: 'pasta-rice', label: 'Pasta & Rice' },
   { key: 'alcohol', label: 'Alcohol' },
   { key: 'instruments', label: 'Instruments' },
 ];
@@ -209,7 +213,7 @@ const cupToOzSearchText = buildCupToOzSearchText();
 const butterOliveSearchText = buildButterOliveSearchText();
 
 export default function ReferenceScreen() {
-  const { palette } = useAppSettings();
+  const { palette, defaultReferenceTab, loaded: settingsLoaded } = useAppSettings();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const isMobile = width < 768;
@@ -234,7 +238,8 @@ export default function ReferenceScreen() {
   const literSliderPageXRef = useRef(0);
   const tspMlSliderPageXRef = useRef(0);
 
-  const [activeTab, setActiveTab] = useState<MainTab>('conversions');
+  const [activeTab, setActiveTab] = useState<MainTab>(defaultReferenceTab);
+  const didInitTabRef = useRef(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
@@ -673,6 +678,7 @@ export default function ReferenceScreen() {
       case 'alcohol': return alcoholDictionaryEntries;
       case 'instruments': return instrumentsDictionaryEntries;
       case 'breads': return breadsDictionaryEntries;
+      case 'pasta-rice': return pastaRiceDictionaryEntries;
       default: return cookingDictionaryEntries;
     }
   }, [dictTab]);
@@ -715,6 +721,16 @@ export default function ReferenceScreen() {
     setSearchStickyThreshold(null);
     setShowStickySearch(false);
   }, [activeTab]);
+
+  // Apply the saved default Kitchen Guides view once settings have loaded.
+  // The ref guard ensures this runs a single time and never overrides a manual tab switch.
+  useEffect(() => {
+    if (!settingsLoaded || didInitTabRef.current) {
+      return;
+    }
+    didInitTabRef.current = true;
+    setActiveTab(defaultReferenceTab);
+  }, [settingsLoaded, defaultReferenceTab]);
 
   function updateStickySearch(offsetY: number, threshold = searchStickyThreshold) {
     if (threshold === null) {
@@ -1286,7 +1302,7 @@ export default function ReferenceScreen() {
             </View>
           </View>
 
-          <View
+          {activeTab !== 'tips' && <View
             onLayout={(event) => {
               heroCardLayoutYRef.current = event.nativeEvent.layout.y;
             }}
@@ -1476,7 +1492,8 @@ export default function ReferenceScreen() {
                 </View>
               </>
             )}
-          </View>
+
+          </View>}
         </View>
 
         {activeTab === 'conversions' && (
@@ -1676,6 +1693,31 @@ export default function ReferenceScreen() {
                   </Text>
                 </View>
               ) : null}
+            </View>
+          </View>
+        )}
+
+        {activeTab === 'tips' && (
+          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
+            <Text style={[styles.panelTitle, { color: palette.text }]}>Tips</Text>
+            <View style={styles.listStack}>
+              {cookingTips.map((group) => (
+                <View key={group.category} style={{ gap: 14 }}>
+                  {group.tips.map((tip) => (
+                    <View
+                      key={tip.title}
+                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    >
+                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{tip.title}</Text>
+                      {tip.lines.map((line, index) => (
+                        <Text key={index} style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                          {line}
+                        </Text>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              ))}
             </View>
           </View>
         )}
