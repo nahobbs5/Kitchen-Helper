@@ -34,6 +34,7 @@ type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
   allowVibration: boolean;
+  reorderHapticsEnabled: boolean;
   confirmDeleteEnabled: boolean;
   showRatingsInCardExports: boolean;
   timerCount: number;
@@ -47,6 +48,7 @@ type SettingsContextValue = {
   toggleDarkMode: (value?: boolean) => void;
   toggleKeepScreenAwake: (value?: boolean) => void;
   toggleAllowVibration: (value?: boolean) => void;
+  toggleReorderHaptics: (value?: boolean) => void;
   toggleConfirmDelete: (value?: boolean) => void;
   toggleShowRatingsInCardExports: (value?: boolean) => void;
   setTimerCount: (value: number) => void;
@@ -63,6 +65,7 @@ const DEFAULT_SETTINGS: {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
   allowVibration: boolean;
+  reorderHapticsEnabled: boolean;
   confirmDeleteEnabled: boolean;
   showRatingsInCardExports: boolean;
   timerCount: number;
@@ -72,6 +75,7 @@ const DEFAULT_SETTINGS: {
   darkModeEnabled: false,
   keepScreenAwake: false,
   allowVibration: true,
+  reorderHapticsEnabled: true,
   confirmDeleteEnabled: true,
   showRatingsInCardExports: false,
   timerCount: 3,
@@ -97,6 +101,7 @@ type StoredSettings = {
   darkModeEnabled?: boolean;
   keepScreenAwake?: boolean;
   allowVibration?: boolean;
+  reorderHapticsEnabled?: boolean;
   confirmDeleteEnabled?: boolean;
   showRatingsInCardExports?: boolean;
   timerCount?: number;
@@ -108,6 +113,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
   const [darkModeEnabled, setDarkModeEnabled] = useState(DEFAULT_SETTINGS.darkModeEnabled);
   const [keepScreenAwake, setKeepScreenAwake] = useState(DEFAULT_SETTINGS.keepScreenAwake);
   const [allowVibration, setAllowVibration] = useState(DEFAULT_SETTINGS.allowVibration);
+  const [reorderHapticsEnabled, setReorderHapticsEnabled] = useState(DEFAULT_SETTINGS.reorderHapticsEnabled);
   const [confirmDeleteEnabled, setConfirmDeleteEnabled] = useState(DEFAULT_SETTINGS.confirmDeleteEnabled);
   const [showRatingsInCardExports, setShowRatingsInCardExports] = useState(
     DEFAULT_SETTINGS.showRatingsInCardExports
@@ -140,6 +146,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
           setDarkModeEnabled(parsed.darkModeEnabled ?? DEFAULT_SETTINGS.darkModeEnabled);
           setKeepScreenAwake(parsed.keepScreenAwake ?? DEFAULT_SETTINGS.keepScreenAwake);
           setAllowVibration(parsed.allowVibration ?? DEFAULT_SETTINGS.allowVibration);
+          setReorderHapticsEnabled(parsed.reorderHapticsEnabled ?? DEFAULT_SETTINGS.reorderHapticsEnabled);
           setConfirmDeleteEnabled(parsed.confirmDeleteEnabled ?? DEFAULT_SETTINGS.confirmDeleteEnabled);
           setShowRatingsInCardExports(
             parsed.showRatingsInCardExports ?? DEFAULT_SETTINGS.showRatingsInCardExports
@@ -181,6 +188,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         darkModeEnabled,
         keepScreenAwake,
         allowVibration,
+        reorderHapticsEnabled,
         confirmDeleteEnabled,
         showRatingsInCardExports,
         timerCount,
@@ -190,6 +198,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     ).catch(() => {});
   }, [
     allowVibration,
+    reorderHapticsEnabled,
     confirmDeleteEnabled,
     showRatingsInCardExports,
     darkModeEnabled,
@@ -233,6 +242,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       darkModeEnabled,
       keepScreenAwake,
       allowVibration,
+      reorderHapticsEnabled,
       confirmDeleteEnabled,
       showRatingsInCardExports,
       timerCount,
@@ -249,6 +259,8 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setKeepScreenAwake((current) => (typeof value === 'boolean' ? value : !current)),
       toggleAllowVibration: (value?: boolean) =>
         setAllowVibration((current) => (typeof value === 'boolean' ? value : !current)),
+      toggleReorderHaptics: (value?: boolean) =>
+        setReorderHapticsEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       toggleConfirmDelete: (value?: boolean) =>
         setConfirmDeleteEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       toggleShowRatingsInCardExports: (value?: boolean) =>
@@ -260,6 +272,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
         setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
         setAllowVibration(DEFAULT_SETTINGS.allowVibration);
+        setReorderHapticsEnabled(DEFAULT_SETTINGS.reorderHapticsEnabled);
         setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
         setShowRatingsInCardExports(DEFAULT_SETTINGS.showRatingsInCardExports);
         setTimerCount(DEFAULT_SETTINGS.timerCount);
@@ -269,6 +282,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     }),
     [
       allowVibration,
+      reorderHapticsEnabled,
       confirmDeleteEnabled,
       showRatingsInCardExports,
       darkModeEnabled,

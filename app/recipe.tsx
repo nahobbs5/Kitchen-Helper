@@ -11,58 +11,44 @@ import {
 } from 'react-native';
 
 import { ClearableSearchInput } from '../components/clearable-search-input';
+import { DraggableRecipeList } from '../components/draggable-recipe-list';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { StarRating } from '../components/star-rating';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
+import { useRatings } from '../contexts/ratings-context';
+import { useRecipeOrder } from '../contexts/recipe-order-context';
 import { useAppSettings } from '../contexts/settings-context';
-import { obsidianRecipes } from '../data/obsidian-recipes';
+import { triggerReorderHaptic } from '../utils/haptics';
+import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
-
-const sampleRecipeCategories = ['Entree', 'Appetizers', 'Breakfast', 'Dessert'] as const;
+import { buildSampleRecipes, sampleRecipeCategories } from '../utils/sample-recipes';
 
 export default function SampleRecipesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
-  const { palette } = useAppSettings();
+  const { palette, reorderHapticsEnabled } = useAppSettings();
   const { recipeOverrideMap } = useCustomRecipes();
+  const { getRating, setRating } = useRatings();
+  const { applyOrder, getOrder } = useRecipeOrder();
   const scrollOffsetRef = useRef(0);
+  const scrollViewRef = useRef<ScrollView>(null);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [searchText, setSearchText] = useState('');
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const sampleRecipes = useMemo(
     () =>
-      obsidianRecipes
-        .filter((recipe) => sampleRecipeCategories.includes(recipe.category as (typeof sampleRecipeCategories)[number]))
-        .filter((recipe) => !recipeOverrideMap[recipe.slug]?.deleted)
-        .map((recipe) => {
-          const override = recipeOverrideMap[recipe.slug];
-
-          return override
-            ? {
-                ...recipe,
-                title: override.title,
-                category: override.category,
-                allergyFriendlyTags: override.allergyFriendlyTags,
-                allergenTags: override.allergenTags,
-                ingredients: override.ingredients,
-                directions: override.directions,
-                cuisineRegion: override.cuisineRegion,
-                notes: override.notes,
-                sourceInfo: override.sourceInfo,
-              }
-            : {
-                ...recipe,
-                cuisineRegion: null,
-                notes: recipe.notes,
-                sourceInfo: null,
-              };
-        })
-        .sort((left, right) => left.title.localeCompare(right.title)),
-    [recipeOverrideMap]
+      sortByManualOrder(
+        buildSampleRecipes(recipeOverrideMap),
+        (recipe) => recipe.slug,
+        getOrder('sample-recipes')
+      ),
+    [recipeOverrideMap, getOrder]
   );
 
   const categoryCounts = sampleRecipeCategories.map((category) => ({
@@ -139,6 +125,8 @@ export default function SampleRecipesScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView
+        ref={scrollViewRef}
+        scrollEnabled={!isDragging}
         contentContainerStyle={styles.page}
         onScroll={(event) => {
           const offsetY = event.nativeEvent.contentOffset.y;
@@ -211,17 +199,36 @@ export default function SampleRecipesScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <View style={styles.listStack}>
-                {filteredRecipes.map((recipe) => (
+              <DraggableRecipeList
+                data={filteredRecipes}
+                keyExtractor={(recipe) => recipe.slug}
+                enabled
+                onPickup={() => triggerReorderHaptic(reorderHapticsEnabled)}
+                onDragStateChange={setIsDragging}
+                scrollRef={scrollViewRef}
+                scrollOffsetRef={scrollOffsetRef}
+                containerStyle={{ marginTop: 4 }}
+                onReorder={(from, to) =>
+                  applyOrder(
+                    'sample-recipes',
+                    reorderWithinFilteredView(
+                      sampleRecipes.map((recipe) => recipe.slug),
+                      filteredRecipes.map((recipe) => recipe.slug),
+                      from,
+                      to
+                    )
+                  )
+                }
+                onItemPress={(recipe) =>
+                  router.push({
+                    pathname: '/recipes/[slug]',
+                    params: { slug: recipe.slug, origin: 'sample-recipes' },
+                  })
+                }
+                renderItem={(recipe, _index, { dragProps }) => (
                   <Pressable
-                    key={recipe.slug}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/recipes/[slug]',
-                        params: { slug: recipe.slug, origin: 'sample-recipes' },
-                      })
-                    }
                     style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                    {...dragProps}
                   >
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
@@ -274,17 +281,23 @@ export default function SampleRecipesScreen() {
                         ) : null}
                       </View>
                     ) : null}
+                    <View style={styles.detailCardRatingRow}>
+                      <StarRating
+                        value={getRating(recipe.slug)}
+                        onRate={(next) => setRating(recipe.slug, next)}
+                      />
+                    </View>
                   </Pressable>
-                ))}
-                {filteredRecipes.length === 0 ? (
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>No sample recipes found</Text>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      Try another category or search term.
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
+                )}
+              />
+              {filteredRecipes.length === 0 ? (
+                <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>No sample recipes found</Text>
+                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                    Try another category or search term.
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
 

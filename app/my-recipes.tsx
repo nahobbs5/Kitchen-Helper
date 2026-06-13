@@ -13,11 +13,13 @@ import {
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ClearableSearchInput } from '../components/clearable-search-input';
+import { DraggableRecipeList } from '../components/draggable-recipe-list';
 import { RecipeShareCard, recipeShareCardWidth } from '../components/recipe-share-card';
 import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
 import { FryingPanIcon, MultiSelectIcon } from '../components/recipe-action-icons';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
+import { useRecipeOrder } from '../contexts/recipe-order-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { useRatings } from '../contexts/ratings-context';
@@ -25,7 +27,9 @@ import { StarRating } from '../components/star-rating';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
+import { triggerReorderHaptic } from '../utils/haptics';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
+import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 
 const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
 const mobileHiddenAllergenFilters = new Set([
@@ -77,10 +81,12 @@ export default function MyRecipesScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const isMobile = width < 768;
-  const { palette, showRatingsInCardExports } = useAppSettings();
+  const { palette, reorderHapticsEnabled, showRatingsInCardExports } = useAppSettings();
   const scrollOffsetRef = useRef(0);
+  const scrollViewRef = useRef<ScrollView>(null);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
   const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
@@ -115,6 +121,7 @@ export default function MyRecipesScreen() {
   } = useCustomRecipes();
   const { favoriteRecipes, favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
   const { getRating, setRating } = useRatings();
+  const { applyOrder, getOrder } = useRecipeOrder();
   const allRecipes = useMemo(
     () => [
       ...customRecipes,
@@ -140,6 +147,10 @@ export default function MyRecipesScreen() {
       }),
     ],
     [customRecipes, recipeOverrideMap]
+  );
+  const orderedRecipes = useMemo(
+    () => sortByManualOrder(allRecipes, (recipe) => recipe.slug, getOrder('my-recipes')),
+    [allRecipes, getOrder]
   );
   const recipeCategories = Object.entries(
     allRecipes.reduce<Record<string, number>>((groups, recipe) => {
@@ -197,7 +208,7 @@ export default function MyRecipesScreen() {
   const normalizedSearch = searchText.trim().toLowerCase();
   const filteredRecipes = useMemo(
     () =>
-      allRecipes
+      orderedRecipes
         .filter((recipe) =>
           activeCategoryFilters.includes('Favorites') ? favoriteSlugs.includes(recipe.slug) : true
         )
@@ -224,7 +235,7 @@ export default function MyRecipesScreen() {
                 .includes(normalizedSearch)
             : true
         ),
-    [activeAllergenTags, activeCategoryFilters, activeCuisineFilters, allRecipes, favoriteSlugs, normalizedSearch]
+    [activeAllergenTags, activeCategoryFilters, activeCuisineFilters, orderedRecipes, favoriteSlugs, normalizedSearch]
   );
   const recipeBySlug = useMemo(
     () => new Map(allRecipes.map((recipe) => [recipe.slug, recipe])),
@@ -511,6 +522,8 @@ export default function MyRecipesScreen() {
         </View>
       ) : null}
       <ScrollView
+        ref={scrollViewRef}
+        scrollEnabled={!isDragging}
         contentContainerStyle={styles.page}
         onScroll={(event) => {
           const offsetY = event.nativeEvent.contentOffset.y;
@@ -1037,25 +1050,43 @@ export default function MyRecipesScreen() {
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
               <Text style={[styles.panelTitle, { color: palette.text }]}>Your Library</Text>
-              <View style={styles.listStack}>
-                {filteredRecipes.map((recipe) => (
-                  <Pressable
-                    key={recipe.slug}
-                    onPress={(event) => {
-                      if (selectionMode) {
-                        handleSelectionPress(recipe.slug, Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey));
-                        return;
-                      }
+              <DraggableRecipeList
+                data={filteredRecipes}
+                keyExtractor={(recipe) => recipe.slug}
+                enabled={!selectionMode}
+                onPickup={() => triggerReorderHaptic(reorderHapticsEnabled)}
+                onDragStateChange={setIsDragging}
+                scrollRef={scrollViewRef}
+                scrollOffsetRef={scrollOffsetRef}
+                containerStyle={{ marginTop: 4 }}
+                onReorder={(from, to) =>
+                  applyOrder(
+                    'my-recipes',
+                    reorderWithinFilteredView(
+                      orderedRecipes.map((recipe) => recipe.slug),
+                      filteredRecipes.map((recipe) => recipe.slug),
+                      from,
+                      to
+                    )
+                  )
+                }
+                onItemPress={(recipe, _index, event) => {
+                  if (selectionMode) {
+                    handleSelectionPress(recipe.slug, Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey));
+                    return;
+                  }
 
-                      router.push(
-                        recipe.source === 'App Storage'
-                          ? { pathname: '/user-recipes/[slug]', params: { slug: recipe.slug } }
-                          : {
-                              pathname: '/recipes/[slug]',
-                              params: { slug: recipe.slug, origin: 'my-recipes' },
-                            }
-                      );
-                    }}
+                  router.push(
+                    recipe.source === 'App Storage'
+                      ? { pathname: '/user-recipes/[slug]', params: { slug: recipe.slug } }
+                      : {
+                          pathname: '/recipes/[slug]',
+                          params: { slug: recipe.slug, origin: 'my-recipes' },
+                        }
+                  );
+                }}
+                renderItem={(recipe, _index, { dragProps }) => (
+                  <Pressable
                     style={[
                       styles.detailCard,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
@@ -1064,6 +1095,7 @@ export default function MyRecipesScreen() {
                         borderWidth: 2,
                       },
                     ]}
+                    {...dragProps}
                   >
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
                     <View style={styles.detailCardHeader}>
@@ -1201,16 +1233,16 @@ export default function MyRecipesScreen() {
                       />
                     </View>
                   </Pressable>
-                ))}
-                {filteredRecipes.length === 0 ? (
-                  <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>No recipes in this filter</Text>
-                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                      Try another search term, another category, or switch back to `All`.
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
+                )}
+              />
+              {filteredRecipes.length === 0 ? (
+                <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
+                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>No recipes in this filter</Text>
+                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                    Try another search term, another category, or switch back to `All`.
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
 

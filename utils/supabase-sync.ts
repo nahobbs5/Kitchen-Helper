@@ -71,6 +71,14 @@ export type SyncedRecipeOverrideRecord = {
   updated_at: string;
 };
 
+export type SyncedRecipeOrderRecord = {
+  id: string;
+  user_id: string;
+  list_key: string;
+  slug_order: string[];
+  updated_at: string;
+};
+
 type AuthResponse = {
   access_token?: string;
   refresh_token?: string;
@@ -334,4 +342,32 @@ export async function upsertRecipeOverrides(
   records: SyncedRecipeOverrideRecord[]
 ) {
   return upsertRecords(config, accessToken, 'recipe_overrides', records);
+}
+
+export async function listRecipeOrders(
+  config: SyncConfig,
+  accessToken: string,
+  userId: string
+) {
+  const params = new URLSearchParams({
+    select: '*',
+    user_id: `eq.${userId}`,
+  });
+
+  return request<SyncedRecipeOrderRecord[]>(
+    `${config.url}/rest/v1/recipe_orders?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: authHeaders(config, accessToken),
+    },
+    'Unable to load synced recipe order.'
+  );
+}
+
+export async function upsertRecipeOrders(
+  config: SyncConfig,
+  accessToken: string,
+  records: SyncedRecipeOrderRecord[]
+) {
+  return upsertRecords(config, accessToken, 'recipe_orders', records);
 }

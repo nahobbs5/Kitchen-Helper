@@ -51,8 +51,20 @@ create table if not exists public.recipe_overrides (
 create unique index if not exists recipe_overrides_user_slug_idx
   on public.recipe_overrides (user_id, slug);
 
+create table if not exists public.recipe_orders (
+  id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  list_key text not null,
+  slug_order jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create unique index if not exists recipe_orders_user_list_idx
+  on public.recipe_orders (user_id, list_key);
+
 alter table public.user_recipes enable row level security;
 alter table public.recipe_overrides enable row level security;
+alter table public.recipe_orders enable row level security;
 
 create policy "user_recipes_select_own" on public.user_recipes
   for select using (auth.uid() = user_id);
@@ -70,4 +82,13 @@ create policy "recipe_overrides_insert_own" on public.recipe_overrides
   for insert with check (auth.uid() = user_id);
 
 create policy "recipe_overrides_update_own" on public.recipe_overrides
+  for update using (auth.uid() = user_id);
+
+create policy "recipe_orders_select_own" on public.recipe_orders
+  for select using (auth.uid() = user_id);
+
+create policy "recipe_orders_insert_own" on public.recipe_orders
+  for insert with check (auth.uid() = user_id);
+
+create policy "recipe_orders_update_own" on public.recipe_orders
   for update using (auth.uid() = user_id);

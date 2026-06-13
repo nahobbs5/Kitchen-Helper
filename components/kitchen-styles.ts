@@ -564,6 +564,12 @@ export const kitchenStyles = StyleSheet.create({
     borderColor: '#ead2ab',
     gap: 6,
   },
+  draggingCard: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+  },
   detailCardTitle: {
     fontSize: 18,
     lineHeight: 22,

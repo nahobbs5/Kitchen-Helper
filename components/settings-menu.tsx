@@ -1,9 +1,11 @@
 import { usePathname, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
+import { useCustomRecipes } from '../contexts/custom-recipes-context';
+import { useRecipeOrder } from '../contexts/recipe-order-context';
 import {
   MAX_TIMER_COUNT,
   MIN_TIMER_COUNT,
@@ -11,6 +13,8 @@ import {
   TIMER_SOUND_OPTIONS,
   useAppSettings,
 } from '../contexts/settings-context';
+import { sortByManualOrder } from '../utils/recipe-order';
+import { buildSampleRecipes } from '../utils/sample-recipes';
 
 const TIMER_COUNT_ERROR_MESSAGE = `Enter a number from ${MIN_TIMER_COUNT} to ${MAX_TIMER_COUNT}.`;
 
@@ -268,13 +272,27 @@ export function SettingsMenuModal() {
     toggleDarkMode,
     toggleKeepScreenAwake,
     toggleAllowVibration,
+    reorderHapticsEnabled,
+    toggleReorderHaptics,
     setTimerCount,
   } = useAppSettings();
+  const { recipeOverrideMap } = useCustomRecipes();
+  const { applyOrder, getOrder } = useRecipeOrder();
   const [timerCountInput, setTimerCountInput] = useState(String(timerCount));
   const [timerCountError, setTimerCountError] = useState('');
   const [resetDefaultsChecked, setResetDefaultsChecked] = useState(false);
   const [soundDropdownOpen, setSoundDropdownOpen] = useState(false);
   const [viewDropdownOpen, setViewDropdownOpen] = useState(false);
+
+  const sampleOrderIsDefault = useMemo(() => {
+    const defaultSlugs = buildSampleRecipes(recipeOverrideMap).map((recipe) => recipe.slug);
+    const currentSlugs = sortByManualOrder(
+      defaultSlugs,
+      (slug) => slug,
+      getOrder('sample-recipes')
+    );
+    return defaultSlugs.every((slug, index) => slug === currentSlugs[index]);
+  }, [recipeOverrideMap, getOrder]);
   const selectedTimerSound = TIMER_SOUND_OPTIONS.find((option) => option.id === timerSound) ?? TIMER_SOUND_OPTIONS[0];
   const selectedReferenceTab =
     REFERENCE_TAB_OPTIONS.find((option) => option.id === defaultReferenceTab) ?? REFERENCE_TAB_OPTIONS[0];
@@ -442,6 +460,36 @@ export function SettingsMenuModal() {
                     ]}
                   >
                     {allowVibration ? 'On' : 'Off'}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+            {(Platform.OS === 'ios' || Platform.OS === 'android') ? (
+              <View style={styles.settingsRow}>
+                <View style={styles.settingsCopy}>
+                  <Text style={[styles.settingsLabel, { color: palette.text }]}>Reorder haptics</Text>
+                  <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                    Short vibration when you pick up a recipe to move it.
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => toggleReorderHaptics()}
+                  style={[
+                    styles.numberButton,
+                    {
+                      minWidth: 72,
+                      backgroundColor: reorderHapticsEnabled ? palette.accentSoft : palette.elevatedAlt,
+                      borderColor: reorderHapticsEnabled ? palette.accentSoft : palette.borderAlt,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.numberButtonText,
+                      { color: reorderHapticsEnabled ? palette.accentContrastText : palette.text },
+                    ]}
+                  >
+                    {reorderHapticsEnabled ? 'On' : 'Off'}
                   </Text>
                 </Pressable>
               </View>
@@ -748,6 +796,34 @@ export function SettingsMenuModal() {
                 >
                   {showRatingsInCardExports ? 'On' : 'Off'}
                 </Text>
+              </Pressable>
+            </View>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsCopy}>
+                <Text style={[styles.settingsLabel, { color: palette.text }]}>Reset sample recipe order</Text>
+                <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
+                  Restore the Sample Recipes list to the default alphabetical order.
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  if (!sampleOrderIsDefault) {
+                    applyOrder('sample-recipes', []);
+                  }
+                }}
+                disabled={sampleOrderIsDefault}
+                accessibilityState={{ disabled: sampleOrderIsDefault }}
+                style={[
+                  styles.numberButton,
+                  {
+                    minWidth: 72,
+                    opacity: sampleOrderIsDefault ? 0.5 : 1,
+                    backgroundColor: palette.elevatedAlt,
+                    borderColor: palette.borderAlt,
+                  },
+                ]}
+              >
+                <Text style={[styles.numberButtonText, { color: palette.text }]}>Reset</Text>
               </Pressable>
             </View>
           </View>
