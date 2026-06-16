@@ -13,6 +13,7 @@ import {
 import { ClearableSearchInput } from '../components/clearable-search-input';
 import { DraggableRecipeList } from '../components/draggable-recipe-list';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { RatingFilterChip, type RatingThreshold } from '../components/rating-filter-chip';
 import { StarRating } from '../components/star-rating';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useRatings } from '../contexts/ratings-context';
@@ -36,6 +37,9 @@ export default function SampleRecipesScreen() {
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
+  const [ratingFilterActive, setRatingFilterActive] = useState(false);
+  const [ratingThreshold, setRatingThreshold] = useState<RatingThreshold>(3);
+  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
@@ -62,15 +66,16 @@ export default function SampleRecipesScreen() {
     return sampleRecipes.filter((recipe) => {
       const matchesCategory =
         activeCategoryFilters.length === 0 ? true : activeCategoryFilters.includes(recipe.category);
+      const matchesRating = ratingFilterActive ? getRating(recipe.slug) >= ratingThreshold : true;
       const cuisine = (recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '';
       const tagText = [...recipe.allergyFriendlyTags, ...recipe.allergenTags].join(' ');
       const matchesSearch = normalizedSearch
         ? `${recipe.title} ${recipe.category} ${cuisine} ${tagText}`.toLowerCase().includes(normalizedSearch)
         : true;
 
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesRating && matchesSearch;
     });
-  }, [activeCategoryFilters, sampleRecipes, searchText]);
+  }, [activeCategoryFilters, sampleRecipes, searchText, ratingFilterActive, ratingThreshold, getRating]);
 
   function toggleCategoryFilter(tag: string) {
     if (tag === 'All') {
@@ -163,11 +168,17 @@ export default function SampleRecipesScreen() {
             </Text>
             {renderRecipeSearchInput('inline')}
 
-            <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
+            <View
+              style={[
+                styles.servingsRow,
+                !isWide && styles.recipeFilterRowMobile,
+                ratingDropdownOpen && { zIndex: 30 },
+              ]}
+            >
               {['All', ...sampleRecipeCategories].map((category) => {
                 const isActive = category === 'All' ? activeCategoryFilters.length === 0 : activeCategoryFilters.includes(category);
 
-                return (
+                const chip = (
                   <Pressable
                     key={category}
                     onPress={() => toggleCategoryFilter(category)}
@@ -191,6 +202,29 @@ export default function SampleRecipesScreen() {
                     </Text>
                   </Pressable>
                 );
+
+                if (category === 'All') {
+                  return [
+                    chip,
+                    <RatingFilterChip
+                      key="rating-filter"
+                      active={ratingFilterActive}
+                      threshold={ratingThreshold}
+                      dropdownOpen={ratingDropdownOpen}
+                      onToggleActive={() => setRatingFilterActive((current) => !current)}
+                      onToggleDropdown={() => setRatingDropdownOpen((current) => !current)}
+                      onSelectThreshold={(next) => {
+                        setRatingThreshold(next);
+                        setRatingFilterActive(true);
+                        setRatingDropdownOpen(false);
+                      }}
+                      palette={palette}
+                      isWide={isWide}
+                    />,
+                  ];
+                }
+
+                return chip;
               })}
             </View>
           </View>

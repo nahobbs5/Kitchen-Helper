@@ -24,6 +24,7 @@ import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { useRatings } from '../contexts/ratings-context';
 import { StarRating } from '../components/star-rating';
+import { RatingFilterChip, type RatingThreshold } from '../components/rating-filter-chip';
 import { obsidianRecipes } from '../data/obsidian-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
@@ -90,6 +91,9 @@ export default function MyRecipesScreen() {
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
   const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
+  const [ratingFilterActive, setRatingFilterActive] = useState(false);
+  const [ratingThreshold, setRatingThreshold] = useState<RatingThreshold>(3);
+  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
@@ -212,6 +216,7 @@ export default function MyRecipesScreen() {
         .filter((recipe) =>
           activeCategoryFilters.includes('Favorites') ? favoriteSlugs.includes(recipe.slug) : true
         )
+        .filter((recipe) => (ratingFilterActive ? getRating(recipe.slug) >= ratingThreshold : true))
         .filter((recipe) => {
           const selectedCategories = activeCategoryFilters.filter((value) => value !== 'Favorites');
           return selectedCategories.length === 0 ? true : selectedCategories.includes(recipe.category);
@@ -235,7 +240,17 @@ export default function MyRecipesScreen() {
                 .includes(normalizedSearch)
             : true
         ),
-    [activeAllergenTags, activeCategoryFilters, activeCuisineFilters, orderedRecipes, favoriteSlugs, normalizedSearch]
+    [
+      activeAllergenTags,
+      activeCategoryFilters,
+      activeCuisineFilters,
+      orderedRecipes,
+      favoriteSlugs,
+      normalizedSearch,
+      ratingFilterActive,
+      ratingThreshold,
+      getRating,
+    ]
   );
   const recipeBySlug = useMemo(
     () => new Map(allRecipes.map((recipe) => [recipe.slug, recipe])),
@@ -925,14 +940,20 @@ export default function MyRecipesScreen() {
 
             {renderRecipeSearchInput('inline')}
 
-            <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
+            <View
+              style={[
+                styles.servingsRow,
+                !isWide && styles.recipeFilterRowMobile,
+                ratingDropdownOpen && { zIndex: 30 },
+              ]}
+            >
               {categoryFilters.map((category) => {
                 const isActive =
                   category.name === 'All'
                     ? activeCategoryFilters.length === 0
                     : activeCategoryFilters.includes(category.name);
 
-                return (
+                const chip = (
                   <Pressable
                     key={category.name}
                     onPress={() => toggleCategoryFilter(category.name)}
@@ -963,6 +984,29 @@ export default function MyRecipesScreen() {
                     </Text>
                   </Pressable>
                 );
+
+                if (category.name === 'Favorites') {
+                  return [
+                    chip,
+                    <RatingFilterChip
+                      key="rating-filter"
+                      active={ratingFilterActive}
+                      threshold={ratingThreshold}
+                      dropdownOpen={ratingDropdownOpen}
+                      onToggleActive={() => setRatingFilterActive((current) => !current)}
+                      onToggleDropdown={() => setRatingDropdownOpen((current) => !current)}
+                      onSelectThreshold={(next) => {
+                        setRatingThreshold(next);
+                        setRatingFilterActive(true);
+                        setRatingDropdownOpen(false);
+                      }}
+                      palette={palette}
+                      isWide={isWide}
+                    />,
+                  ];
+                }
+
+                return chip;
               })}
             </View>
 
