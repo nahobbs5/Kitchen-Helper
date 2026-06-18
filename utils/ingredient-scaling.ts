@@ -22,7 +22,7 @@ const unicodeFractionMap: Record<string, number> = {
 const unicodeFractionChars = Object.keys(unicodeFractionMap).join('');
 
 const numberPattern =
-  `(?:\\d+\\s+\\d+/\\d+|\\d+\\s+[${unicodeFractionChars}]|\\d+[${unicodeFractionChars}]|\\d+/\\d+|\\d+(?:\\.\\d+)?|[${unicodeFractionChars}])`;
+  `(?:\\d+\\s*&\\s*\\d+/\\d+|\\d+\\s*&\\s*[${unicodeFractionChars}]|\\d+\\s+\\d+/\\d+|\\d+\\s+[${unicodeFractionChars}]|\\d+[${unicodeFractionChars}]|\\d+/\\d+|\\d+(?:\\.\\d+)?|[${unicodeFractionChars}])`;
 
 const qualitativeAmountPattern =
   '(?:pinches|pinch|dashes|dash|sprinkles|sprinkle|splashes|splash|drizzles|drizzle|handfuls|handful|knobs|knob)';
@@ -71,7 +71,7 @@ function normalizeUnitWord(word: string): string {
 }
 
 function parseSingleAmount(value: string): number | null {
-  const trimmed = value.trim();
+  const trimmed = value.trim().replace(/\s*&\s*/, ' ');
 
   if (unicodeFractionMap[trimmed] !== undefined) {
     return unicodeFractionMap[trimmed];
