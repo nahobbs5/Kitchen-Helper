@@ -18,13 +18,64 @@ type ImportedRecipe = {
   suggestedCategory: string | null;
 };
 
+const NAMED_ENTITIES: Record<string, string> = {
+  quot: '"',
+  apos: "'",
+  lt: '<',
+  gt: '>',
+  nbsp: ' ',
+  lsquo: '‘',
+  rsquo: '’',
+  ldquo: '“',
+  rdquo: '”',
+  ndash: '–',
+  mdash: '—',
+  hellip: '…',
+  deg: '°',
+  frac12: '½',
+  frac14: '¼',
+  frac34: '¾',
+  eacute: 'é',
+  trade: '™',
+  reg: '®',
+  copy: '©',
+};
+
+function codePointToString(codePoint: number): string | null {
+  if (!Number.isFinite(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+    return null;
+  }
+
+  try {
+    return String.fromCodePoint(codePoint);
+  } catch {
+    return null;
+  }
+}
+
 function decodeHtml(value: string) {
-  return value
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+  return (
+    value
+      // Numeric hex entities, e.g. &#x2019;
+      .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => {
+        const decoded = codePointToString(parseInt(hex, 16));
+        return decoded ?? match;
+      })
+      // Numeric decimal entities, e.g. &#8217;
+      .replace(/&#(\d+);/g, (match, dec) => {
+        const decoded = codePointToString(parseInt(dec, 10));
+        return decoded ?? match;
+      })
+      // Named entities (unknown names are left untouched)
+      .replace(/&([a-zA-Z][a-zA-Z0-9]*);/g, (match, name) => {
+        return Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, name)
+          ? NAMED_ENTITIES[name]
+          : match;
+      })
+      // Decode &amp; last so sequences like "Salt &amp; Pepper" resolve without
+      // double-decoding any entities revealed above.
+      .replace(/&amp;/g, '&')
+  );
 }
 
 function stripHtml(value: string) {
