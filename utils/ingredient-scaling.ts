@@ -221,7 +221,7 @@ function scaleMeasurementText(
 
 function scaleInlineMeasurements(text: string, multiplier: number) {
   const measurementPattern = new RegExp(
-    `(${numberPattern})(\\s*[-–]\\s*(${numberPattern}))?(\\s+)([A-Za-z]+\\.?)\\b`,
+    `(${numberPattern})(\\s*[-–]\\s*(${numberPattern}))?(\\s*)([A-Za-z]+\\.?)\\b`,
     'g'
   );
 
