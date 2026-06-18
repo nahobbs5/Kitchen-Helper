@@ -21,8 +21,10 @@ const unicodeFractionMap: Record<string, number> = {
 
 const unicodeFractionChars = Object.keys(unicodeFractionMap).join('');
 
+const mixedSeparator = '(?:\\s*&\\s*|\\s+and\\s+)';
+
 const numberPattern =
-  `(?:\\d+\\s*&\\s*\\d+/\\d+|\\d+\\s*&\\s*[${unicodeFractionChars}]|\\d+\\s+\\d+/\\d+|\\d+\\s+[${unicodeFractionChars}]|\\d+[${unicodeFractionChars}]|\\d+/\\d+|\\d+(?:\\.\\d+)?|[${unicodeFractionChars}])`;
+  `(?:\\d+${mixedSeparator}\\d+/\\d+|\\d+${mixedSeparator}[${unicodeFractionChars}]|\\d+\\s+\\d+/\\d+|\\d+\\s+[${unicodeFractionChars}]|\\d+[${unicodeFractionChars}]|\\d+/\\d+|\\d+(?:\\.\\d+)?|[${unicodeFractionChars}])`;
 
 const qualitativeAmountPattern =
   '(?:pinches|pinch|dashes|dash|sprinkles|sprinkle|splashes|splash|drizzles|drizzle|handfuls|handful|knobs|knob)';
@@ -71,7 +73,7 @@ function normalizeUnitWord(word: string): string {
 }
 
 function parseSingleAmount(value: string): number | null {
-  const trimmed = value.trim().replace(/\s*&\s*/, ' ');
+  const trimmed = value.trim().replace(/\s*&\s*|\s+and\s+/i, ' ');
 
   if (unicodeFractionMap[trimmed] !== undefined) {
     return unicodeFractionMap[trimmed];

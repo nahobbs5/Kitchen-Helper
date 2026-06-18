@@ -741,6 +741,7 @@ export default function AccountScreen() {
         <View style={{ gap: 4, marginTop: 12 }}>
           <Text style={[styles.settingsLabel, { color: palette.text }]}>Doesn't Work</Text>
           {[
+            'inspiredtaste.net',
             'therealfooddietitians.com',
           ].map((site) => (
             <Text key={site} style={[styles.settingsHint, { color: palette.textMuted }]}>
