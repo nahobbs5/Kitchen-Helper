@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ProgressBar } from '../components/progress-bar';
 import { RecipeSectionEditor } from '../components/recipe-section-editor';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
@@ -660,11 +661,16 @@ export default function AddRecipeScreen() {
                           ) : null}
                         </View>
                         {aiState === 'extracting' ? (
-                          <Text style={[styles.formHint, { color: palette.accentText }]}>
-                            {lastAiTier === 'accurate'
-                              ? 'Re-reading the photo(s) with the more accurate model...'
-                              : 'Reading the recipe photo(s) and filling the form...'}
-                          </Text>
+                          <>
+                            <Text style={[styles.formHint, { color: palette.accentText }]}>
+                              {lastAiTier === 'accurate'
+                                ? 'Re-reading the photo(s) with the more accurate model...'
+                                : 'Reading the recipe photo(s) and filling the form...'}
+                            </Text>
+                            <View style={{ marginTop: 8 }}>
+                              <ProgressBar palette={palette} accessibilityLabel="Reading recipe photos" />
+                            </View>
+                          </>
                         ) : null}
                         {aiState === 'done' ? (
                           <Text style={[styles.formHint, { color: palette.accentText }]}>
@@ -722,9 +728,14 @@ export default function AddRecipeScreen() {
                           </Pressable>
                         </View>
                         {ocrState === 'recognizing' ? (
-                          <Text style={[styles.formHint, { color: palette.accentText }]}>
-                            Reading the selected recipe image(s) and filling the form...
-                          </Text>
+                          <>
+                            <Text style={[styles.formHint, { color: palette.accentText }]}>
+                              Reading the selected recipe image(s) and filling the form...
+                            </Text>
+                            <View style={{ marginTop: 8 }}>
+                              <ProgressBar palette={palette} accessibilityLabel="Recognizing recipe text" />
+                            </View>
+                          </>
                         ) : null}
                         {ocrError ? (
                           <Text style={[styles.formHint, { color: palette.accent }]}>{ocrError}</Text>
@@ -783,9 +794,14 @@ export default function AddRecipeScreen() {
                       </Pressable>
                     </View>
                     {websiteImportState === 'loading' ? (
-                      <Text style={[styles.formHint, { color: palette.accentText }]}>
-                        Scanning the website for recipe data...
-                      </Text>
+                      <>
+                        <Text style={[styles.formHint, { color: palette.accentText }]}>
+                          Scanning the website for recipe data...
+                        </Text>
+                        <View style={{ marginTop: 8 }}>
+                          <ProgressBar palette={palette} accessibilityLabel="Scanning website for recipe data" />
+                        </View>
+                      </>
                     ) : null}
                     {websiteImportError ? (
                       <Text style={[styles.formHint, { color: palette.accent }]}>{websiteImportError}</Text>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
+import { ProgressBar } from '../components/progress-bar';
 import { useAuth } from '../contexts/auth-context';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useRatings } from '../contexts/ratings-context';
@@ -22,6 +23,7 @@ export default function AccountScreen() {
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportingTarget, setExportingTarget] = useState<'all' | 'filtered' | null>(null);
   const [selectedExportCategories, setSelectedExportCategories] = useState<string[]>([]);
   const [selectedExportFriendlyTags, setSelectedExportFriendlyTags] = useState<string[]>([]);
   const [selectedExportAllergenTags, setSelectedExportAllergenTags] = useState<string[]>([]);
@@ -184,6 +186,7 @@ export default function AccountScreen() {
     setExportError(null);
     setExportMessage(null);
     setIsExporting(true);
+    setExportingTarget('all');
     try {
       const result = await exportRecipesToPdf(exportRecipes);
       setExportMessage(result.message);
@@ -193,6 +196,7 @@ export default function AccountScreen() {
       );
     } finally {
       setIsExporting(false);
+      setExportingTarget(null);
     }
   }
 
@@ -201,6 +205,7 @@ export default function AccountScreen() {
     setExportError(null);
     setExportMessage(null);
     setIsExporting(true);
+    setExportingTarget('filtered');
     try {
       const result = await exportRecipesToPdf(filteredExportRecipes);
       setExportMessage(result.message);
@@ -210,6 +215,7 @@ export default function AccountScreen() {
       );
     } finally {
       setIsExporting(false);
+      setExportingTarget(null);
     }
   }
 
@@ -522,6 +528,11 @@ export default function AccountScreen() {
             {isExporting ? 'Exporting…' : 'Export all recipes to PDF'}
           </Text>
         </Pressable>
+        {exportingTarget === 'all' ? (
+          <View style={{ marginTop: 10 }}>
+            <ProgressBar palette={palette} accessibilityLabel="Exporting recipes to PDF" />
+          </View>
+        ) : null}
         <View style={[styles.settingsCopy, { flexBasis: 'auto', flexGrow: 0, flexShrink: 0, gap: 10 }]}>
           <Text style={[styles.settingsLabel, { color: palette.text }]}>Export selected recipes to PDF</Text>
           <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
@@ -669,6 +680,11 @@ export default function AccountScreen() {
             {isExporting ? 'Exporting…' : 'Export selected recipes to PDF'}
           </Text>
         </Pressable>
+        {exportingTarget === 'filtered' ? (
+          <View style={{ marginTop: 10 }}>
+            <ProgressBar palette={palette} accessibilityLabel="Exporting selected recipes to PDF" />
+          </View>
+        ) : null}
         {exportMessage ? (
           <Text style={[styles.settingsHint, { color: palette.accentText }]}>{exportMessage}</Text>
         ) : null}
@@ -698,6 +714,7 @@ export default function AccountScreen() {
             'allrecipes.com',
             'cooking.nytimes.com',
             'food.com',
+            'littlesweetbaker.com',
             'nutrition.gov',
             'recipetineats.com',
             'simplyrecipes.com',
