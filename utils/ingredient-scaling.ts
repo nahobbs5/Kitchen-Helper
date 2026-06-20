@@ -66,7 +66,75 @@ const unitWordMap: Record<string, { singular: string; plural: string }> = {
   packages: { singular: 'package', plural: 'packages' },
   stick: { singular: 'stick', plural: 'sticks' },
   sticks: { singular: 'stick', plural: 'sticks' },
+  onion: { singular: 'onion', plural: 'onions' },
+  onions: { singular: 'onion', plural: 'onions' },
+  shallot: { singular: 'shallot', plural: 'shallots' },
+  shallots: { singular: 'shallot', plural: 'shallots' },
+  scallion: { singular: 'scallion', plural: 'scallions' },
+  scallions: { singular: 'scallion', plural: 'scallions' },
+  carrot: { singular: 'carrot', plural: 'carrots' },
+  carrots: { singular: 'carrot', plural: 'carrots' },
+  potato: { singular: 'potato', plural: 'potatoes' },
+  potatoes: { singular: 'potato', plural: 'potatoes' },
+  tomato: { singular: 'tomato', plural: 'tomatoes' },
+  tomatoes: { singular: 'tomato', plural: 'tomatoes' },
+  pepper: { singular: 'pepper', plural: 'peppers' },
+  peppers: { singular: 'pepper', plural: 'peppers' },
+  chile: { singular: 'chile', plural: 'chiles' },
+  chiles: { singular: 'chile', plural: 'chiles' },
+  cucumber: { singular: 'cucumber', plural: 'cucumbers' },
+  cucumbers: { singular: 'cucumber', plural: 'cucumbers' },
+  zucchini: { singular: 'zucchini', plural: 'zucchini' },
+  mushroom: { singular: 'mushroom', plural: 'mushrooms' },
+  mushrooms: { singular: 'mushroom', plural: 'mushrooms' },
+  avocado: { singular: 'avocado', plural: 'avocados' },
+  avocados: { singular: 'avocado', plural: 'avocados' },
+  apple: { singular: 'apple', plural: 'apples' },
+  apples: { singular: 'apple', plural: 'apples' },
+  banana: { singular: 'banana', plural: 'bananas' },
+  bananas: { singular: 'banana', plural: 'bananas' },
+  lemon: { singular: 'lemon', plural: 'lemons' },
+  lemons: { singular: 'lemon', plural: 'lemons' },
+  lime: { singular: 'lime', plural: 'limes' },
+  limes: { singular: 'lime', plural: 'limes' },
+  orange: { singular: 'orange', plural: 'oranges' },
+  oranges: { singular: 'orange', plural: 'oranges' },
+  stalk: { singular: 'stalk', plural: 'stalks' },
+  stalks: { singular: 'stalk', plural: 'stalks' },
+  sprig: { singular: 'sprig', plural: 'sprigs' },
+  sprigs: { singular: 'sprig', plural: 'sprigs' },
+  leaf: { singular: 'leaf', plural: 'leaves' },
+  leaves: { singular: 'leaf', plural: 'leaves' },
+  slice: { singular: 'slice', plural: 'slices' },
+  slices: { singular: 'slice', plural: 'slices' },
+  strip: { singular: 'strip', plural: 'strips' },
+  strips: { singular: 'strip', plural: 'strips' },
+  piece: { singular: 'piece', plural: 'pieces' },
+  pieces: { singular: 'piece', plural: 'pieces' },
+  head: { singular: 'head', plural: 'heads' },
+  heads: { singular: 'head', plural: 'heads' },
+  bunch: { singular: 'bunch', plural: 'bunches' },
+  bunches: { singular: 'bunch', plural: 'bunches' },
+  ear: { singular: 'ear', plural: 'ears' },
+  ears: { singular: 'ear', plural: 'ears' },
+  slab: { singular: 'slab', plural: 'slabs' },
+  slabs: { singular: 'slab', plural: 'slabs' },
+  fillet: { singular: 'fillet', plural: 'fillets' },
+  fillets: { singular: 'fillet', plural: 'fillets' },
 };
+
+// Size words that describe a count of whole items (e.g. "4 large", "2 medium
+// onions"). The number is a quantity and must scale, but the word itself stays
+// as-is. Kept separate from units so non-quantity numbers (temperatures, times,
+// ratios) are never touched.
+const countDescriptors = new Set([
+  'large',
+  'medium',
+  'small',
+  'jumbo',
+  'whole',
+  'extra-large',
+]);
 
 function normalizeUnitWord(word: string): string {
   return word.toLowerCase().replace(/\.$/, '');
@@ -161,7 +229,7 @@ function shouldUseSingular(quantity: number): boolean {
 }
 
 function pluralizeLeadingUnit(remainder: string, quantity: number): string {
-  const match = remainder.match(/^(\s*)([A-Za-z]+)(\b.*)$/);
+  const match = remainder.match(/^(\s*)([A-Za-z]+(?:-[A-Za-z]+)*)(\b.*)$/);
 
   if (!match) {
     return remainder;
@@ -169,6 +237,13 @@ function pluralizeLeadingUnit(remainder: string, quantity: number): string {
 
   const [, whitespace, word, rest] = match;
   const normalizedWord = normalizeUnitWord(word);
+
+  // Skip a size descriptor ("4 large eggs") so the count noun after it gets
+  // singularized/pluralized instead of the adjective.
+  if (countDescriptors.has(normalizedWord)) {
+    return `${whitespace}${word}${pluralizeLeadingUnit(rest, quantity)}`;
+  }
+
   const unit = unitWordMap[normalizedWord];
 
   if (!unit) {
@@ -188,9 +263,11 @@ function scaleMeasurementText(
   unitWord: string,
   multiplier: number
 ) {
-  const unit = unitWordMap[normalizeUnitWord(unitWord)];
+  const normalizedWord = normalizeUnitWord(unitWord);
+  const unit = unitWordMap[normalizedWord];
+  const isCountDescriptor = !unit && countDescriptors.has(normalizedWord);
 
-  if (!unit) {
+  if (!unit && !isCountDescriptor) {
     return measurementMatch;
   }
 
@@ -215,7 +292,11 @@ function scaleMeasurementText(
     }
   }
 
-  const replacementUnit = shouldUseSingular(quantityForUnit) ? unit.singular : unit.plural;
+  if (isCountDescriptor) {
+    return `${scaledAmount}${unitSpacing}${unitWord}`;
+  }
+
+  const replacementUnit = shouldUseSingular(quantityForUnit) ? unit!.singular : unit!.plural;
   return `${scaledAmount}${unitSpacing}${replacementUnit}`;
 }
 
