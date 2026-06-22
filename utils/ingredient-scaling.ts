@@ -292,12 +292,14 @@ function scaleMeasurementText(
     }
   }
 
+  const spacing = unitSpacing || ' ';
+
   if (isCountDescriptor) {
-    return `${scaledAmount}${unitSpacing}${unitWord}`;
+    return `${scaledAmount}${spacing}${unitWord}`;
   }
 
   const replacementUnit = shouldUseSingular(quantityForUnit) ? unit!.singular : unit!.plural;
-  return `${scaledAmount}${unitSpacing}${replacementUnit}`;
+  return `${scaledAmount}${spacing}${replacementUnit}`;
 }
 
 function scaleInlineMeasurements(text: string, multiplier: number) {

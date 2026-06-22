@@ -22,8 +22,8 @@ export default function AccountScreen() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportingTarget, setExportingTarget] = useState<'all' | 'filtered' | null>(null);
+  const [exportState, setExportState] = useState<'idle' | 'all' | 'filtered'>('idle');
+  const isExporting = exportState !== 'idle';
   const [selectedExportCategories, setSelectedExportCategories] = useState<string[]>([]);
   const [selectedExportFriendlyTags, setSelectedExportFriendlyTags] = useState<string[]>([]);
   const [selectedExportAllergenTags, setSelectedExportAllergenTags] = useState<string[]>([]);
@@ -185,8 +185,7 @@ export default function AccountScreen() {
     if (isExporting || !loaded) return;
     setExportError(null);
     setExportMessage(null);
-    setIsExporting(true);
-    setExportingTarget('all');
+    setExportState('all');
     try {
       const result = await exportRecipesToPdf(exportRecipes);
       setExportMessage(result.message);
@@ -195,8 +194,7 @@ export default function AccountScreen() {
         error instanceof Error ? error.message : 'Recipe export failed. Please try again.'
       );
     } finally {
-      setIsExporting(false);
-      setExportingTarget(null);
+      setExportState('idle');
     }
   }
 
@@ -204,8 +202,7 @@ export default function AccountScreen() {
     if (isExporting || !loaded || filteredExportRecipes.length === 0) return;
     setExportError(null);
     setExportMessage(null);
-    setIsExporting(true);
-    setExportingTarget('filtered');
+    setExportState('filtered');
     try {
       const result = await exportRecipesToPdf(filteredExportRecipes);
       setExportMessage(result.message);
@@ -214,8 +211,7 @@ export default function AccountScreen() {
         error instanceof Error ? error.message : 'Recipe export failed. Please try again.'
       );
     } finally {
-      setIsExporting(false);
-      setExportingTarget(null);
+      setExportState('idle');
     }
   }
 
@@ -528,7 +524,7 @@ export default function AccountScreen() {
             {isExporting ? 'Exporting…' : 'Export all recipes to PDF'}
           </Text>
         </Pressable>
-        {exportingTarget === 'all' ? (
+        {exportState === 'all' ? (
           <View style={{ marginTop: 10 }}>
             <ProgressBar palette={palette} accessibilityLabel="Exporting recipes to PDF" />
           </View>
@@ -680,7 +676,7 @@ export default function AccountScreen() {
             {isExporting ? 'Exporting…' : 'Export selected recipes to PDF'}
           </Text>
         </Pressable>
-        {exportingTarget === 'filtered' ? (
+        {exportState === 'filtered' ? (
           <View style={{ marginTop: 10 }}>
             <ProgressBar palette={palette} accessibilityLabel="Exporting selected recipes to PDF" />
           </View>

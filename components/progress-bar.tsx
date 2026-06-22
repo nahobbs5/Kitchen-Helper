@@ -25,7 +25,7 @@ export function ProgressBar({ palette, accessibilityLabel }: Props) {
         toValue: 1,
         duration: CYCLE_MS,
         easing: Easing.inOut(Easing.ease),
-        useNativeDriver: Platform.OS !== 'web',
+        useNativeDriver: false,
       })
     );
     animation.start();
