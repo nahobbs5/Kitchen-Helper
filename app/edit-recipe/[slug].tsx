@@ -70,6 +70,8 @@ export default function EditRecipeScreen() {
       notes: override ? override.notes : obsidianRecipe.notes,
       cuisineRegion: override?.cuisineRegion ?? null,
       sourceInfo: override?.sourceInfo ?? null,
+      allergenTags: override?.allergenTags ?? obsidianRecipe.allergenTags,
+      allergyFriendlyTags: override?.allergyFriendlyTags ?? obsidianRecipe.allergyFriendlyTags,
     };
   }, [customRecipe, effectiveSource, obsidianRecipe, override]);
 
