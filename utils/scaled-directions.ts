@@ -29,12 +29,13 @@ export type DirectionDetectedSignal = {
   match: string;
 };
 
-export type DirectionHighlightType = 'time' | 'temperature' | 'doneness';
+export type DirectionHighlightType = 'time' | 'temperature' | 'doneness' | 'cook-method' | 'equipment';
 
 export type DirectionHighlightRange = {
   start: number;
   end: number;
   type: DirectionHighlightType;
+  annotations?: DirectionAnnotation[];
 };
 
 export type NormalizedDirectionStep = {
@@ -225,13 +226,41 @@ export function parseHighlightedTimeMs(text: string): number {
   return 0;
 }
 
-function normalizeHighlights(text: string, scale: number) {
+function annotationsForHighlightType(
+  type: DirectionHighlightType,
+  annotations: DirectionAnnotation[]
+): DirectionAnnotation[] {
+  const byType = (...types: DirectionAnnotationType[]) =>
+    annotations.filter((annotation) => types.includes(annotation.type));
+
+  switch (type) {
+    case 'time':
+      // Time words keep their timer behavior; no message popup.
+      return [];
+    case 'temperature':
+      return byType('target-temp', 'original-time');
+    case 'doneness':
+      return byType('doneness', 'original-time');
+    case 'cook-method':
+      return byType('crowding', 'depth');
+    case 'equipment':
+      return byType('equipment');
+    default:
+      return [];
+  }
+}
+
+function buildHighlights(text: string, scale: number, annotations: DirectionAnnotation[]) {
   const ranges: DirectionHighlightRange[] = [];
   addHighlightRanges(text, timeRegex, 'time', ranges);
 
   if (scale !== 1) {
     addHighlightRanges(text, temperatureRegex, 'temperature', ranges);
     addHighlightRanges(text, donenessCueRegex, 'doneness', ranges);
+    addHighlightRanges(text, surfaceCookRegex, 'cook-method', ranges);
+    addHighlightRanges(text, deepCookRegex, 'cook-method', ranges);
+    addHighlightRanges(text, equipmentRegex, 'equipment', ranges);
+    addHighlightRanges(text, dimensionRegex, 'equipment', ranges);
   }
 
   ranges.sort((left, right) => left.start - right.start || left.end - right.end);
@@ -249,7 +278,10 @@ function normalizeHighlights(text: string, scale: number) {
     }
   }
 
-  return merged;
+  return merged.map((range) => {
+    const attached = annotationsForHighlightType(range.type, annotations);
+    return attached.length > 0 ? { ...range, annotations: attached } : range;
+  });
 }
 
 export function splitDirectionsText(text: string) {
@@ -420,6 +452,17 @@ export function analyzeScaledDirections({
     const isEdited =
       Object.prototype.hasOwnProperty.call(stepOverrides, stepId) && stepOverrides[stepId] !== originalText;
     const detectedSignals = collectSignals(displayText);
+    const allAnnotations = buildAnnotations(displayText, detectedSignals, scale, isEdited);
+    const highlights = buildHighlights(displayText, scale, allAnnotations);
+
+    const attachedKeys = new Set(
+      highlights.flatMap((highlight) =>
+        (highlight.annotations ?? []).map((annotation) => `${annotation.type}:${annotation.message}`)
+      )
+    );
+    const orphanAnnotations = allAnnotations.filter(
+      (annotation) => !attachedKeys.has(`${annotation.type}:${annotation.message}`)
+    );
 
     steps.push({
       id: stepId,
@@ -428,9 +471,9 @@ export function analyzeScaledDirections({
       originalText,
       displayText,
       isEdited,
-      annotations: buildAnnotations(displayText, detectedSignals, scale, isEdited),
+      annotations: orphanAnnotations,
       detectedSignals,
-      highlights: normalizeHighlights(displayText, scale),
+      highlights,
     });
   }
 
