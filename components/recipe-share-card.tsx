@@ -40,7 +40,7 @@ export function RecipeShareCard({ onLayout, recipe }: Props) {
   const metadata = [
     recipe.cuisineRegion ? `Cuisine: ${recipe.cuisineRegion}` : null,
     recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
-    recipe.cookTime ? formatCookTimeTag(recipe.category, recipe.cookTime) : null,
+    recipe.cookTime ? formatCookTimeTag(recipe, recipe.cookTime) : null,
     recipe.totalTime ? `Total: ${recipe.totalTime}` : null,
     recipe.servings,
   ].filter(Boolean) as string[];

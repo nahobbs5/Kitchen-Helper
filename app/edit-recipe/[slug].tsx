@@ -637,7 +637,10 @@ export default function EditRecipeScreen() {
                       {cookTime.trim() ? (
                         <View style={[styles.tag, { backgroundColor: palette.tag }]}>
                           <Text style={[styles.tagText, { color: palette.tagText }]}>
-                            {formatCookTimeTag(category, cookTime.trim())}
+                            {formatCookTimeTag(
+                              { title: recipeName, category, directions: [{ items: [directionsText] }] },
+                              cookTime.trim()
+                            )}
                           </Text>
                         </View>
                       ) : null}

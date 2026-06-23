@@ -130,8 +130,43 @@ export function normalizeRecipeMetadata(input: RecipeMetadata): RecipeMetadata {
   };
 }
 
-export function formatCookTimeTag(category: string | null | undefined, cookTime: string) {
-  return `${category === 'Dessert' ? 'Bake' : 'Cook'}: ${cookTime}`;
+type CookVerbInput = {
+  title?: string | null;
+  category?: string | null;
+  directions?: { items: string[] }[] | null;
+};
+
+export function resolveCookVerb(input: CookVerbInput): 'Bake' | 'Cook' {
+  const title = (input.title ?? '').toLowerCase();
+  const directionsText = (input.directions ?? [])
+    .flatMap((section) => section.items ?? [])
+    .join(' ')
+    .toLowerCase();
+
+  const noBake = /\bno[-\s]?bake\b/;
+  const bakeWord = /\b(baked|baking|bake|roast(?:ed|ing)?)\b/;
+  const ovenCue = /\b(preheat|oven|bake|roast)\b|\b\d{3}\s*(?:°|degrees?|f\b|c\b)|°[fc]/;
+  const chilledCue = /\b(no[-\s]?bake|icebox|refrigerat\w*|chill\w*|freez\w*|frozen)\b/;
+
+  // 1. Title is authoritative
+  if (noBake.test(title)) return 'Cook';
+  if (bakeWord.test(title)) return 'Bake';
+
+  // 2. Oven cues in directions (unless directions explicitly say no-bake)
+  if (!noBake.test(directionsText) && ovenCue.test(directionsText)) return 'Bake';
+
+  // 3. Dessert fallback: flip clearly non-baked desserts to Cook
+  if (input.category === 'Dessert') {
+    if (chilledCue.test(title) || chilledCue.test(directionsText)) return 'Cook';
+    return 'Bake'; // preserve current default for desserts we can't disambiguate
+  }
+
+  // 4. Default
+  return 'Cook';
+}
+
+export function formatCookTimeTag(recipe: CookVerbInput, cookTime: string) {
+  return `${resolveCookVerb(recipe)}: ${cookTime}`;
 }
 
 export function parseRecipeTimeMinutes(value: string | null) {

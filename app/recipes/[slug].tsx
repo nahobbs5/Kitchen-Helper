@@ -302,7 +302,7 @@ export default function ObsidianRecipeScreen() {
                 {recipe.cookTime ? (
                   <View style={[styles.tag, { backgroundColor: palette.tag }]}>
                     <Text style={[styles.tagText, { color: palette.tagText }]}>
-                      {formatCookTimeTag(recipe.category, recipe.cookTime)}
+                      {formatCookTimeTag(recipe, recipe.cookTime)}
                     </Text>
                   </View>
                 ) : null}

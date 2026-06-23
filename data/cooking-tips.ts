@@ -10,6 +10,18 @@ export type CookingTipCategory = {
 
 export const cookingTips: CookingTipCategory[] = [
   {
+    category: 'Potatoes',
+    tips: [
+      {
+        title: 'Baked potato — oven',
+        lines: [
+          'Temperature: 400°F',
+          'Time: 50–60 minutes',
+        ],
+      },
+    ],
+  },
+  {
     category: 'Rice',
     tips: [
       {
