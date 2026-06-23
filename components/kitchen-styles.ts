@@ -57,9 +57,10 @@ export const kitchenStyles = StyleSheet.create({
     gap: 10,
   },
   heroTitleLogo: {
-    borderRadius: 8,
-    height: 40,
-    width: 40,
+    alignSelf: 'center',
+    borderRadius: 12,
+    height: 80,
+    width: 80,
   },
   subtitle: {
     fontSize: 16,
@@ -597,6 +598,9 @@ export const kitchenStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
+  },
+  detailCardRatingRowMobile: {
+    justifyContent: 'space-between',
   },
   detailCardMeta: {
     fontSize: 13,

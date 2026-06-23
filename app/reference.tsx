@@ -1281,7 +1281,7 @@ export default function ReferenceScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.title, { color: palette.text }]}>Kitchen Guides</Text>
+            <Text style={[styles.title, { color: palette.text, fontSize: 28, lineHeight: 34 }]}>Kitchen Guides</Text>
             <View style={styles.numberGrid}>
               {MAIN_TABS.map((tab) => {
                 const isActive = activeTab === tab.key;

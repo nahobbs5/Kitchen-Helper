@@ -1129,7 +1129,36 @@ export default function MyRecipesScreen() {
                         }
                   );
                 }}
-                renderItem={(recipe, _index, { dragProps }) => (
+                renderItem={(recipe, _index, { dragProps }) => {
+                  const actionButtons = (
+                    <View style={styles.detailCardActionRow}>
+                      <Pressable
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          void handleShareRecipe(recipe);
+                        }}
+                        style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
+                      >
+                        <ShareIcon color={palette.accentText} />
+                      </Pressable>
+                      <Pressable
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          toggleFavorite(recipe.slug);
+                        }}
+                        style={[
+                          styles.starButton,
+                          { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                          isFavorite(recipe.slug) && styles.starButtonActive,
+                        ]}
+                      >
+                        <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                          {isFavorite(recipe.slug) ? '★' : '☆'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  );
+                  return (
                   <Pressable
                     style={[
                       styles.detailCard,
@@ -1173,33 +1202,8 @@ export default function MyRecipesScreen() {
                             {selectedRecipeSlugs.includes(recipe.slug) ? '☑' : '☐'}
                           </Text>
                         </Pressable>
-                      ) : (
-                        <View style={styles.detailCardActionRow}>
-                          <Pressable
-                            onPress={(event) => {
-                              event.stopPropagation();
-                              void handleShareRecipe(recipe);
-                            }}
-                            style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
-                          >
-                            <ShareIcon color={palette.accentText} />
-                          </Pressable>
-                          <Pressable
-                            onPress={(event) => {
-                              event.stopPropagation();
-                              toggleFavorite(recipe.slug);
-                            }}
-                            style={[
-                              styles.starButton,
-                              { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                              isFavorite(recipe.slug) && styles.starButtonActive,
-                            ]}
-                          >
-                            <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                              {isFavorite(recipe.slug) ? '★' : '☆'}
-                            </Text>
-                          </Pressable>
-                        </View>
+                      ) : isMobile ? null : (
+                        actionButtons
                       )}
                     </View>
                     {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
@@ -1270,14 +1274,21 @@ export default function MyRecipesScreen() {
                         ) : null}
                       </View>
                     ) : null}
-                    <View style={styles.detailCardRatingRow}>
+                    <View
+                      style={[
+                        styles.detailCardRatingRow,
+                        isMobile && !selectionMode && styles.detailCardRatingRowMobile,
+                      ]}
+                    >
                       <StarRating
                         value={getRating(recipe.slug)}
                         onRate={(next) => setRating(recipe.slug, next)}
                       />
+                      {isMobile && !selectionMode ? actionButtons : null}
                     </View>
                   </Pressable>
-                )}
+                  );
+                }}
               />
               {filteredRecipes.length === 0 ? (
                 <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>

@@ -562,7 +562,7 @@ export default function EditRecipeScreen() {
                     onPress={handleSave}
                     style={[
                       styles.primaryButton,
-                      { backgroundColor: canSave ? palette.accent : palette.borderAlt },
+                      { backgroundColor: canSave ? '#2c8030' : palette.borderAlt },
                     ]}
                   >
                     <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Save Changes</Text>

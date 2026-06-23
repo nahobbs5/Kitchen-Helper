@@ -80,18 +80,8 @@ export default function HomeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            {isMobile ? (
-              <View style={styles.heroTitleStack}>
-                <Text style={[styles.title, { color: palette.text }]}>Your Kitchen.</Text>
-                <View style={styles.heroTitleRow}>
-                  <Text style={[styles.title, { color: palette.text }]}>Your Way.</Text>
-                  <Image source={homeHeroLogo} style={styles.heroTitleLogo} resizeMode="contain" />
-                </View>
-              </View>
-            ) : (
-              <Text style={[styles.title, { color: palette.text }]}>Your Kitchen. Your Way.</Text>
-            )}
-            <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+            <Image source={homeHeroLogo} style={styles.heroTitleLogo} resizeMode="contain" />
+            <Text style={[styles.subtitle, { color: palette.textMuted, textAlign: 'center' }]}>
               {configured
                 ? user
                   ? `Welcome back, ${user.email?.split('@')[0] ?? user.email}.`
