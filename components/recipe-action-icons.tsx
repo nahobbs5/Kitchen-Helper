@@ -24,26 +24,37 @@ export function FryingPanIcon({ size, palette }: { size: number; palette: AppPal
 export function MultiSelectIcon({ active, size, palette }: { active: boolean; size: number; palette: AppPalette }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <Rect x={5} y={4} width={16} height={16} rx={4} stroke={palette.addButtonText} strokeWidth={2.4} />
+      {/* Layered cards peeking out behind the front card */}
+      <Path
+        d="M13 28.6H24.6C26.8 28.6 28.6 26.8 28.6 24.6V13"
+        stroke={palette.addButtonText}
+        strokeWidth={2.4}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M9 24.6H20.6C22.8 24.6 24.6 22.8 24.6 20.6V9"
+        stroke={palette.addButtonText}
+        strokeWidth={2.4}
+        strokeLinecap="round"
+      />
+      {/* Front card with checkmark */}
       <Rect
-        x={11}
-        y={11}
-        width={16}
-        height={16}
+        x={4}
+        y={4}
+        width={16.6}
+        height={16.6}
         rx={4}
         fill={active ? palette.addButtonText : palette.addButtonBg}
         stroke={palette.addButtonText}
         strokeWidth={2.4}
       />
-      {active ? (
-        <Path
-          d="M15.2 19.1L18.1 22L23 16.7"
-          stroke={palette.addButtonBg}
-          strokeWidth={2.4}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ) : null}
+      <Path
+        d="M8.2 12.4L11.3 15.5L16.6 9.4"
+        stroke={active ? palette.addButtonBg : palette.addButtonText}
+        strokeWidth={2.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
