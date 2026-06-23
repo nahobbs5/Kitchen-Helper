@@ -27,6 +27,9 @@ export type AppPalette = {
   highlightMethodText: string;
   highlightEquipment: string;
   highlightEquipmentText: string;
+  warningBg: string;
+  warningBorder: string;
+  warningText: string;
   addButtonBg: string;
   addButtonBorder: string;
   addButtonText: string;
@@ -61,6 +64,9 @@ export const lightPalette: AppPalette = {
   highlightMethodText: '#4a2d63',
   highlightEquipment: '#dfe7ef',
   highlightEquipmentText: '#2f4a63',
+  warningBg: '#fff1e8',
+  warningBorder: '#e8b08a',
+  warningText: '#9b4c20',
   addButtonBg: '#fff8ef',
   addButtonBorder: '#edca88',
   addButtonText: '#4a2d63',
@@ -95,6 +101,9 @@ export const darkPalette: AppPalette = {
   highlightMethodText: '#c4aadf',
   highlightEquipment: '#27323f',
   highlightEquipmentText: '#aac4df',
+  warningBg: '#3e2a1c',
+  warningBorder: '#6e472c',
+  warningText: '#f3b98f',
   addButtonBg: '#2d2318',
   addButtonBorder: '#5c4736',
   addButtonText: '#c4aadf',

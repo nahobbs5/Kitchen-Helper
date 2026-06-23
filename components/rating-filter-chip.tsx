@@ -79,7 +79,7 @@ export function RatingFilterChip({
             <Text style={[patternStyles.plus, { color: contentColor }]}>+</Text>
           ) : null}
         </View>
-        <View style={patternStyles.divider} />
+        <View style={[patternStyles.divider, { backgroundColor: palette.borderAlt }]} />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Change rating threshold"
@@ -173,7 +173,6 @@ const patternStyles = StyleSheet.create({
     width: 1,
     alignSelf: 'stretch',
     marginHorizontal: 2,
-    backgroundColor: '#000000',
   },
   caretButton: {
     paddingLeft: 2,

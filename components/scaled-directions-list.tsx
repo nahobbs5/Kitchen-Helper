@@ -357,14 +357,14 @@ export function ScaledDirectionsList({
                     style={[
                       styles.directionAnnotationCard,
                       annotation.severity === 'warning'
-                        ? { backgroundColor: '#fff1e8', borderColor: '#e8b08a' }
+                        ? { backgroundColor: palette.warningBg, borderColor: palette.warningBorder }
                         : { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
                     ]}
                   >
                     <Text
                       style={[
                         styles.directionAnnotationLabel,
-                        { color: annotation.severity === 'warning' ? '#9b4c20' : palette.accentText },
+                        { color: annotation.severity === 'warning' ? palette.warningText : palette.accentText },
                       ]}
                     >
                       {annotation.type.replace(/-/g, ' ')}
@@ -404,14 +404,14 @@ export function ScaledDirectionsList({
                   style={[
                     styles.directionAnnotationCard,
                     annotation.severity === 'warning'
-                      ? { backgroundColor: '#fff1e8', borderColor: '#e8b08a' }
+                      ? { backgroundColor: palette.warningBg, borderColor: palette.warningBorder }
                       : { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
                   ]}
                 >
                   <Text
                     style={[
                       styles.directionAnnotationLabel,
-                      { color: annotation.severity === 'warning' ? '#9b4c20' : palette.accentText },
+                      { color: annotation.severity === 'warning' ? palette.warningText : palette.accentText },
                     ]}
                   >
                     {annotation.type.replace(/-/g, ' ')}
