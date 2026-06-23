@@ -13,14 +13,18 @@ Current core areas:
 - recipe browsing from Obsidian notes
 - imported sample-recipe browsing from selected Obsidian folders
 - account-backed recipe creation and editing with cross-device sync
-- photo-based recipe import with local OCR-assisted prefill
+- photo-based recipe import with local OCR-assisted prefill or AI-powered Claude API import
 - website-based recipe import with source attribution
-- ingredient scaling
-- scaled directions with per-step annotations
+- ingredient scaling with mixed-number and unicode fraction support
+- scaled directions with per-step annotations and a tap-to-expand annotation popup
+- context-aware cook-time tag (Bake vs Cook derived from title and directions)
 - kitchen conversions
 - allergy-friendly substitutions
 - cooking glossary lookups
+- cooking tips reference
 - saved favorites
+- recipe ratings and rating-based filter
+- drag-and-drop recipe reordering
 - bulk recipe management
 - cook timers
 - app-wide settings
@@ -252,6 +256,7 @@ Important route files:
 
 - [`app/_layout.tsx`]
 - [`app/add-recipe.tsx`]
+- [`app/account.tsx`]
 - [`app/index.tsx`]
 - [`app/reference.tsx`]
 - [`app/conversions.tsx`]
@@ -288,6 +293,8 @@ Important files:
 - [`contexts/cook-timer-context.tsx`]
 - [`contexts/custom-recipes-context.tsx`]
 - [`contexts/favorites-context.tsx`]
+- [`contexts/ratings-context.tsx`]
+- [`contexts/recipe-order-context.tsx`]
 - [`contexts/settings-context.tsx`]
 
 What this layer currently handles:
@@ -297,10 +304,14 @@ What this layer currently handles:
 - synced overrides for imported recipes
 - deleted-recipe undo state
 - favorite recipe slugs
+- recipe ratings (stored per user, synced)
+- recipe display order (drag-and-drop reordering, synced per user)
 - dark mode
 - keep-screen-awake cook mode
 - the number of cook-timer slots
 - the confirm-delete preference
+- the Kitchen Guides default view setting
+- whether recipe reordering is enabled
 - the handoff to account-level auth and export flows
 - the shared cook-timer popup and timer state
 - opening and closing the settings overlay
@@ -316,12 +327,17 @@ Important files:
 
 - [`data/obsidian-recipes.ts`]
 - [`data/cooking-dictionary.ts`]
+- [`data/cooking-tips.ts`]
 - [`scripts/generate-obsidian-recipes.mjs`]
 - [`scripts/generate-cooking-dictionary.mjs`]
 - [`utils/supabase-sync.ts`]
+- [`utils/ai-recipe-import.ts`]
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
+- [`utils/recipe-metadata.ts`]
+- [`utils/recipe-order.ts`]
 - [`utils/scaled-directions.ts`]
+- [`supabase/functions/recipe-import/index.ts`]
 - [`Cooking/`](Cooking)
 
 How this layer works:
@@ -347,11 +363,15 @@ Important files:
 
 - [`components/cook-timer-modal.tsx`]
 - [`components/clearable-search-input.tsx`]
+- [`components/draggable-recipe-list.tsx`]
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
+- [`components/progress-bar.tsx`]
+- [`components/rating-filter-chip.tsx`]
 - [`components/recipe-share-card.tsx`]
 - [`components/scaled-directions-list.tsx`]
 - [`components/share-icon.tsx`]
+- [`components/star-rating.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
 - [`app/account.tsx`]
@@ -429,15 +449,21 @@ Current capabilities:
 - parsed ingredients and directions from recipe notes
 - prep, cook, and total time where the note supports it
 - ingredient scaling controls including `1/4x`, `1/2x`, preset servings, and a custom `1-10` selector, with the serving count tag updating dynamically as the multiplier changes
+- ingredient scaling handles mixed numbers (`1 1/2 cups`), unicode fractions (`½`, `¼`), and ampersand/and-separated quantities (`2 & 1/2`)
+- context-aware cook-time tag that reads "Bake" for baked dishes and "Cook" for stovetop dishes, inferred from recipe title and direction text
 - allergen and allergy-friendly tags on recipes
 - auto-detected allergen tags that remain editable
 - cuisine-region tags and filters
 - favorite recipe toggles with persistent storage
-- a shared settings menu from the header gear
+- recipe ratings with star controls on detail pages and My Recipes cards
+- rating-based filter toggle in My Recipes and Sample Recipes
+- drag-and-drop recipe reordering in My Recipes (enable via settings; order synced per user)
+- a shared settings menu from the header gear, including Kitchen Guides default view and reorder toggle
 - dark mode
 - keep-screen-awake cook mode
 - all-recipes and filtered PDF export from the Account screen
 - a global shared cook timer popup/modal with a configurable number of timer slots
+- a loading progress bar shown during AI import and PDF export
 - responsive layouts for both Android and web
 
 What it does not yet support:
@@ -445,6 +471,7 @@ What it does not yet support:
 - pantry tracking
 - grocery list generation
 - dedicated step-linked cooking mode
+- expanding the Cooking Tips content beyond the initial set
 
 ## Obsidian Recipe Integration
 
@@ -531,12 +558,14 @@ Current behavior:
 - edited steps are stored as local per-step overrides
 - reset returns the step to the original source text and re-enables automatic annotations
 - highlighted time mentions in direction steps are tappable — tapping one calls `loadTimerSlot` on the cook timer context with the parsed duration and recipe name as the label, then opens the timer popup if a slot was successfully loaded
+- highlighted cooking-method and equipment words are now also tappable — tapping one opens a native Modal popup listing that step's scale-relevant annotations (severity-coded warnings and notes) with a Close button
 
 Important product decision:
 
 - timers stay visible as original times and highlighted time spans are tappable to open the timer
 - temperatures are highlighted using palette-aware theme colors (not hardcoded hex), not scaled
 - doneness cues are emphasized using palette-aware theme colors because they remain more reliable than the timer when scale changes
+- cook-method and equipment highlights use their own palette colors (`highlightMethod`/`highlightEquipment`) so they are visually distinct from time and temperature highlights
 - once a step is edited, the app stops auto-appending annotations to that step until it is reset
 
 ## Cooking Dictionary
@@ -595,6 +624,8 @@ Current saved settings:
 - `Allow vibration`
 - `Timer sound`
 - `Confirm delete`
+- `Kitchen Guides default view` — which tab opens first when navigating to Kitchen Guides
+- `Enable recipe reordering` — toggles drag-and-drop mode in My Recipes
 
 How it works:
 
@@ -609,6 +640,8 @@ How it works:
 - timer sound controls the cook-timer completion alert and offers `Beep Beep`, `Soft Chime`, `Classic Bell`, and `Urgent Alarm`
 - confirm delete controls whether single app-recipe deletion asks first
 - bulk delete still always confirms, even if the single-delete setting is turned off
+- Kitchen Guides default view saves which reference tab the user uses most so they land there instead of the first tab
+- recipe reordering is off by default so the normal list experience is unaffected for users who don't want drag-and-drop
 - the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
 - the scrollable settings overlay uses a backdrop, a sheet, fixed-width controls, and max-width/max-height constraints so the same modal remains usable on compact mobile screens and larger web layouts
 
@@ -721,22 +754,26 @@ This context now manages:
 
 This approach was chosen so we could support editing everywhere without writing back into the original `Cooking` vault, while still keeping one shared recipe library across signed-in devices.
 
-## Local OCR And Website Recipe Import
+## Photo Recipe Import: Local OCR And AI Import
 
 The add-recipe flow now has three starting modes:
 
 - manual entry
-- photo OCR
-- website
+- photo import (local OCR or AI-powered)
+- website URL
 
 The Account screen also includes high-level importer guidance and compatibility notes, but the docs intentionally avoid a hard-coded site list because those results change frequently.
 
-The photo path works like this:
+### On-Device OCR (ML Kit)
+
+The original photo path:
 
 - pick up to two recipe images from the device
 - run local OCR on the selected images in order
 - parse the recognized text into title, ingredients, directions, and notes
 - prefill the normal add-recipe form for review
+
+This path uses a native ML Kit module and is intended for a native development build rather than Expo Go.
 
 Important files:
 
@@ -744,12 +781,30 @@ Important files:
 - [`utils/ocr-recipe-parser.ts`](utils/ocr-recipe-parser.ts)
 - [`app.json`](app.json)
 
-One important implementation detail:
+### AI Import (Claude API)
 
-- this OCR path uses a native ML Kit module
-- that means it is intended for a native development build rather than Expo Go
+The AI import path sends recipe photos to a Supabase edge function that calls the Claude API:
 
-That tradeoff is worth calling out early so the feature feels predictable during testing.
+- pick up to two recipe images from the device
+- choose a tier: `fast` (quicker, lower detail) or `accurate` (more thorough extraction)
+- the edge function calls Claude with the images and a structured extraction prompt
+- Claude returns a complete recipe object: title, ingredient sections, direction sections, prep/cook time, servings, notes, suggested category, cuisine region, allergen tags, and allergy-friendly tags
+- the result prefills the normal add-recipe form for review
+
+Important files:
+
+- [`app/add-recipe.tsx`](app/add-recipe.tsx)
+- [`utils/ai-recipe-import.ts`](utils/ai-recipe-import.ts)
+- [`supabase/functions/recipe-import/index.ts`](supabase/functions/recipe-import/index.ts)
+- [`supabase/functions/recipe-import/README.md`](supabase/functions/recipe-import/README.md)
+
+Setup requires:
+
+- `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` in `.env`
+- the `recipe-import` edge function deployed to Supabase
+- an `ANTHROPIC_API_KEY` secret set on the edge function
+
+`aiImportIsConfigured()` in `utils/ai-recipe-import.ts` checks whether the required env vars are present; the UI only shows the AI path when that check passes.
 
 The website path works like this:
 
@@ -853,6 +908,123 @@ Current behavior:
 - `loadTimerSlot(label, durationMs)` is a context API that finds the first available slot (preferring unused over paused), sets its label and duration, and returns `true` if successful; direction step links use this to pre-load a timer from a tapped time highlight
 
 The timer popup is global, which keeps it accessible while moving around the app.
+
+## Recipe Ratings
+
+Ratings let users score each recipe from 1–5 stars.
+
+Important files:
+
+- [`components/star-rating.tsx`](components/star-rating.tsx)
+- [`components/rating-filter-chip.tsx`](components/rating-filter-chip.tsx)
+- [`contexts/ratings-context.tsx`](contexts/ratings-context.tsx)
+- [`app/my-recipes.tsx`](app/my-recipes.tsx)
+- [`app/recipes/[slug].tsx`](app/recipes/[slug].tsx)
+- [`app/user-recipes/[slug].tsx`](app/user-recipes/[slug].tsx)
+
+Current behavior:
+
+- star controls appear on recipe detail pages and in My Recipes list cards
+- ratings are stored per user and synced through Supabase
+- `ratings-context.tsx` owns the load, save, and optimistic-update flow
+- a `RatingFilterChip` in My Recipes and Sample Recipes lets users show only rated recipes or filter by minimum star count
+- ratings are also included in PDF export and share cards
+
+Design decision:
+
+- ratings are kept separate from recipe data so they don't require a recipe edit to change
+- Sample Recipes shows ratings pulled from sample data (added at the same time as the reorder feature) so the library feels more useful out of the box
+
+## Recipe Reordering
+
+Users can drag and drop recipes into a custom order in My Recipes.
+
+Important files:
+
+- [`components/draggable-recipe-list.tsx`](components/draggable-recipe-list.tsx)
+- [`contexts/recipe-order-context.tsx`](contexts/recipe-order-context.tsx)
+- [`utils/recipe-order.ts`](utils/recipe-order.ts)
+- [`utils/haptics.ts`](utils/haptics.ts)
+- [`docs/supabase-sync.sql`](docs/supabase-sync.sql)
+
+Current behavior:
+
+- reorder mode is opt-in via a toggle in Settings (`Enable recipe reordering`)
+- when enabled, My Recipes switches from the normal list to `DraggableRecipeList`
+- dragging a card uses animated gesture handlers; a haptic pulse fires when a card is picked up
+- the resolved order is persisted to Supabase so it syncs across devices for the signed-in user
+- `recipe-order-context.tsx` owns the order array and exposes `setOrder` and `resetOrder`
+- `utils/recipe-order.ts` handles merging new recipes into an existing saved order without disrupting the user's arrangement
+
+The Supabase schema addition for this feature is in `docs/supabase-sync.sql`.
+
+## Cooking Tips
+
+A `Cooking Tips` tab was added to the Kitchen Guides (Reference) screen.
+
+Important files:
+
+- [`data/cooking-tips.ts`](data/cooking-tips.ts)
+- [`app/reference.tsx`](app/reference.tsx)
+
+Current behavior:
+
+- tips live in `data/cooking-tips.ts` as a flat array of `{ title, body }` objects
+- the Reference screen renders them as cards in the Tips tab
+- the default tab that opens in Kitchen Guides is now user-configurable via Settings (`Kitchen Guides default view`)
+
+Design decision:
+
+- tips are static app data rather than user-editable, so they live in a generated data file rather than Supabase
+- the default view setting lets users who primarily use the dictionary or conversions avoid landing on Tips each time
+
+## Context-Aware Cook-Time Tag
+
+The cook-time tag used to hardcode "Bake" for desserts and "Cook" for everything else. It now uses a detection function to pick the right verb regardless of category.
+
+Important files:
+
+- [`utils/recipe-metadata.ts`](utils/recipe-metadata.ts)
+
+How `resolveCookVerb` works (in priority order):
+
+1. **Title is authoritative** — if the title contains `no-bake`, return Cook; if it contains `baked`, `baking`, `bake`, or `roast(ed/ing)`, return Bake
+2. **Directions oven cues** — if directions mention `preheat`, `oven`, `bake`, `roast`, or a 3-digit temperature, return Bake (unless directions also explicitly say `no-bake`)
+3. **Dessert default with chilled-cue override** — desserts with `icebox`, `refrigerat…`, `chill…`, `freez…`, or `frozen` return Cook; otherwise keep Bake as the dessert default
+4. **General default** — return Cook
+
+`formatCookTimeTag(recipe, cookTime)` now accepts the full recipe object (needs `title`, `category`, `directions`) instead of just `category`. The add/edit form preview passes a synthetic object constructed from the live form state.
+
+## Ingredient Scaling: Mixed Numbers And Extended Units
+
+The scaling algorithm was significantly improved to handle real-world recipe formats.
+
+Important file:
+
+- [`utils/ingredient-scaling.ts`](utils/ingredient-scaling.ts)
+
+Changes:
+
+- **Mixed numbers** — quantities like `1 1/2`, `2 & 1/2`, `2 and 1/2` are parsed and scaled correctly
+- **Unicode fractions** — `½`, `¼`, `¾`, and other unicode fraction characters are recognized as numeric values
+- **Parenthetical measurements** — quantities in parentheses (often weight equivalents like `(200g)`) are handled without corrupting the scaled output
+- **Extended unit word map** — the singular/plural unit map was expanded to cover a large set of produce and common ingredient descriptors (onion/onions, leaf/leaves, slice/slices, etc.) so scaled quantities use the correct grammatical form
+
+## Loading Progress Bar
+
+A shared `ProgressBar` component shows progress during long operations.
+
+Important files:
+
+- [`components/progress-bar.tsx`](components/progress-bar.tsx)
+- [`app/add-recipe.tsx`](app/add-recipe.tsx)
+- [`app/account.tsx`](app/account.tsx)
+
+Current usage:
+
+- shown during AI photo import (progress advances as the edge function responds)
+- shown during PDF export on the Account screen
+- the component accepts a `0–1` progress value and renders an animated fill bar
 
 ## Expo Go Dependency Lesson
 
@@ -1058,6 +1230,18 @@ High-level sequence of what has happened:
 47. serving count tag now scales dynamically with the ingredient multiplier on recipe detail pages
 48. tappable time highlights in recipe directions that pre-load the cook timer with the parsed duration and recipe name, then open the popup
 49. fixed Android status bar visibility in light mode by adding a `values-night/styles.xml` override
+50. upgraded photo import with Claude API integration via a Supabase edge function (`fast`/`accurate` tier toggle)
+51. added recipe ratings with star controls, ratings context, and PDF/share card export
+52. added Cooking Tips tab to Kitchen Guides and a Kitchen Guides default view setting in Settings
+53. added drag-and-drop recipe reordering in My Recipes (opt-in via Settings; synced per user)
+54. added rating filter chip to My Recipes and Sample Recipes
+55. added loading progress bar to AI import and PDF export flows
+56. improved ingredient scaling to handle mixed numbers, unicode fractions, and ampersand/and-separated quantities
+57. expanded unit word map to cover common produce and ingredient terms
+58. improved website scanning to fix HTML character entities in imported recipe text
+59. added annotation popup: tapping a highlighted cook-method or equipment word in scaled directions opens a modal with per-step scale warnings
+60. fixed allergen tag bug on the edit recipe screen
+61. made the cook-time tag context-aware (title and direction scanning via `resolveCookVerb`)
 
 ## How To Grow This File
 

@@ -26,7 +26,7 @@ The app currently includes:
 - shared header shortcuts for Home, My Recipes, Kitchen Guides, cook timer, settings, and account
 - compact mobile header titles that collapse to `KH` on smaller screens
 - a `Sample Recipes` page that shows an imported-only subset of Obsidian recipes from the sample cooking folders
-- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs, and interactive conversion sliders for oven temperature, liquid measure, dry measure, butter/olive oil substitution, gallons, quarts, liters, and tsp/ml
+- a consolidated `Kitchen Reference` screen with conversions, substitutions, dictionary tabs (including Cooking Tips), and interactive conversion sliders for oven temperature, liquid measure, dry measure, butter/olive oil substitution, gallons, quarts, liters, and tsp/ml
 - dedicated searchable routes for conversions, substitutions, and the cooking dictionary
 - sticky search bars on recipe and reference browsing screens, with clear buttons when search text is entered
 - a `My Recipes` page backed by Obsidian recipe notes in [`Cooking/`](Cooking)
@@ -34,9 +34,13 @@ The app currently includes:
 - clickable recipe detail pages generated from Markdown
 - editable recipe detail pages for both local recipes and Obsidian-backed recipes through local overrides
 - ingredient scaling controls on recipe pages, with the serving count tag updating dynamically as the multiplier changes
+- ingredient scaling handles mixed numbers (`1 1/2 cups`), unicode fractions, and ampersand/and-separated quantities
+- context-aware cook-time tag: reads "Bake" for baked dishes and "Cook" for stovetop dishes, detected from recipe title and directions
 - single-recipe share cards and bulk `Share Selected` from `My Recipes`
 - favorites saved locally
-- category, cuisine-region, allergen, and favorites filtering
+- recipe ratings with star controls; rating-based filter toggle in `My Recipes` and `Sample Recipes`
+- recipe reordering via drag-and-drop in `My Recipes`, synced per user
+- category, cuisine-region, allergen, favorites, and rating filtering
 - bulk recipe selection, bulk favorites, bulk metadata editing, and bulk delete
 - undo delete notifications with auto-dismiss
 - a shared settings menu in the header for local app preferences
@@ -44,9 +48,11 @@ The app currently includes:
 - a keep-screen-awake cook mode setting
 - an account page with sync controls, importer guidance, and a PDF export action for the full recipe library
 - a global shared cook timer popup/modal with a configurable number of timer slots
-- photo-based recipe import with local OCR-assisted prefill
+- photo-based recipe import: on-device OCR prefill or AI-powered import via Claude API (fast/accurate tier selectable)
 - website-based recipe import with source attribution
+- a loading progress bar on long operations such as AI import and PDF export
 - scaled directions with per-step warnings, cue highlights, local step edits, and tappable time highlights that pre-load the cook timer
+- tapping a highlighted cooking method or equipment word in directions opens an annotation popup with scale-relevant warnings and notes
 
 ## Stack
 
@@ -181,21 +187,29 @@ Important shared files:
 
 - [`components/cook-timer-modal.tsx`]
 - [`components/clearable-search-input.tsx`]
+- [`components/draggable-recipe-list.tsx`]
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
+- [`components/progress-bar.tsx`]
+- [`components/rating-filter-chip.tsx`]
 - [`components/recipe-share-card.tsx`]
 - [`components/scaled-directions-list.tsx`]
 - [`components/share-icon.tsx`]
+- [`components/star-rating.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
 - [`contexts/auth-context.tsx`]
 - [`contexts/cook-timer-context.tsx`]
 - [`contexts/custom-recipes-context.tsx`]
 - [`contexts/favorites-context.tsx`]
+- [`contexts/ratings-context.tsx`]
+- [`contexts/recipe-order-context.tsx`]
 - [`contexts/settings-context.tsx`]
 - [`utils/supabase-sync.ts`]
+- [`utils/ai-recipe-import.ts`]
 - [`utils/allergen-tags.ts`]
 - [`utils/ingredient-scaling.ts`]
+- [`utils/recipe-order.ts`]
 - [`utils/scaled-directions.ts`]
 
 ## Data Sources
@@ -409,6 +423,8 @@ Current saved settings:
 - `Allow vibration`
 - `Timer sound`
 - `Confirm delete`
+- `Kitchen Guides default view` (which tab opens first)
+- `Enable recipe reordering` (toggles drag-and-drop mode in My Recipes)
 
 How it works:
 
@@ -472,14 +488,22 @@ Scaled directions now use a step-based annotation pipeline:
 - the app adds hints on top of the source text instead of rewriting recipe prose
 - edited direction steps are stored locally and can be reset back to the original text
 
-The OCR import path is intentionally review-first:
+The photo import path supports two modes:
 
+**On-device OCR (ML Kit):**
 - pick up to two recipe images
 - extract text locally on device in selection order
 - prefill the normal recipe form
 - review and save manually
+- intended for native development builds rather than Expo Go
 
-Right now, the local OCR module is intended for a native development build rather than Expo Go.
+**AI import (Claude API via Supabase edge function):**
+- pick up to two recipe images
+- send to the `recipe-import` Supabase edge function
+- Claude returns a fully structured recipe (title, ingredients, directions, metadata, allergen tags, etc.)
+- a fast/accurate tier toggle controls response speed vs. detail
+- requires `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` plus the edge function to be deployed
+- see `supabase/functions/recipe-import/README.md` for setup details
 
 The website import path is also review-first:
 
@@ -651,4 +675,5 @@ Natural next steps from here:
 2. improve dictionary formatting for very long entries
 3. standardize more recipe note formats so more metadata can be parsed cleanly
 4. build a dedicated step-linked cook mode that sequences directions and links timers per step
+5. expand the Cooking Tips content
 
