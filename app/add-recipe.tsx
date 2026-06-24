@@ -103,6 +103,10 @@ export default function AddRecipeScreen() {
     () => formatRecipeSections(directionsSections, { ordered: true }),
     [directionsSections]
   );
+  const sourceUrl = useMemo(
+    () => (sourceInfo?.url ?? websiteUrl).trim(),
+    [sourceInfo, websiteUrl]
+  );
 
   const detectedTags = useMemo(
     () =>
@@ -121,8 +125,9 @@ export default function AddRecipeScreen() {
         !recipeName.trim() ? 'recipe name' : null,
         !recipeSectionsHaveItems(ingredientsSections) ? 'ingredients' : null,
         !recipeSectionsHaveItems(directionsSections) ? 'directions' : null,
+        entryMode === 'website' && !sourceUrl ? 'website URL' : null,
       ].filter(Boolean) as string[],
-    [directionsSections, ingredientsSections, recipeName]
+    [directionsSections, entryMode, ingredientsSections, recipeName, sourceUrl]
   );
 
   const canSave = missingRequiredFields.length === 0;
@@ -157,7 +162,14 @@ export default function AddRecipeScreen() {
       servings,
       notes,
       cuisineRegion,
-      sourceInfo,
+      sourceInfo:
+        entryMode === 'website'
+          ? {
+              websiteName: sourceInfo?.websiteName ?? null,
+              author: sourceInfo?.author ?? null,
+              url: sourceUrl || null,
+            }
+          : sourceInfo,
       allergenTags,
       allergyFriendlyTags,
     });
@@ -972,6 +984,31 @@ export default function AddRecipeScreen() {
                     ]}
                   />
                 </View>
+
+                {entryMode === 'website' ? (
+                  <View style={styles.formField}>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Website URL *</Text>
+                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                      Saved automatically from the recipe URL you imported above. This records where the
+                      recipe came from and can&apos;t be edited here.
+                    </Text>
+                    <TextInput
+                      value={sourceUrl}
+                      editable={false}
+                      placeholder="Import a recipe URL above"
+                      placeholderTextColor={palette.searchPlaceholder}
+                      style={[
+                        styles.formInput,
+                        { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text, opacity: 0.7 },
+                      ]}
+                    />
+                    {saveAttempted && !sourceUrl ? (
+                      <Text style={[styles.formHint, { color: palette.accent }]}>
+                        Import a recipe URL above before saving a website recipe.
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : null}
 
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergy-friendly tags</Text>

@@ -473,6 +473,23 @@ export default function EditRecipeScreen() {
                   />
                 </View>
 
+                {recipe.sourceInfo?.url ? (
+                  <View style={styles.formField}>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Website URL *</Text>
+                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                      Records where this recipe came from. The source URL can&apos;t be changed.
+                    </Text>
+                    <TextInput
+                      value={recipe.sourceInfo.url}
+                      editable={false}
+                      style={[
+                        styles.formInput,
+                        { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text, opacity: 0.7 },
+                      ]}
+                    />
+                  </View>
+                ) : null}
+
                 <View style={styles.formField}>
                   <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergy-friendly tags</Text>
                   <Text style={[styles.formHint, { color: palette.textSoft }]}>

@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Linking, Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { DeleteIcon } from '../../components/delete-icon';
@@ -452,6 +452,20 @@ export default function ObsidianRecipeScreen() {
                     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
                   </View>
                 </View>
+              </View>
+            ) : null}
+
+            {recipe.sourceInfo?.url ? (
+              <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
+                <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                  Source:{' '}
+                  <Text
+                    onPress={() => Linking.openURL(recipe.sourceInfo!.url!)}
+                    style={{ color: palette.accentText, textDecorationLine: 'underline' }}
+                  >
+                    {recipe.sourceInfo.url}
+                  </Text>
+                </Text>
               </View>
             ) : null}
           </View>
