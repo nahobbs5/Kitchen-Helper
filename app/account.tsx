@@ -713,6 +713,7 @@ export default function AccountScreen() {
             'littlesweetbaker.com',
             'nutrition.gov',
             'recipetineats.com',
+            'sallysbakingaddiction.com',
             'simplyrecipes.com',
             'tinykitchendivas.com',
           ].map((site) => (
