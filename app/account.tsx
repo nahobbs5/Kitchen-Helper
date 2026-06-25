@@ -241,7 +241,7 @@ export default function AccountScreen() {
           styles.settingsRow,
           {
             alignItems: 'center',
-            borderColor: active ? palette.accent : palette.borderAlt,
+            borderColor: active ? '#2c8030' : palette.borderAlt,
             borderRadius: 14,
             borderWidth: 1,
             backgroundColor: active ? palette.elevatedAlt : palette.surface,
@@ -251,7 +251,7 @@ export default function AccountScreen() {
         ]}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 10 }}>
-          <Text style={{ color: active ? palette.accentText : palette.text, fontSize: 18, fontWeight: '800' }}>
+          <Text style={{ color: active ? '#2c8030' : palette.text, fontSize: 18, fontWeight: '800' }}>
             {active ? '☑' : '☐'}
           </Text>
           <Text style={[styles.settingsHint, { color: palette.text, flex: 1, fontWeight: '700' }]}>
@@ -499,12 +499,9 @@ export default function AccountScreen() {
           },
         ]}
       >
-        <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Export</Text>
+        <Text style={[styles.settingsSectionTitle, { color: palette.text }]}>Export to PDF</Text>
         <View style={[styles.settingsCopy, { flexBasis: 'auto', flexGrow: 0, flexShrink: 0 }]}>
-          <Text style={[styles.settingsLabel, { color: palette.text }]}>Export all recipes to PDF</Text>
-          <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-            Create one cookbook-style PDF from your full library.
-          </Text>
+          <Text style={[styles.settingsLabel, { color: palette.text }]}>Export All</Text>
           <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
             {exportRecipes.length} recipe{exportRecipes.length === 1 ? '' : 's'} ready to export.
           </Text>
@@ -521,7 +518,7 @@ export default function AccountScreen() {
           ]}
         >
           <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>
-            {isExporting ? 'Exporting…' : 'Export all recipes to PDF'}
+            {isExporting ? 'Exporting…' : 'Export All'}
           </Text>
         </Pressable>
         {exportState === 'all' ? (
@@ -530,15 +527,7 @@ export default function AccountScreen() {
           </View>
         ) : null}
         <View style={[styles.settingsCopy, { flexBasis: 'auto', flexGrow: 0, flexShrink: 0, gap: 10 }]}>
-          <Text style={[styles.settingsLabel, { color: palette.text }]}>Export selected recipes to PDF</Text>
-          <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-            Filter the full library by recipe type, tags, and time before exporting.
-          </Text>
-          <Text style={[styles.settingsHint, { color: palette.textMuted }]}>
-            {hasExportFilters
-              ? `${filteredExportRecipes.length} recipe${filteredExportRecipes.length === 1 ? '' : 's'} match these filters.`
-              : 'Choose one or more filters to build a selected export.'}
-          </Text>
+          <Text style={[styles.settingsLabel, { color: palette.text }]}>Export Selected</Text>
 
           {exportCategoryOptions.length > 0 ? (
             <View style={{ gap: 8 }}>
@@ -673,7 +662,7 @@ export default function AccountScreen() {
           ]}
         >
           <Text style={[styles.settingsCloseText, { color: palette.accentContrastText }]}>
-            {isExporting ? 'Exporting…' : 'Export selected recipes to PDF'}
+            {isExporting ? 'Exporting…' : `Export ${filteredExportRecipes.length} ${filteredExportRecipes.length === 1 ? 'recipe' : 'recipes'} to PDF`}
           </Text>
         </Pressable>
         {exportState === 'filtered' ? (
