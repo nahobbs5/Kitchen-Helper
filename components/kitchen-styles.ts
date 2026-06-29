@@ -24,7 +24,9 @@ export const kitchenStyles = StyleSheet.create({
   hero: {
     backgroundColor: '#fff7ea',
     borderRadius: 28,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 14,
+    paddingBottom: 24,
     borderWidth: 1,
     borderColor: '#eadac0',
     gap: 20,
@@ -962,20 +964,6 @@ export const kitchenStyles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     marginTop: 4,
-  },
-  mobileRecipeActionRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    gap: 12,
-    marginTop: 4,
-  },
-  mobileRecipeActionButton: {
-    width: 58,
-    height: 58,
-    borderWidth: 1,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   mobileRecipePanIconWrap: {
     alignItems: 'center',

@@ -589,7 +589,6 @@ export default function MyRecipesScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.title, { color: palette.text }]}>My Recipes</Text>
             {syncEnabled && (syncBusy || syncError) ? (
               <View
                 style={[
@@ -655,65 +654,6 @@ export default function MyRecipesScreen() {
                 </View>
               </View>
             ) : null}
-
-            {isMobile ? (
-              <View style={styles.mobileRecipeActionRow}>
-                <Pressable
-                  accessibilityLabel="Add recipe"
-                  onPress={() => router.push('/add-recipe')}
-                  style={[
-                    styles.mobileRecipeActionButton,
-                    { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
-                  ]}
-                >
-                  <View style={styles.mobileRecipePanIconWrap}>
-                    <FryingPanIcon size={34} palette={palette} />
-                    <View
-                      style={[
-                        styles.mobileRecipeActionPlusBadge,
-                        { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
-                      ]}
-                    >
-                      <Text style={[styles.mobileRecipeActionPlusText, { color: palette.addButtonText }]}>+</Text>
-                    </View>
-                  </View>
-                </Pressable>
-                <Pressable
-                  accessibilityLabel={selectionMode ? 'Done selecting recipes' : 'Select recipes'}
-                  accessibilityState={{ selected: selectionMode }}
-                  onPress={toggleSelectionMode}
-                  style={[
-                    styles.mobileRecipeActionButton,
-                    {
-                      backgroundColor: selectionMode ? palette.accentSoft : palette.surface,
-                      borderColor: selectionMode ? palette.accentSoft : palette.borderAlt,
-                    },
-                  ]}
-                >
-                  <MultiSelectIcon active={selectionMode} size={30} palette={palette} />
-                </Pressable>
-              </View>
-            ) : (
-              <View style={styles.actionRow}>
-                <Pressable
-                  onPress={() => router.push('/add-recipe')}
-                  style={[styles.primaryButton, { backgroundColor: palette.accent }]}
-                >
-                  <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>+ Add Recipe</Text>
-                </Pressable>
-                <Pressable
-                  onPress={toggleSelectionMode}
-                  style={[
-                    styles.secondaryButton,
-                    { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                  ]}
-                >
-                  <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
-                    {selectionMode ? 'Done Selecting' : 'Select Recipes'}
-                  </Text>
-                </Pressable>
-              </View>
-            )}
 
           </View>
 
