@@ -102,6 +102,8 @@ export default function MyRecipesScreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedRecipeSlugs, setSelectedRecipeSlugs] = useState<string[]>([]);
   const [selectionAnchorSlug, setSelectionAnchorSlug] = useState<string | null>(null);
+  const [favoritedFeedbackCount, setFavoritedFeedbackCount] = useState<number | null>(null);
+  const favoritedFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showBulkMetadataEditor, setShowBulkMetadataEditor] = useState(false);
   const [bulkCategory, setBulkCategory] = useState<(typeof bulkCategoryOptions)[number]>('Keep existing');
@@ -368,6 +370,13 @@ export default function MyRecipesScreen() {
     }
 
     favoriteRecipes(selectedRecipeSlugs);
+
+    const count = selectedRecipeSlugs.length;
+    setFavoritedFeedbackCount(count);
+    if (favoritedFeedbackTimeout.current) {
+      clearTimeout(favoritedFeedbackTimeout.current);
+    }
+    favoritedFeedbackTimeout.current = setTimeout(() => setFavoritedFeedbackCount(null), 2000);
   }
 
   function toggleBulkAllergenTag(tag: string) {
@@ -451,6 +460,17 @@ export default function MyRecipesScreen() {
       setSharingSelectedRecipes(false);
     }
   }
+
+  useEffect(() => {
+    // Hide the "n favorited" confirmation as soon as the selection changes.
+    setFavoritedFeedbackCount(null);
+  }, [selectedRecipeSlugs]);
+
+  useEffect(() => () => {
+    if (favoritedFeedbackTimeout.current) {
+      clearTimeout(favoritedFeedbackTimeout.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (lastDeletedRecipes.length === 0) {
@@ -957,27 +977,37 @@ export default function MyRecipesScreen() {
                         <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
                       </View>
                       {selectionMode ? (
-                        <Pressable
-                          onPress={(event) => {
-                            event.stopPropagation();
-                            handleSelectionPress(
-                              recipe.slug,
-                              Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey)
-                            );
-                          }}
-                          style={[
-                            styles.starButton,
-                            { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                            selectedRecipeSlugs.includes(recipe.slug) && {
-                              backgroundColor: palette.accentSoft,
-                              borderColor: palette.accentSoft,
-                            },
-                          ]}
-                        >
-                          <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                            {selectedRecipeSlugs.includes(recipe.slug) ? '☑' : '☐'}
-                          </Text>
-                        </Pressable>
+                        <View style={styles.detailCardActionRow}>
+                          {isFavorite(recipe.slug) ? (
+                            <Text
+                              accessibilityLabel="Favorited"
+                              style={[styles.starButtonText, { color: palette.accent }]}
+                            >
+                              ★
+                            </Text>
+                          ) : null}
+                          <Pressable
+                            onPress={(event) => {
+                              event.stopPropagation();
+                              handleSelectionPress(
+                                recipe.slug,
+                                Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey)
+                              );
+                            }}
+                            style={[
+                              styles.starButton,
+                              { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+                              selectedRecipeSlugs.includes(recipe.slug) && {
+                                backgroundColor: palette.accentSoft,
+                                borderColor: palette.accentSoft,
+                              },
+                            ]}
+                          >
+                            <Text style={[styles.starButtonText, { color: palette.accentText }]}>
+                              {selectedRecipeSlugs.includes(recipe.slug) ? '☑' : '☐'}
+                            </Text>
+                          </Pressable>
+                        </View>
                       ) : isMobile ? null : (
                         actionButtons
                       )}
@@ -1148,7 +1178,9 @@ export default function MyRecipesScreen() {
           >
             <View style={styles.selectionBarHeader}>
               <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
-                {selectedRecipeSlugs.length} selected
+                {favoritedFeedbackCount !== null
+                  ? `${favoritedFeedbackCount} favorited`
+                  : `${selectedRecipeSlugs.length} selected`}
               </Text>
               <View style={styles.selectionBarHeaderActions}>
                 <Pressable onPress={selectAllVisibleRecipes} hitSlop={8}>
