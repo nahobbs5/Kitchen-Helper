@@ -794,6 +794,27 @@ export const kitchenStyles = StyleSheet.create({
   referenceStickySearchInput: {
     marginTop: 0,
   },
+  floatingActionStack: {
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    transform: [{ translateY: -62 }],
+    gap: 12,
+    zIndex: 15,
+  },
+  floatingActionButton: {
+    width: 56,
+    height: 56,
+    borderWidth: 1,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 6,
+  },
   formStack: {
     gap: 16,
     marginTop: 6,

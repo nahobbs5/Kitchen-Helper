@@ -87,6 +87,8 @@ export default function MyRecipesScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
+  const heroCardHeightRef = useRef(0);
+  const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
@@ -486,6 +488,12 @@ export default function MyRecipesScreen() {
     setShowStickySearch((current) => (current === shouldShow ? current : shouldShow));
   }
 
+  function updateFloatingActions(offsetY: number) {
+    const threshold = heroLayoutYRef.current + heroCardLayoutYRef.current + heroCardHeightRef.current;
+    const shouldShow = threshold > 0 && offsetY >= threshold;
+    setShowFloatingActions((current) => (current === shouldShow ? current : shouldShow));
+  }
+
   function handleInlineSearchLayout(event: LayoutChangeEvent) {
     const threshold = heroLayoutYRef.current + heroCardLayoutYRef.current + event.nativeEvent.layout.y;
     setSearchStickyThreshold(threshold);
@@ -544,6 +552,7 @@ export default function MyRecipesScreen() {
           const offsetY = event.nativeEvent.contentOffset.y;
           scrollOffsetRef.current = offsetY;
           updateStickySearch(offsetY);
+          updateFloatingActions(offsetY);
         }}
         scrollEventThrottle={16}
       >
@@ -929,6 +938,8 @@ export default function MyRecipesScreen() {
           <View
             onLayout={(event) => {
               heroCardLayoutYRef.current = event.nativeEvent.layout.y;
+              heroCardHeightRef.current = event.nativeEvent.layout.height;
+              updateFloatingActions(scrollOffsetRef.current);
             }}
             style={[
               styles.heroCard,
@@ -1093,7 +1104,6 @@ export default function MyRecipesScreen() {
         <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
           <View style={styles.primaryColumn}>
             <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <Text style={[styles.panelTitle, { color: palette.text }]}>Your Library</Text>
               <DraggableRecipeList
                 data={filteredRecipes}
                 keyExtractor={(recipe) => recipe.slug}
@@ -1362,6 +1372,49 @@ export default function MyRecipesScreen() {
         >
           {renderRecipeSearchInput('sticky')}
         </View>
+      ) : null}
+      {showFloatingActions ? (
+      <View style={styles.floatingActionStack} pointerEvents="box-none">
+        <Pressable
+          accessibilityLabel="Add recipe"
+          onPress={() => router.push('/add-recipe')}
+          style={[
+            styles.floatingActionButton,
+            { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
+          ]}
+        >
+          <View style={styles.mobileRecipePanIconWrap}>
+            <FryingPanIcon size={30} palette={palette} />
+            <View
+              style={[
+                styles.mobileRecipeActionPlusBadge,
+                { backgroundColor: palette.addButtonBg, borderColor: palette.addButtonBorder },
+              ]}
+            >
+              <Text style={[styles.mobileRecipeActionPlusText, { color: palette.addButtonText }]}>+</Text>
+            </View>
+          </View>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={selectionMode ? 'Done selecting recipes' : 'Select recipes'}
+          accessibilityState={{ selected: selectionMode }}
+          onPress={() => {
+            if (!selectionMode) {
+              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+            }
+            toggleSelectionMode();
+          }}
+          style={[
+            styles.floatingActionButton,
+            {
+              backgroundColor: selectionMode ? palette.accentSoft : palette.surface,
+              borderColor: selectionMode ? palette.accentSoft : palette.borderAlt,
+            },
+          ]}
+        >
+          <MultiSelectIcon active={selectionMode} size={28} palette={palette} />
+        </Pressable>
+      </View>
       ) : null}
     </SafeAreaView>
   );
