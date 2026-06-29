@@ -11,6 +11,9 @@ export const kitchenStyles = StyleSheet.create({
     paddingBottom: 32,
     gap: 20,
   },
+  pageWithSelectionBar: {
+    paddingBottom: 280,
+  },
   dictionaryPageWithBackToTop: {
     paddingBottom: 104,
   },
@@ -814,6 +817,54 @@ export const kitchenStyles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 6,
     elevation: 6,
+  },
+  selectionBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: '60%',
+    borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    zIndex: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 16,
+  },
+  selectionBarScroll: {
+    flexGrow: 0,
+  },
+  selectionBarContent: {
+    gap: 12,
+    paddingBottom: 4,
+  },
+  selectionBarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  selectionBarHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  selectionBarLink: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  selectionBarDone: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  selectionBarDoneText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
   formStack: {
     gap: 16,
