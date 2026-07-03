@@ -1,7 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { Linking, Pressable, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 
+import { CopiedToast, useCopiedToast } from '../../components/copied-toast';
 import { kitchenStyles as styles } from '../../components/kitchen-styles';
 import { DeleteIcon } from '../../components/delete-icon';
 import { EditIcon } from '../../components/edit-icon';
@@ -13,7 +15,7 @@ import { useFavorites } from '../../contexts/favorites-context';
 import { useRatings } from '../../contexts/ratings-context';
 import { StarRating } from '../../components/star-rating';
 import { useAppSettings } from '../../contexts/settings-context';
-import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
+import { formatIngredientsText, shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { extractBaseServings, formatScaleLabel, scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
@@ -75,6 +77,15 @@ export default function UserRecipeScreen() {
       items: section.items.map((item) => scaleIngredientLine(item, multiplier)),
     }));
   }, [multiplier, recipe]);
+
+  const copiedToast = useCopiedToast();
+  const copyIngredients = () => {
+    const text = formatIngredientsText(scaledIngredients);
+    if (!text) return;
+    Clipboard.setStringAsync(text);
+    copiedToast.show();
+  };
+
   const scaledServingsLabel = useMemo(() => {
     if (!recipe?.servings) return null;
     if (multiplier === 1) return recipe.servings;
@@ -375,9 +386,15 @@ export default function UserRecipeScreen() {
                     >
                       {section.title ? <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{section.title}</Text> : null}
                       {section.items.map((item) => (
-                        <Text key={item} style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                          - {item}
-                        </Text>
+                        <Pressable
+                          key={item}
+                          onLongPress={copyIngredients}
+                          delayLongPress={400}
+                        >
+                          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
+                            - {item}
+                          </Text>
+                        </Pressable>
                       ))}
                     </View>
                   ))
@@ -447,6 +464,7 @@ export default function UserRecipeScreen() {
           </View>
         </View>
       </ScrollView>
+      <CopiedToast visible={copiedToast.visible} opacity={copiedToast.opacity} />
     </SafeAreaView>
   );
 }

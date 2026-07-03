@@ -38,6 +38,20 @@ type ExportBuildInput = {
 
 const MAX_EXPORT_RATING = 5;
 
+/** Flattens ingredient sections into plain multiline text for clipboard copy. */
+export function formatIngredientsText(sections: RecipeSection[]): string {
+  return sections
+    .map((section) => {
+      const lines = section.items.map((item) => `- ${item}`);
+      if (section.title) {
+        return [section.title, ...lines].join('\n');
+      }
+      return lines.join('\n');
+    })
+    .filter((block) => block.length > 0)
+    .join('\n\n');
+}
+
 type ExportResult = {
   filename: string;
   message: string;
