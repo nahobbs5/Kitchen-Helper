@@ -42,7 +42,7 @@ export function RecipeShareCard({ onLayout, recipe }: Props) {
     recipe.prepTime ? `Prep: ${recipe.prepTime}` : null,
     recipe.cookTime ? formatCookTimeTag(recipe, recipe.cookTime) : null,
     recipe.totalTime ? `Total: ${recipe.totalTime}` : null,
-    recipe.servings,
+    recipe.servings ? `Serves: ${recipe.servings}` : null,
   ].filter(Boolean) as string[];
   const tags = [...recipe.allergyFriendlyTags, ...recipe.allergenTags];
   const sourceRows = [
@@ -56,6 +56,12 @@ export function RecipeShareCard({ onLayout, recipe }: Props) {
       <View style={shareStyles.card}>
         <Text style={shareStyles.category}>{recipe.category}</Text>
         <Text style={shareStyles.title}>{recipe.title}</Text>
+
+        {recipe.scaleNote ? (
+          <View style={shareStyles.scaleBanner}>
+            <Text style={shareStyles.scaleBannerText}>{recipe.scaleNote}</Text>
+          </View>
+        ) : null}
 
         {recipe.rating && recipe.rating > 0 ? (
           <View style={shareStyles.ratingRow}>
@@ -150,6 +156,20 @@ export const shareStyles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 34,
     marginBottom: 16,
+  },
+  scaleBanner: {
+    backgroundColor: '#f4dfba',
+    borderColor: '#e0c79c',
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  scaleBannerText: {
+    color: '#6f4817',
+    fontSize: 14,
+    fontWeight: '700',
   },
   ratingRow: {
     flexDirection: 'row',

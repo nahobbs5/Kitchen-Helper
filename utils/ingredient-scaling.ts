@@ -332,6 +332,10 @@ function scaleParentheticalMeasurements(text: string, multiplier: number): strin
   });
 }
 
+export function formatScaleLabel(multiplier: number): string {
+  return `${formatScaledAmount(multiplier)}x`;
+}
+
 export function extractBaseServings(servingsText: string | null): number | null {
   if (!servingsText) {
     return null;

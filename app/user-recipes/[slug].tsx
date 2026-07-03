@@ -14,7 +14,7 @@ import { useRatings } from '../../contexts/ratings-context';
 import { StarRating } from '../../components/star-rating';
 import { useAppSettings } from '../../contexts/settings-context';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
-import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { extractBaseServings, formatScaleLabel, scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -40,26 +40,6 @@ export default function UserRecipeScreen() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const normalizedSlug = Array.isArray(slug) ? slug[0] : slug;
   const recipe = normalizedSlug ? customRecipeMap[normalizedSlug] : undefined;
-  const exportRecipe: ExportRecipe | null = recipe
-    ? {
-      slug: recipe.slug,
-      title: recipe.title,
-      category: recipe.category,
-      sourceLabel: recipe.source,
-      cuisineRegion: recipe.cuisineRegion,
-      prepTime: recipe.prepTime,
-      cookTime: recipe.cookTime,
-      totalTime: recipe.totalTime,
-      servings: recipe.servings,
-      allergyFriendlyTags: recipe.allergyFriendlyTags,
-      allergenTags: recipe.allergenTags,
-      ingredients: recipe.ingredients,
-      directions: recipe.directions,
-      notes: recipe.notes,
-      sourceInfo: recipe.sourceInfo,
-      rating: showRatingsInCardExports ? getRating(recipe.slug) : null,
-    }
-    : null;
   const headerTitle = isWide ? `My Recipes / ${recipe?.title ?? 'Recipe'}` : recipe?.title ?? 'Recipe';
 
   const servingButtons = useMemo(
@@ -104,6 +84,30 @@ export default function UserRecipeScreen() {
   }, [recipe?.servings, multiplier]);
 
   const isOriginalScale = Math.abs(multiplier - 1) < 0.001;
+
+  const exportRecipe: ExportRecipe | null = recipe
+    ? {
+      slug: recipe.slug,
+      title: recipe.title,
+      category: recipe.category,
+      sourceLabel: recipe.source,
+      cuisineRegion: recipe.cuisineRegion,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      totalTime: recipe.totalTime,
+      servings: scaledServingsLabel,
+      allergyFriendlyTags: recipe.allergyFriendlyTags,
+      allergenTags: recipe.allergenTags,
+      ingredients: scaledIngredients,
+      directions: recipe.directions,
+      notes: recipe.notes,
+      sourceInfo: recipe.sourceInfo,
+      rating: showRatingsInCardExports ? getRating(recipe.slug) : null,
+      scaleNote: isOriginalScale
+        ? null
+        : `Scaled to ${formatScaleLabel(multiplier)} — ingredient amounts adjusted from the original.`,
+    }
+    : null;
 
   async function handleDelete() {
     if (!recipe) {

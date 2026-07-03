@@ -15,7 +15,7 @@ import { StarRating } from '../../components/star-rating';
 import { useAppSettings } from '../../contexts/settings-context';
 import { obsidianRecipeMap } from '../../data/obsidian-recipes';
 import { shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
-import { extractBaseServings, scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { extractBaseServings, formatScaleLabel, scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -83,27 +83,6 @@ export default function ObsidianRecipeScreen() {
     void shareRecipe(exportRecipe, shareCardRef);
   }
 
-  const exportRecipe: ExportRecipe | null = recipe
-    ? {
-      slug: recipe.slug,
-      title: recipe.title,
-      category: recipe.category,
-      sourceLabel: recipe.source,
-      cuisineRegion: recipe.cuisineRegion,
-      prepTime: recipe.prepTime,
-      cookTime: recipe.cookTime,
-      totalTime: recipe.totalTime,
-      servings: recipe.servings,
-      allergyFriendlyTags: recipe.allergyFriendlyTags,
-      allergenTags: recipe.allergenTags,
-      ingredients: recipe.ingredients,
-      directions: recipe.directions,
-      notes: recipe.notes,
-      sourceInfo: recipe.sourceInfo,
-      rating: showRatingsInCardExports ? getRating(recipe.slug) : null,
-    }
-    : null;
-
   const servingButtons = useMemo(() => {
     const buttons = [
       { key: 'original', label: 'Original', multiplier: 1 },
@@ -151,6 +130,30 @@ export default function ObsidianRecipeScreen() {
   }, [recipe?.servings, multiplier]);
 
   const isOriginalScale = Math.abs(multiplier - 1) < 0.001;
+
+  const exportRecipe: ExportRecipe | null = recipe
+    ? {
+      slug: recipe.slug,
+      title: recipe.title,
+      category: recipe.category,
+      sourceLabel: recipe.source,
+      cuisineRegion: recipe.cuisineRegion,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      totalTime: recipe.totalTime,
+      servings: scaledServingsLabel,
+      allergyFriendlyTags: recipe.allergyFriendlyTags,
+      allergenTags: recipe.allergenTags,
+      ingredients: scaledIngredients,
+      directions: recipe.directions,
+      notes: recipe.notes,
+      sourceInfo: recipe.sourceInfo,
+      rating: showRatingsInCardExports ? getRating(recipe.slug) : null,
+      scaleNote: isOriginalScale
+        ? null
+        : `Scaled to ${formatScaleLabel(multiplier)} — ingredient amounts adjusted from the original.`,
+    }
+    : null;
 
   if (!recipe) {
     return (

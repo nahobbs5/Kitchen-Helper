@@ -26,6 +26,7 @@ export type ExportRecipe = {
   notes: string | null;
   sourceInfo: RecipeSource;
   rating?: number | null;
+  scaleNote?: string | null;
 };
 
 type ExportBuildInput = {
