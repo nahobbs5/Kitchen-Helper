@@ -450,8 +450,6 @@ export default function ObsidianRecipeScreen() {
                 />
               ) : (
                 <ScaledDirectionsList
-                  slug={recipe.slug}
-                  source="obsidian"
                   baseDirections={baseRecipe?.directions ?? recipe.directions}
                   displayDirections={recipe.directions}
                   stepOverrides={override?.directionStepOverrides ?? {}}

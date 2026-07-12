@@ -621,10 +621,6 @@ export const kitchenStyles = StyleSheet.create({
   recipeFlatGroup: {
     gap: 6,
   },
-  recipeFlatEditedGroup: {
-    borderLeftWidth: 3,
-    paddingLeft: 12,
-  },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -910,9 +906,6 @@ export const kitchenStyles = StyleSheet.create({
   formTextArea: {
     minHeight: 140,
     textAlignVertical: 'top',
-  },
-  formTextAreaCompact: {
-    minHeight: 110,
   },
   helperCard: {
     borderRadius: 18,
@@ -1255,16 +1248,6 @@ export const kitchenStyles = StyleSheet.create({
   directionHighlight: {
     borderRadius: 6,
     paddingHorizontal: 2,
-  },
-  editedDirectionCard: {
-    borderWidth: 2,
-    borderColor: '#d1a65c',
-  },
-  directionStepHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
   },
   directionStepMeta: {
     flex: 1,

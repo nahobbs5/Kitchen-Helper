@@ -1,4 +1,5 @@
 import type { RecipeSection } from '../data/obsidian-recipes';
+import { scaleMeasurementsInText } from './ingredient-scaling';
 
 export type DirectionSignalType =
   | 'time'
@@ -376,57 +377,6 @@ export function buildDirectionStepOverrides(baseSections: RecipeSection[], displ
   return overrides;
 }
 
-export function replaceDirectionStepText(sections: RecipeSection[], stepId: string, nextText: string) {
-  const index = Number(stepId.replace('step-', '')) - 1;
-
-  if (!Number.isFinite(index) || index < 0) {
-    return sections;
-  }
-
-  let currentIndex = 0;
-  let replaced = false;
-
-  const nextSections = sections.map((section) => {
-    const nextItems = section.items.map((item) => {
-      const itemIndex = currentIndex;
-      currentIndex += 1;
-
-      if (itemIndex !== index) {
-        return item;
-      }
-
-      replaced = true;
-      return nextText.trim();
-    });
-
-    return {
-      ...section,
-      items: nextItems.filter((item) => item.trim().length > 0),
-    };
-  });
-
-  if (replaced) {
-    return nextSections.filter((section) => section.title || section.items.length > 0);
-  }
-
-  if (!nextText.trim()) {
-    return sections;
-  }
-
-  if (nextSections.length === 0) {
-    return [{ title: null, items: [nextText.trim()] }];
-  }
-
-  const lastSection = nextSections[nextSections.length - 1];
-  return [
-    ...nextSections.slice(0, -1),
-    {
-      ...lastSection,
-      items: [...lastSection.items, nextText.trim()],
-    },
-  ];
-}
-
 export function analyzeScaledDirections({
   baseSections,
   displaySections,
@@ -451,9 +401,10 @@ export function analyzeScaledDirections({
 
     const isEdited =
       Object.prototype.hasOwnProperty.call(stepOverrides, stepId) && stepOverrides[stepId] !== originalText;
-    const detectedSignals = collectSignals(displayText);
-    const allAnnotations = buildAnnotations(displayText, detectedSignals, scale, isEdited);
-    const highlights = buildHighlights(displayText, scale, allAnnotations);
+    const scaledDisplayText = scaleMeasurementsInText(displayText, scale);
+    const detectedSignals = collectSignals(scaledDisplayText);
+    const allAnnotations = buildAnnotations(scaledDisplayText, detectedSignals, scale, isEdited);
+    const highlights = buildHighlights(scaledDisplayText, scale, allAnnotations);
 
     const attachedKeys = new Set(
       highlights.flatMap((highlight) =>
@@ -469,7 +420,7 @@ export function analyzeScaledDirections({
       stepNumber: index + 1,
       sectionTitle: displayStep?.sectionTitle ?? baseStep?.sectionTitle ?? null,
       originalText,
-      displayText,
+      displayText: scaledDisplayText,
       isEdited,
       annotations: orphanAnnotations,
       detectedSignals,

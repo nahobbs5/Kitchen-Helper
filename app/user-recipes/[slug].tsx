@@ -417,8 +417,6 @@ export default function UserRecipeScreen() {
                 />
               ) : (
                 <ScaledDirectionsList
-                  slug={recipe.slug}
-                  source="custom"
                   baseDirections={recipe.originalDirections}
                   displayDirections={recipe.directions}
                   stepOverrides={recipe.directionStepOverrides}

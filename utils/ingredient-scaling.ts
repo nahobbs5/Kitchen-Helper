@@ -323,6 +323,21 @@ function scaleInlineMeasurements(text: string, multiplier: number) {
   );
 }
 
+/**
+ * Scales every recognized measurement (amount + unit, e.g. "2 cups") found
+ * anywhere within free-form text, such as a recipe direction sentence.
+ * Unlike scaleIngredientLine, it does not assume the text starts with a
+ * quantity, and it leaves numbers without a recognized unit (times,
+ * temperatures, plain word counts) untouched.
+ */
+export function scaleMeasurementsInText(text: string, multiplier: number): string {
+  if (multiplier === 1) {
+    return text;
+  }
+
+  return scaleInlineMeasurements(text, multiplier);
+}
+
 function scaleParentheticalMeasurements(text: string, multiplier: number): string {
   const parentheticalPattern = /\(([^)]*)\)/g;
 
