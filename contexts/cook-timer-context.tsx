@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAppSettings } from './settings-context';
 
 export type CookTimerSlot = {
@@ -34,17 +34,29 @@ type CookTimerContextValue = {
   loadTimerSlot: (label: string, durationMs: number) => boolean;
 };
 
-function makeTimers(count: number): CookTimerSlot[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
+/** Duration fields for an idle slot, pre-filled from the "Default timer duration" setting (0 = empty). */
+function defaultDurationFields(minutes: number) {
+  const durationMs = minutes * 60 * 1000;
+  return {
+    durationInput: minutes > 0 ? msToTimerInput(durationMs) : '',
+    durationMs,
+    remainingMs: durationMs,
+  };
+}
+
+function makeTimerSlot(id: number, defaultMinutes: number): CookTimerSlot {
+  return {
+    id,
     label: '',
-    durationInput: '',
-    durationMs: 0,
-    remainingMs: 0,
+    ...defaultDurationFields(defaultMinutes),
     endAt: null,
     active: false,
     hasStarted: false,
-  }));
+  };
+}
+
+function makeTimers(count: number, defaultMinutes: number): CookTimerSlot[] {
+  return Array.from({ length: count }, (_, i) => makeTimerSlot(i + 1, defaultMinutes));
 }
 
 const CookTimerContext = createContext<CookTimerContextValue | undefined>(undefined);
@@ -120,11 +132,12 @@ export function formatTimerRemaining(ms: number) {
 }
 
 export function CookTimerProvider({ children }: PropsWithChildren) {
-  const { timerCount } = useAppSettings();
+  const { timerCount, defaultTimerMinutes } = useAppSettings();
   const [completedEventCount, setCompletedEventCount] = useState(0);
   const [finishedTimerAlerts, setFinishedTimerAlerts] = useState<CookTimerFinishedAlert[]>([]);
   const [isCookTimerOpen, setIsCookTimerOpen] = useState(false);
-  const [timers, setTimers] = useState<CookTimerSlot[]>(() => makeTimers(timerCount));
+  const [timers, setTimers] = useState<CookTimerSlot[]>(() => makeTimers(timerCount, defaultTimerMinutes));
+  const previousDefaultMinutesRef = useRef(defaultTimerMinutes);
 
   useEffect(() => {
     setTimers((current) => {
@@ -134,18 +147,8 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
 
       if (timerCount > current.length) {
         const nextId = current.length > 0 ? Math.max(...current.map((t) => t.id)) + 1 : 1;
-        const newSlots: CookTimerSlot[] = Array.from(
-          { length: timerCount - current.length },
-          (_, i) => ({
-            id: nextId + i,
-            label: '',
-            durationInput: '',
-            durationMs: 0,
-            remainingMs: 0,
-            endAt: null,
-            active: false,
-            hasStarted: false,
-          })
+        const newSlots: CookTimerSlot[] = Array.from({ length: timerCount - current.length }, (_, i) =>
+          makeTimerSlot(nextId + i, defaultTimerMinutes)
         );
         return [...current, ...newSlots];
       }
@@ -162,7 +165,26 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
       }
       return result;
     });
+    // Only the count should trigger this; new slots read the current default when created.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerCount]);
+
+  // When the default duration changes, update idle slots that are empty or still hold the old default.
+  useEffect(() => {
+    const previousInput = defaultDurationFields(previousDefaultMinutesRef.current).durationInput;
+    previousDefaultMinutesRef.current = defaultTimerMinutes;
+    const nextFields = defaultDurationFields(defaultTimerMinutes);
+
+    setTimers((current) =>
+      current.map((timer) =>
+        !timer.active &&
+        !timer.hasStarted &&
+        (timer.durationInput === '' || timer.durationInput === previousInput)
+          ? { ...timer, ...nextFields }
+          : timer
+      )
+    );
+  }, [defaultTimerMinutes]);
 
   useEffect(() => {
     const hasActiveTimers = timers.some((timer) => timer.active);

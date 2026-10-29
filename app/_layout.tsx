@@ -6,7 +6,7 @@ import { AppState, Image, Platform, Text, View, useWindowDimensions } from 'reac
 
 import { CookTimerFinishedAlerts } from '../components/cook-timer-alerts';
 import { CookTimerModal } from '../components/cook-timer-modal';
-import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton, SettingsMenuModal } from '../components/settings-menu';
+import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton } from '../components/settings-menu';
 import { AuthProvider } from '../contexts/auth-context';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
@@ -35,7 +35,6 @@ export default function RootLayout() {
                   <RatingsProvider>
                     <RecipeFiltersProvider>
                       <RootNavigator />
-                      <SettingsMenuModal />
                       <CookTimerModal />
                       <CookTimerFinishedAlerts />
                     </RecipeFiltersProvider>
@@ -191,6 +190,8 @@ function RootNavigator() {
       <Stack.Screen name="recipe" options={{ title: 'Sample Recipes' }} />
       <Stack.Screen name="filters" options={{ title: 'Filters', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="account" options={topLevelScreenOptions('Account')} />
+      <Stack.Screen name="settings/index" options={topLevelScreenOptions('Settings')} />
+      <Stack.Screen name="settings/[section]" options={{ title: 'Settings' }} />
       </Stack>
     </>
   );

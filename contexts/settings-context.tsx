@@ -30,6 +30,11 @@ export const REFERENCE_TAB_OPTIONS = [
 
 export type ReferenceTabId = (typeof REFERENCE_TAB_OPTIONS)[number]['id'];
 
+/** Minutes pre-filled into empty cook timer slots. 0 means no default. */
+export const DEFAULT_TIMER_OPTIONS = [0, 1, 3, 5, 10, 15, 20, 30, 45, 60] as const;
+
+export type SettingsSection = 'appearance' | 'cooking' | 'recipes' | 'guides' | 'data';
+
 type SettingsContextValue = {
   darkModeEnabled: boolean;
   keepScreenAwake: boolean;
@@ -40,11 +45,9 @@ type SettingsContextValue = {
   timerCount: number;
   timerSound: TimerSoundId;
   defaultReferenceTab: ReferenceTabId;
+  defaultTimerMinutes: number;
   loaded: boolean;
   palette: AppPalette;
-  isSettingsOpen: boolean;
-  openSettings: () => void;
-  closeSettings: () => void;
   toggleDarkMode: (value?: boolean) => void;
   toggleKeepScreenAwake: (value?: boolean) => void;
   toggleAllowVibration: (value?: boolean) => void;
@@ -54,7 +57,9 @@ type SettingsContextValue = {
   setTimerCount: (value: number) => void;
   setTimerSound: (value: TimerSoundId) => void;
   setDefaultReferenceTab: (value: ReferenceTabId) => void;
+  setDefaultTimerMinutes: (value: number) => void;
   resetToDefaults: () => void;
+  resetSection: (section: SettingsSection) => void;
 };
 
 const SETTINGS_KEY = 'kitchen-helper.app-settings';
@@ -71,6 +76,7 @@ const DEFAULT_SETTINGS: {
   timerCount: number;
   timerSound: TimerSoundId;
   defaultReferenceTab: ReferenceTabId;
+  defaultTimerMinutes: number;
 } = {
   darkModeEnabled: false,
   keepScreenAwake: false,
@@ -81,6 +87,7 @@ const DEFAULT_SETTINGS: {
   timerCount: 3,
   timerSound: 'beep-beep',
   defaultReferenceTab: 'conversions',
+  defaultTimerMinutes: 0,
 };
 
 function clampTimerCount(value: number) {
@@ -95,6 +102,12 @@ function isReferenceTabId(value: unknown): value is ReferenceTabId {
   return REFERENCE_TAB_OPTIONS.some((option) => option.id === value);
 }
 
+function isDefaultTimerMinutes(value: unknown): value is number {
+  return DEFAULT_TIMER_OPTIONS.some((option) => option === value);
+}
+
+const ALL_SETTINGS_SECTIONS: SettingsSection[] = ['appearance', 'cooking', 'recipes', 'guides', 'data'];
+
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
 type StoredSettings = {
@@ -107,6 +120,7 @@ type StoredSettings = {
   timerCount?: number;
   timerSound?: string;
   defaultReferenceTab?: string;
+  defaultTimerMinutes?: number;
 };
 
 export function SettingsProvider({ children }: PropsWithChildren) {
@@ -123,8 +137,8 @@ export function SettingsProvider({ children }: PropsWithChildren) {
   const [defaultReferenceTab, setDefaultReferenceTab] = useState<ReferenceTabId>(
     DEFAULT_SETTINGS.defaultReferenceTab
   );
+  const [defaultTimerMinutes, setDefaultTimerMinutes] = useState(DEFAULT_SETTINGS.defaultTimerMinutes);
   const [loaded, setLoaded] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const wakeLockActiveRef = useRef(false);
 
   useEffect(() => {
@@ -156,6 +170,11 @@ export function SettingsProvider({ children }: PropsWithChildren) {
             isReferenceTabId(parsed.defaultReferenceTab)
               ? parsed.defaultReferenceTab
               : DEFAULT_SETTINGS.defaultReferenceTab
+          );
+          setDefaultTimerMinutes(
+            isDefaultTimerMinutes(parsed.defaultTimerMinutes)
+              ? parsed.defaultTimerMinutes
+              : DEFAULT_SETTINGS.defaultTimerMinutes
           );
           if (typeof parsed.timerCount === 'number' && parsed.timerCount >= MIN_TIMER_COUNT) {
             setTimerCount(clampTimerCount(parsed.timerCount));
@@ -194,6 +213,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         timerCount,
         timerSound,
         defaultReferenceTab,
+        defaultTimerMinutes,
       } satisfies StoredSettings)
     ).catch(() => {});
   }, [
@@ -206,6 +226,7 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     timerCount,
     timerSound,
     defaultReferenceTab,
+    defaultTimerMinutes,
     loaded,
   ]);
 
@@ -237,6 +258,32 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     };
   }, [keepScreenAwake, loaded]);
 
+  // Each Settings page resets only the values shown on it.
+  function resetSettingsSection(section: SettingsSection) {
+    switch (section) {
+      case 'appearance':
+        setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
+        break;
+      case 'cooking':
+        setAllowVibration(DEFAULT_SETTINGS.allowVibration);
+        setTimerSound(DEFAULT_SETTINGS.timerSound);
+        setTimerCount(DEFAULT_SETTINGS.timerCount);
+        setReorderHapticsEnabled(DEFAULT_SETTINGS.reorderHapticsEnabled);
+        setDefaultTimerMinutes(DEFAULT_SETTINGS.defaultTimerMinutes);
+        setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
+        break;
+      case 'recipes':
+        setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
+        break;
+      case 'guides':
+        setDefaultReferenceTab(DEFAULT_SETTINGS.defaultReferenceTab);
+        break;
+      case 'data':
+        setShowRatingsInCardExports(DEFAULT_SETTINGS.showRatingsInCardExports);
+        break;
+    }
+  }
+
   const value = useMemo<SettingsContextValue>(
     () => ({
       darkModeEnabled,
@@ -248,11 +295,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       timerCount,
       timerSound,
       defaultReferenceTab,
+      defaultTimerMinutes,
       loaded,
       palette: darkModeEnabled ? darkPalette : lightPalette,
-      isSettingsOpen,
-      openSettings: () => setIsSettingsOpen(true),
-      closeSettings: () => setIsSettingsOpen(false),
       toggleDarkMode: (value?: boolean) =>
         setDarkModeEnabled((current) => (typeof value === 'boolean' ? value : !current)),
       toggleKeepScreenAwake: (value?: boolean) =>
@@ -268,16 +313,13 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       setTimerCount: (value: number) => setTimerCount(clampTimerCount(value)),
       setTimerSound,
       setDefaultReferenceTab,
+      setDefaultTimerMinutes: (value: number) =>
+        setDefaultTimerMinutes(isDefaultTimerMinutes(value) ? value : DEFAULT_SETTINGS.defaultTimerMinutes),
+      resetSection: (section: SettingsSection) => resetSettingsSection(section),
       resetToDefaults: () => {
-        setDarkModeEnabled(DEFAULT_SETTINGS.darkModeEnabled);
-        setKeepScreenAwake(DEFAULT_SETTINGS.keepScreenAwake);
-        setAllowVibration(DEFAULT_SETTINGS.allowVibration);
-        setReorderHapticsEnabled(DEFAULT_SETTINGS.reorderHapticsEnabled);
-        setConfirmDeleteEnabled(DEFAULT_SETTINGS.confirmDeleteEnabled);
-        setShowRatingsInCardExports(DEFAULT_SETTINGS.showRatingsInCardExports);
-        setTimerCount(DEFAULT_SETTINGS.timerCount);
-        setTimerSound(DEFAULT_SETTINGS.timerSound);
-        setDefaultReferenceTab(DEFAULT_SETTINGS.defaultReferenceTab);
+        for (const section of ALL_SETTINGS_SECTIONS) {
+          resetSettingsSection(section);
+        }
       },
     }),
     [
@@ -290,8 +332,8 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       timerCount,
       timerSound,
       defaultReferenceTab,
+      defaultTimerMinutes,
       loaded,
-      isSettingsOpen,
     ]
   );
 
