@@ -10,9 +10,9 @@ export type ParsedOcrRecipe = {
   servings: string | null;
 };
 
-const ingredientHeadingPattern = /^(ingredients?|ingredient list)$/i;
-const directionsHeadingPattern = /^(directions?|instructions?|method|steps?|preparation)$/i;
-const notesHeadingPattern = /^(notes?|tips?|serving notes?)$/i;
+export const ingredientHeadingPattern = /^(ingredients?|ingredient list)$/i;
+export const directionsHeadingPattern = /^(directions?|instructions?|method|steps?|preparation)$/i;
+export const notesHeadingPattern = /^(notes?|tips?|serving notes?)$/i;
 const photoSeparatorPattern = /^---\s*photo\s+\d+\s*---$/i;
 
 function cleanLine(line: string) {

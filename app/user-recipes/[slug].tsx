@@ -17,6 +17,7 @@ import { StarRating } from '../../components/star-rating';
 import { useAppSettings } from '../../contexts/settings-context';
 import { formatIngredientsText, shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { extractBaseServings, formatScaleLabel, scaleIngredientLine } from '../../utils/ingredient-scaling';
+import { RecipeMetaPill } from '../../components/recipe-meta-pill';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -283,21 +284,13 @@ export default function UserRecipeScreen() {
                 </View>
               ) : null}
               {recipe.prepTime ? (
-                <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                  <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
-                </View>
+                <RecipeMetaPill kind="prep" label={`Prep: ${recipe.prepTime}`} palette={palette} />
               ) : null}
               {recipe.cookTime ? (
-                <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                  <Text style={[styles.tagText, { color: palette.tagText }]}>
-                    {formatCookTimeTag(recipe, recipe.cookTime)}
-                  </Text>
-                </View>
+                <RecipeMetaPill kind="cook" label={formatCookTimeTag(recipe, recipe.cookTime)} palette={palette} />
               ) : null}
               {scaledServingsLabel ? (
-                <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                  <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {scaledServingsLabel}</Text>
-                </View>
+                <RecipeMetaPill kind="serves" label={`Serves: ${scaledServingsLabel}`} palette={palette} />
               ) : null}
             </View>
             <View style={styles.recipeRatingRow}>

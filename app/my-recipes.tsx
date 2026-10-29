@@ -24,24 +24,17 @@ import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { useRatings } from '../contexts/ratings-context';
 import { StarRating } from '../components/star-rating';
-import { RatingFilterChip, type RatingThreshold } from '../components/rating-filter-chip';
-import { obsidianRecipes } from '../data/obsidian-recipes';
+import { ActiveFilterBar } from '../components/active-filter-bar';
+import { useRecipeFilters } from '../contexts/recipe-filters-context';
+import { useLibraryRecipes, type LibraryRecipe } from '../hooks/use-library-recipes';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
 import { triggerReorderHaptic } from '../utils/haptics';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
+import { applyRecipeFilters, toggleValue } from '../utils/recipe-filters';
 import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 
 const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
-const mobileHiddenAllergenFilters = new Set([
-  'Contains Dairy',
-  'Contains Eggs',
-  'Contains Gluten',
-  'Contains Nuts',
-  'Contains Soy',
-]);
-
-type LibraryRecipe = (typeof obsidianRecipes)[number] | ReturnType<typeof useCustomRecipes>['customRecipes'][number];
 
 function toExportRecipe(
   recipe: LibraryRecipe,
@@ -90,13 +83,7 @@ export default function MyRecipesScreen() {
   const recipeListTopRef = useRef(0);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
-  const [activeCuisineFilters, setActiveCuisineFilters] = useState<string[]>([]);
-  const [activeAllergenTags, setActiveAllergenTags] = useState<string[]>([]);
-  const [ratingFilterActive, setRatingFilterActive] = useState(false);
-  const [ratingThreshold, setRatingThreshold] = useState<RatingThreshold>(3);
-  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const { filters, setFilters, searchText, setSearchText } = useRecipeFilters('my-recipes');
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -118,7 +105,6 @@ export default function MyRecipesScreen() {
   const {
     bulkUpdateRecipeMetadata,
     clearDeletedRecipes,
-    customRecipes,
     deleteRecipes,
     lastDeletedRecipes,
     recipeOverrideMap,
@@ -130,32 +116,7 @@ export default function MyRecipesScreen() {
   const { favoriteRecipes, favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
   const { getRating, setRating } = useRatings();
   const { applyOrder, getOrder } = useRecipeOrder();
-  const allRecipes = useMemo(
-    () => [
-      ...customRecipes,
-      ...obsidianRecipes.filter((recipe) => !recipeOverrideMap[recipe.slug]?.deleted).map((recipe) => {
-        const override = recipeOverrideMap[recipe.slug];
-
-        return override
-          ? {
-              ...recipe,
-              title: override.title,
-              category: override.category,
-              allergyFriendlyTags: override.allergyFriendlyTags,
-              allergenTags: override.allergenTags,
-              prepTime: override.prepTime ?? recipe.prepTime,
-              cookTime: override.cookTime ?? recipe.cookTime,
-              servings: override.servings ?? recipe.servings,
-              ingredients: override.ingredients,
-              directions: override.directions,
-              notes: override.notes,
-              cuisineRegion: override.cuisineRegion,
-            }
-          : recipe;
-      }),
-    ],
-    [customRecipes, recipeOverrideMap]
-  );
+  const allRecipes = useLibraryRecipes();
   const orderedRecipes = useMemo(
     () => sortByManualOrder(allRecipes, (recipe) => recipe.slug, getOrder('my-recipes')),
     [allRecipes, getOrder]
@@ -166,95 +127,9 @@ export default function MyRecipesScreen() {
       return groups;
     }, {})
   ).map(([name, count]) => ({ name, count }));
-  const categoryFilters = [
-    { name: 'All', count: allRecipes.length },
-    { name: 'Favorites', count: favoriteSlugs.length },
-    ...recipeCategories,
-  ];
-  const cuisineFilters = [
-    { name: 'All', count: allRecipes.length },
-    ...Object.entries(
-      allRecipes.reduce<Record<string, number>>((groups, recipe) => {
-        const cuisine = (recipe as { cuisineRegion?: string | null }).cuisineRegion;
-
-        if (!cuisine) {
-          return groups;
-        }
-
-        groups[cuisine] = (groups[cuisine] ?? 0) + 1;
-        return groups;
-      }, {})
-    )
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([name, count]) => ({ name, count })),
-  ];
-  const allergenFilters = [
-    { name: 'All', count: allRecipes.length },
-    ...Object.entries(
-      allRecipes.reduce<Record<string, number>>((groups, recipe) => {
-        [...recipe.allergyFriendlyTags, ...recipe.allergenTags].forEach((tag) => {
-          groups[tag] = (groups[tag] ?? 0) + 1;
-        });
-        return groups;
-      }, {})
-    )
-      .sort(([left], [right]) => {
-        const leftFriendly = left.toLowerCase().includes('free');
-        const rightFriendly = right.toLowerCase().includes('free');
-
-        if (leftFriendly !== rightFriendly) {
-          return leftFriendly ? -1 : 1;
-        }
-
-        return left.localeCompare(right);
-      })
-      .map(([name, count]) => ({ name, count })),
-  ];
-  const visibleAllergenFilters = isWide
-    ? allergenFilters
-    : allergenFilters.filter((filter) => !mobileHiddenAllergenFilters.has(filter.name));
-  const normalizedSearch = searchText.trim().toLowerCase();
   const filteredRecipes = useMemo(
-    () =>
-      orderedRecipes
-        .filter((recipe) =>
-          activeCategoryFilters.includes('Favorites') ? favoriteSlugs.includes(recipe.slug) : true
-        )
-        .filter((recipe) => (ratingFilterActive ? getRating(recipe.slug) >= ratingThreshold : true))
-        .filter((recipe) => {
-          const selectedCategories = activeCategoryFilters.filter((value) => value !== 'Favorites');
-          return selectedCategories.length === 0 ? true : selectedCategories.includes(recipe.category);
-        })
-        .filter((recipe) =>
-          activeCuisineFilters.length === 0
-            ? true
-            : activeCuisineFilters.includes((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '')
-        )
-        .filter((recipe) =>
-          activeAllergenTags.length === 0
-            ? true
-            : activeAllergenTags.every((tag) =>
-                [...recipe.allergenTags, ...recipe.allergyFriendlyTags].includes(tag)
-              )
-        )
-        .filter((recipe) =>
-          normalizedSearch
-            ? `${recipe.title} ${recipe.category} ${(recipe as { cuisineRegion?: string | null }).cuisineRegion ?? ''} ${recipe.allergyFriendlyTags.join(' ')} ${recipe.allergenTags.join(' ')}`
-                .toLowerCase()
-                .includes(normalizedSearch)
-            : true
-        ),
-    [
-      activeAllergenTags,
-      activeCategoryFilters,
-      activeCuisineFilters,
-      orderedRecipes,
-      favoriteSlugs,
-      normalizedSearch,
-      ratingFilterActive,
-      ratingThreshold,
-      getRating,
-    ]
+    () => applyRecipeFilters(orderedRecipes, filters, { favoriteSlugs, getRating, searchText }),
+    [orderedRecipes, filters, favoriteSlugs, getRating, searchText]
   );
   const recipeBySlug = useMemo(
     () => new Map(allRecipes.map((recipe) => [recipe.slug, recipe])),
@@ -262,36 +137,18 @@ export default function MyRecipesScreen() {
   );
 
   function toggleCategoryFilter(tag: string) {
-    if (tag === 'All') {
-      setActiveCategoryFilters([]);
-      return;
-    }
-
-    setActiveCategoryFilters((current) =>
-      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
-    );
+    setFilters((current) => ({
+      ...current,
+      categories: tag === 'All' ? [] : toggleValue(current.categories, tag),
+    }));
   }
 
   function toggleCuisineFilter(tag: string) {
-    if (tag === 'All') {
-      setActiveCuisineFilters([]);
-      return;
-    }
-
-    setActiveCuisineFilters((current) =>
-      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
-    );
+    setFilters((current) => ({ ...current, cuisines: toggleValue(current.cuisines, tag) }));
   }
 
-  function toggleAllergenFilter(tag: string) {
-    if (tag === 'All') {
-      setActiveAllergenTags([]);
-      return;
-    }
-
-    setActiveAllergenTags((current) =>
-      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
-    );
+  function toggleDietaryFilter(tag: string) {
+    setFilters((current) => ({ ...current, dietaryTags: toggleValue(current.dietaryTags, tag) }));
   }
 
   function toggleSelectionMode() {
@@ -494,7 +351,7 @@ export default function MyRecipesScreen() {
     };
   }, [clearDeletedRecipes, lastDeletedRecipes]);
 
-  const allStatsActive = activeCategoryFilters.length === 0;
+  const allStatsActive = filters.categories.length === 0;
   const allStatsTextColor = allStatsActive ? palette.accentContrastText : palette.text;
   const allStatsBodyColor = allStatsActive ? palette.accentContrastText : palette.textMuted;
   const allStatsCountColor = allStatsActive ? palette.accentContrastText : '#000000';
@@ -671,153 +528,7 @@ export default function MyRecipesScreen() {
 
             {renderRecipeSearchInput('inline')}
 
-            <View
-              style={[
-                styles.servingsRow,
-                !isWide && styles.recipeFilterRowMobile,
-                ratingDropdownOpen && { zIndex: 30 },
-              ]}
-            >
-              {categoryFilters.map((category) => {
-                const isActive =
-                  category.name === 'All'
-                    ? activeCategoryFilters.length === 0
-                    : activeCategoryFilters.includes(category.name);
-
-                const chip = (
-                  <Pressable
-                    key={category.name}
-                    onPress={() => toggleCategoryFilter(category.name)}
-                    style={[
-                      styles.servingsButton,
-                      !isWide && styles.recipeFilterButtonMobile,
-                      { borderColor: palette.borderAlt },
-                      !isActive && { backgroundColor: palette.surface },
-                      isActive && styles.servingsButtonActive,
-                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.servingsButtonText,
-                        category.name === 'Favorites' && styles.favoriteFilterChipText,
-                        { color: isActive ? palette.inverseText : palette.text },
-                        isActive && styles.servingsButtonTextActive,
-                      ]}
-                    >
-                      {category.name === 'Favorites'
-                        ? isActive
-                          ? '★'
-                          : '☆'
-                        : !isWide && category.name === 'Appetizers'
-                          ? 'Apps'
-                          : category.name}
-                    </Text>
-                  </Pressable>
-                );
-
-                if (category.name === 'Favorites') {
-                  return [
-                    chip,
-                    <RatingFilterChip
-                      key="rating-filter"
-                      active={ratingFilterActive}
-                      threshold={ratingThreshold}
-                      dropdownOpen={ratingDropdownOpen}
-                      onToggleActive={() => setRatingFilterActive((current) => !current)}
-                      onToggleDropdown={() => setRatingDropdownOpen((current) => !current)}
-                      onSelectThreshold={(next) => {
-                        setRatingThreshold(next);
-                        setRatingFilterActive(true);
-                        setRatingDropdownOpen(false);
-                      }}
-                      palette={palette}
-                      isWide={isWide}
-                    />,
-                  ];
-                }
-
-                return chip;
-              })}
-            </View>
-
-            {cuisineFilters.length > 1 ? (
-              <>
-                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Cuisine region</Text>
-                <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
-                  {cuisineFilters.map((cuisine) => {
-                    const isActive =
-                      cuisine.name === 'All'
-                        ? activeCuisineFilters.length === 0
-                        : activeCuisineFilters.includes(cuisine.name);
-
-                    return (
-                      <Pressable
-                        key={cuisine.name}
-                        onPress={() => toggleCuisineFilter(cuisine.name)}
-                        style={[
-                          styles.servingsButton,
-                          !isWide && styles.recipeFilterButtonMobile,
-                          { borderColor: palette.borderAlt },
-                          !isActive && { backgroundColor: palette.surface },
-                          isActive && styles.servingsButtonActive,
-                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.servingsButtonText,
-                            { color: isActive ? palette.inverseText : palette.text },
-                            isActive && styles.servingsButtonTextActive,
-                          ]}
-                        >
-                          {cuisine.name}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </>
-            ) : null}
-
-            {visibleAllergenFilters.length > 1 ? (
-              <>
-                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Allergen tags</Text>
-                <View style={[styles.servingsRow, !isWide && styles.recipeFilterRowMobile]}>
-                  {visibleAllergenFilters.map((filter) => {
-                    const isActive =
-                      filter.name === 'All'
-                        ? activeAllergenTags.length === 0
-                        : activeAllergenTags.includes(filter.name);
-
-                    return (
-                      <Pressable
-                        key={filter.name}
-                        onPress={() => toggleAllergenFilter(filter.name)}
-                        style={[
-                          styles.servingsButton,
-                          !isWide && styles.recipeFilterButtonMobile,
-                          { borderColor: palette.borderAlt },
-                          !isActive && { backgroundColor: palette.surface },
-                          isActive && styles.servingsButtonActive,
-                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.servingsButtonText,
-                            { color: isActive ? palette.inverseText : palette.text },
-                            isActive && styles.servingsButtonTextActive,
-                          ]}
-                        >
-                          {filter.name}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </>
-            ) : null}
+            <ActiveFilterBar scope="my-recipes" palette={palette} />
           </View>
         </View>
 
@@ -957,7 +668,7 @@ export default function MyRecipesScreen() {
                         <Pressable
                           onPress={(event) => {
                             event.stopPropagation();
-                            toggleCuisineFilter((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? 'All');
+                            toggleCuisineFilter((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '');
                           }}
                           style={styles.cuisineTag}
                         >
@@ -974,7 +685,7 @@ export default function MyRecipesScreen() {
                             key={tag}
                             onPress={(event) => {
                             event.stopPropagation();
-                              toggleAllergenFilter(tag);
+                              toggleDietaryFilter(tag);
                             }}
                             style={styles.allergyFriendlyTag}
                           >
@@ -990,7 +701,7 @@ export default function MyRecipesScreen() {
                             key={tag}
                             onPress={(event) => {
                             event.stopPropagation();
-                              toggleAllergenFilter(tag);
+                              toggleDietaryFilter(tag);
                             }}
                             style={styles.allergenTag}
                           >
@@ -1052,7 +763,7 @@ export default function MyRecipesScreen() {
               <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe Stats</Text>
               <View style={styles.listStack}>
                 {recipeCategories.map((category) => {
-                  const isActive = activeCategoryFilters.includes(category.name);
+                  const isActive = filters.categories.includes(category.name);
                   const statTextColor = isActive ? palette.accentContrastText : palette.text;
                   const statBodyColor = isActive ? palette.accentContrastText : palette.textMuted;
                   const statCountColor = isActive ? palette.accentContrastText : '#000000';

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Modal, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { AppPalette } from './app-theme';
 import { kitchenStyles as styles } from './kitchen-styles';
@@ -52,27 +52,44 @@ function highlightStyle(type: DirectionHighlightRange['type'], palette: AppPalet
   }
 }
 
+// Numbered circle shown beside each direction step.
+function StepRow({
+  stepNumber,
+  palette,
+  children,
+}: {
+  stepNumber: number;
+  palette: AppPalette;
+  children: ReactNode;
+}) {
+  return (
+    <View style={stepStyles.row}>
+      <View
+        accessibilityLabel={`Step ${stepNumber}`}
+        style={[stepStyles.badge, { backgroundColor: palette.tag }]}
+      >
+        <Text style={[stepStyles.badgeText, { color: palette.tagText }]}>{stepNumber}</Text>
+      </View>
+      <View style={stepStyles.body}>{children}</View>
+    </View>
+  );
+}
+
 function HighlightedStepText({
   text,
   highlights,
   palette,
   onTimeTap,
   onMessageTap,
-  prefix,
 }: {
   text: string;
   highlights: DirectionHighlightRange[];
   palette: AppPalette;
   onTimeTap?: (highlightText: string) => void;
   onMessageTap?: (annotations: DirectionAnnotation[]) => void;
-  prefix?: string;
 }) {
   if (highlights.length === 0) {
-    return (
-      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-        {prefix}{text}
-      </Text>
-    );
+    return <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{text}</Text>;
   }
 
   const segments: Array<{
@@ -101,7 +118,6 @@ function HighlightedStepText({
 
   return (
     <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-      {prefix}
       {segments.map((segment, index) => {
         const isTappableTime = segment.type === 'time' && !!onTimeTap;
         const hasMessage = !isTappableTime && !!segment.annotations?.length && !!onMessageTap;
@@ -172,14 +188,14 @@ export function RecipeDirectionsList({
             const stepNumber = overallStep;
             const highlights = getTimeHighlights(item);
             return (
-              <HighlightedStepText
-                key={`${itemIndex}-${item}`}
-                prefix={`${itemIndex + 1}. `}
-                text={item}
-                highlights={highlights}
-                palette={palette}
-                onTimeTap={(t) => handleTimeTap(t, stepNumber)}
-              />
+              <StepRow key={`${itemIndex}-${item}`} stepNumber={itemIndex + 1} palette={palette}>
+                <HighlightedStepText
+                  text={item}
+                  highlights={highlights}
+                  palette={palette}
+                  onTimeTap={(t) => handleTimeTap(t, stepNumber)}
+                />
+              </StepRow>
             );
           })}
         </View>
@@ -227,22 +243,21 @@ export function ScaledDirectionsList({
     <View style={styles.listStack}>
       {steps.map((step) => (
         <View key={step.id} style={styles.recipeFlatGroup}>
-          <View style={styles.directionStepMeta}>
-            {step.sectionTitle ? (
-              <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{step.sectionTitle}</Text>
-            ) : null}
-            <Text style={[styles.directionStepNumber, { color: palette.text }]}>Step {step.stepNumber}</Text>
-          </View>
+          {step.sectionTitle ? (
+            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{step.sectionTitle}</Text>
+          ) : null}
 
-          <HighlightedStepText
-            text={step.displayText}
-            highlights={step.highlights}
-            palette={palette}
-            onTimeTap={(highlightText) => handleTimeTap(highlightText, step.stepNumber)}
-            onMessageTap={(annotations) =>
-              setActiveMessage({ label: `Step ${step.stepNumber}`, annotations })
-            }
-          />
+          <StepRow stepNumber={step.stepNumber} palette={palette}>
+            <HighlightedStepText
+              text={step.displayText}
+              highlights={step.highlights}
+              palette={palette}
+              onTimeTap={(highlightText) => handleTimeTap(highlightText, step.stepNumber)}
+              onMessageTap={(annotations) =>
+                setActiveMessage({ label: `Step ${step.stepNumber}`, annotations })
+              }
+            />
+          </StepRow>
 
           {step.annotations.length > 0 ? (
             <View style={styles.directionAnnotationStack}>
@@ -328,3 +343,26 @@ export function ScaledDirectionsList({
     </View>
   );
 }
+
+const stepStyles = StyleSheet.create({
+  row: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  badge: {
+    alignItems: 'center',
+    borderRadius: 15,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  badgeText: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  body: {
+    flex: 1,
+    paddingTop: 4,
+  },
+});

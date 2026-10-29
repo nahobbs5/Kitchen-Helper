@@ -31,6 +31,7 @@ import {
   type AiRecipePhoto,
   importRecipeFromPhotos,
 } from '../utils/ai-recipe-import';
+import { parseRecipeFromMarkdown } from '../utils/markdown-recipe-import';
 import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
 import { extractRecipeMetadata, formatCookTimeTag } from '../utils/recipe-metadata';
 import {
@@ -49,11 +50,12 @@ const categoryOptions = [
   { label: 'Dessert', value: 'Dessert' },
 ] as const;
 
-type EntryMode = 'manual' | 'photo' | 'website';
+type EntryMode = 'manual' | 'photo' | 'website' | 'markdown';
 type PhotoMethod = 'ai' | 'ocr';
 type OcrState = 'idle' | 'recognizing' | 'done' | 'error';
 type AiImportState = 'idle' | 'extracting' | 'done' | 'error';
 type WebsiteImportState = 'idle' | 'loading' | 'done' | 'error';
+type MarkdownImportState = 'idle' | 'reading' | 'done' | 'error';
 type SelectedRecipePhoto = {
   uri: string;
   ocrText: string;
@@ -80,6 +82,9 @@ export default function AddRecipeScreen() {
   const [websiteImportState, setWebsiteImportState] = useState<WebsiteImportState>('idle');
   const [websiteImportError, setWebsiteImportError] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [markdownText, setMarkdownText] = useState('');
+  const [markdownImportState, setMarkdownImportState] = useState<MarkdownImportState>('idle');
+  const [markdownImportError, setMarkdownImportError] = useState('');
   const [category, setCategory] = useState<string>('Entree');
   const [recipeName, setRecipeName] = useState('');
   const [sourceInfo, setSourceInfo] = useState<{ websiteName: string | null; author: string | null; url: string | null } | null>(null);
@@ -534,6 +539,57 @@ export default function AddRecipeScreen() {
     await runAiExtraction(photos, 'fast');
   }
 
+  function handleImportMarkdown() {
+    setMarkdownImportError('');
+
+    if (!markdownText.trim()) {
+      setMarkdownImportState('error');
+      setMarkdownImportError('Paste some markdown or pick a file before importing.');
+      return;
+    }
+
+    try {
+      const recipe = parseRecipeFromMarkdown(markdownText);
+      applyAiResult(recipe);
+      setMarkdownImportState('done');
+    } catch (error) {
+      setMarkdownImportState('error');
+      setMarkdownImportError(error instanceof Error ? error.message : 'Markdown import failed.');
+    }
+  }
+
+  async function handlePickMarkdownFile() {
+    setMarkdownImportError('');
+    setMarkdownImportState('reading');
+
+    try {
+      const DocumentPicker = await import('expo-document-picker');
+      const selection = await DocumentPicker.getDocumentAsync({
+        type: ['text/markdown', 'text/plain', 'text/x-markdown'],
+        copyToCacheDirectory: true,
+      });
+
+      if (selection.canceled || !selection.assets[0]?.uri) {
+        setMarkdownImportState('idle');
+        return;
+      }
+
+      const LegacyFileSystem = await import('expo-file-system/legacy');
+      const fileText = await LegacyFileSystem.readAsStringAsync(selection.assets[0].uri, {
+        encoding: LegacyFileSystem.EncodingType.UTF8,
+      });
+
+      setMarkdownText(fileText);
+
+      const recipe = parseRecipeFromMarkdown(fileText);
+      applyAiResult(recipe);
+      setMarkdownImportState('done');
+    } catch (error) {
+      setMarkdownImportState('error');
+      setMarkdownImportError(error instanceof Error ? error.message : 'Could not read that markdown file.');
+    }
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.page}>
@@ -571,6 +627,7 @@ export default function AddRecipeScreen() {
                       { label: 'Manual entry', value: 'manual' as const },
                       { label: 'Photo OCR', value: 'photo' as const },
                       { label: 'Website', value: 'website' as const },
+                      { label: 'Markdown', value: 'markdown' as const },
                     ].map((option) => {
                       const isActive = entryMode === option.value;
 
@@ -822,6 +879,75 @@ export default function AddRecipeScreen() {
                       <Text style={[styles.formHint, { color: palette.textSoft }]}>
                         Browser CORS rules will block some sites. Native builds are more reliable for this mode.
                       </Text>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {entryMode === 'markdown' ? (
+                  <View style={styles.formField}>
+                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Markdown recipe</Text>
+                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
+                      Paste a recipe written in markdown — like something an AI assistant gave you — or pick a .md
+                      file. We will look for a title and Ingredients/Instructions sections and use them to prefill
+                      the form below, so you can review everything before saving.
+                    </Text>
+                    <TextInput
+                      value={markdownText}
+                      onChangeText={setMarkdownText}
+                      placeholder={'# Recipe Title\n\n## Ingredients\n- ...\n\n## Instructions\n1. ...'}
+                      placeholderTextColor={palette.searchPlaceholder}
+                      multiline
+                      textAlignVertical="top"
+                      style={[
+                        styles.formInput,
+                        {
+                          backgroundColor: palette.surface,
+                          borderColor: palette.borderAlt,
+                          color: palette.text,
+                          minHeight: 220,
+                        },
+                      ]}
+                    />
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={handleImportMarkdown}
+                        style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+                      >
+                        <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
+                          Import Markdown
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          void handlePickMarkdownFile();
+                        }}
+                        style={[
+                          styles.secondaryButton,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+                        ]}
+                      >
+                        <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
+                          Pick .md File
+                        </Text>
+                      </Pressable>
+                    </View>
+                    {markdownImportState === 'reading' ? (
+                      <>
+                        <Text style={[styles.formHint, { color: palette.accentText }]}>
+                          Reading the selected file and filling the form...
+                        </Text>
+                        <View style={{ marginTop: 8 }}>
+                          <ProgressBar palette={palette} accessibilityLabel="Reading markdown file" />
+                        </View>
+                      </>
+                    ) : null}
+                    {markdownImportState === 'done' ? (
+                      <Text style={[styles.formHint, { color: palette.accentText }]}>
+                        Done — review the prefilled form below before saving.
+                      </Text>
+                    ) : null}
+                    {markdownImportError ? (
+                      <Text style={[styles.formHint, { color: palette.accent }]}>{markdownImportError}</Text>
                     ) : null}
                   </View>
                 ) : null}

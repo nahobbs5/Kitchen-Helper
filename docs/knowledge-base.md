@@ -367,7 +367,9 @@ Important files:
 - [`components/kitchen-styles.ts`]
 - [`components/notice-pie-timer.tsx`]
 - [`components/progress-bar.tsx`]
-- [`components/rating-filter-chip.tsx`]
+- [`components/active-filter-bar.tsx`]
+- [`components/filter-icons.tsx`]
+- [`components/star-pattern.tsx`]
 - [`components/recipe-share-card.tsx`]
 - [`components/scaled-directions-list.tsx`]
 - [`components/share-icon.tsx`]
@@ -456,7 +458,8 @@ Current capabilities:
 - cuisine-region tags and filters
 - favorite recipe toggles with persistent storage
 - recipe ratings with star controls on detail pages and My Recipes cards
-- rating-based filter toggle in My Recipes and Sample Recipes
+- rating-based filter in My Recipes and Sample Recipes, set from the Filters page
+- separate Filters page with icon tiles; active filters show as removable chips under the search box
 - drag-and-drop recipe reordering in My Recipes (enable via settings; order synced per user)
 - a shared settings menu from the header gear, including Kitchen Guides default view and reorder toggle
 - dark mode
@@ -916,7 +919,8 @@ Ratings let users score each recipe from 1–5 stars.
 Important files:
 
 - [`components/star-rating.tsx`](components/star-rating.tsx)
-- [`components/rating-filter-chip.tsx`](components/rating-filter-chip.tsx)
+- [`components/star-pattern.tsx`](components/star-pattern.tsx)
+- [`app/filters.tsx`](app/filters.tsx)
 - [`contexts/ratings-context.tsx`](contexts/ratings-context.tsx)
 - [`app/my-recipes.tsx`](app/my-recipes.tsx)
 - [`app/recipes/[slug].tsx`](app/recipes/[slug].tsx)
@@ -927,7 +931,7 @@ Current behavior:
 - star controls appear on recipe detail pages and in My Recipes list cards
 - ratings are stored per user and synced through Supabase
 - `ratings-context.tsx` owns the load, save, and optimistic-update flow
-- a `RatingFilterChip` in My Recipes and Sample Recipes lets users show only rated recipes or filter by minimum star count
+- the Filters page (`app/filters.tsx`) has rating tiles (3+, 4+, 5 stars) for My Recipes and Sample Recipes
 - ratings are also included in PDF export and share cards
 
 Design decision:
@@ -1242,6 +1246,7 @@ High-level sequence of what has happened:
 59. added annotation popup: tapping a highlighted cook-method or equipment word in scaled directions opens a modal with per-step scale warnings
 60. fixed allergen tag bug on the edit recipe screen
 61. made the cook-time tag context-aware (title and direction scanning via `resolveCookVerb`)
+62. moved recipe filters to a separate Filters page (`app/filters.tsx`) with icon tiles, added a Filters button with removable chips on My Recipes and Sample Recipes, and added icons to recipe time/servings pills and numbered step circles (icons from `lucide-react-native`)
 
 ## How To Grow This File
 

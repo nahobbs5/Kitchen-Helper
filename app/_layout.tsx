@@ -12,6 +12,7 @@ import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
 import { FavoritesProvider } from '../contexts/favorites-context';
 import { RatingsProvider } from '../contexts/ratings-context';
+import { RecipeFiltersProvider } from '../contexts/recipe-filters-context';
 import { RecipeOrderProvider } from '../contexts/recipe-order-context';
 import type { AppPalette } from '../components/app-theme';
 import { SettingsProvider, useAppSettings } from '../contexts/settings-context';
@@ -32,10 +33,12 @@ export default function RootLayout() {
               <RecipeOrderProvider>
                 <FavoritesProvider>
                   <RatingsProvider>
-                    <RootNavigator />
-                    <SettingsMenuModal />
-                    <CookTimerModal />
-                    <CookTimerFinishedAlerts />
+                    <RecipeFiltersProvider>
+                      <RootNavigator />
+                      <SettingsMenuModal />
+                      <CookTimerModal />
+                      <CookTimerFinishedAlerts />
+                    </RecipeFiltersProvider>
                   </RatingsProvider>
                 </FavoritesProvider>
               </RecipeOrderProvider>
@@ -186,6 +189,7 @@ function RootNavigator() {
       <Stack.Screen name="user-recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipe" options={{ title: 'Sample Recipes' }} />
+      <Stack.Screen name="filters" options={{ title: 'Filters', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="account" options={topLevelScreenOptions('Account')} />
       </Stack>
     </>

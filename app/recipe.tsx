@@ -13,13 +13,16 @@ import {
 import { ClearableSearchInput } from '../components/clearable-search-input';
 import { DraggableRecipeList } from '../components/draggable-recipe-list';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
-import { RatingFilterChip, type RatingThreshold } from '../components/rating-filter-chip';
+import { ActiveFilterBar } from '../components/active-filter-bar';
 import { StarRating } from '../components/star-rating';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
+import { useFavorites } from '../contexts/favorites-context';
 import { useRatings } from '../contexts/ratings-context';
+import { useRecipeFilters } from '../contexts/recipe-filters-context';
 import { useRecipeOrder } from '../contexts/recipe-order-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { triggerReorderHaptic } from '../utils/haptics';
+import { applyRecipeFilters, toggleValue } from '../utils/recipe-filters';
 import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 import { buildSampleRecipes, sampleRecipeCategories } from '../utils/sample-recipes';
@@ -36,11 +39,8 @@ export default function SampleRecipesScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
-  const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
-  const [ratingFilterActive, setRatingFilterActive] = useState(false);
-  const [ratingThreshold, setRatingThreshold] = useState<RatingThreshold>(3);
-  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const { filters, setFilters, searchText, setSearchText } = useRecipeFilters('sample-recipes');
+  const { favoriteSlugs } = useFavorites();
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -60,35 +60,19 @@ export default function SampleRecipesScreen() {
     count: sampleRecipes.filter((recipe) => recipe.category === category).length,
   }));
 
-  const filteredRecipes = useMemo(() => {
-    const normalizedSearch = searchText.trim().toLowerCase();
-
-    return sampleRecipes.filter((recipe) => {
-      const matchesCategory =
-        activeCategoryFilters.length === 0 ? true : activeCategoryFilters.includes(recipe.category);
-      const matchesRating = ratingFilterActive ? getRating(recipe.slug) >= ratingThreshold : true;
-      const cuisine = (recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '';
-      const tagText = [...recipe.allergyFriendlyTags, ...recipe.allergenTags].join(' ');
-      const matchesSearch = normalizedSearch
-        ? `${recipe.title} ${recipe.category} ${cuisine} ${tagText}`.toLowerCase().includes(normalizedSearch)
-        : true;
-
-      return matchesCategory && matchesRating && matchesSearch;
-    });
-  }, [activeCategoryFilters, sampleRecipes, searchText, ratingFilterActive, ratingThreshold, getRating]);
+  const filteredRecipes = useMemo(
+    () => applyRecipeFilters(sampleRecipes, filters, { favoriteSlugs, getRating, searchText }),
+    [sampleRecipes, filters, favoriteSlugs, getRating, searchText]
+  );
 
   function toggleCategoryFilter(tag: string) {
-    if (tag === 'All') {
-      setActiveCategoryFilters([]);
-      return;
-    }
-
-    setActiveCategoryFilters((current) =>
-      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag]
-    );
+    setFilters((current) => ({
+      ...current,
+      categories: tag === 'All' ? [] : toggleValue(current.categories, tag),
+    }));
   }
 
-  const allStatsActive = activeCategoryFilters.length === 0;
+  const allStatsActive = filters.categories.length === 0;
   const allStatsTextColor = allStatsActive ? palette.accentContrastText : palette.text;
   const allStatsBodyColor = allStatsActive ? palette.accentContrastText : palette.textMuted;
   const allStatsCountColor = allStatsActive ? palette.accentContrastText : '#000000';
@@ -168,65 +152,7 @@ export default function SampleRecipesScreen() {
             </Text>
             {renderRecipeSearchInput('inline')}
 
-            <View
-              style={[
-                styles.servingsRow,
-                !isWide && styles.recipeFilterRowMobile,
-                ratingDropdownOpen && { zIndex: 30 },
-              ]}
-            >
-              {['All', ...sampleRecipeCategories].map((category) => {
-                const isActive = category === 'All' ? activeCategoryFilters.length === 0 : activeCategoryFilters.includes(category);
-
-                const chip = (
-                  <Pressable
-                    key={category}
-                    onPress={() => toggleCategoryFilter(category)}
-                    style={[
-                      styles.servingsButton,
-                      !isWide && styles.recipeFilterButtonMobile,
-                      { borderColor: palette.borderAlt },
-                      !isActive && { backgroundColor: palette.surface },
-                      isActive && styles.servingsButtonActive,
-                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.servingsButtonText,
-                        { color: isActive ? palette.inverseText : palette.text },
-                        isActive && styles.servingsButtonTextActive,
-                      ]}
-                    >
-                      {!isWide && category === 'Appetizers' ? 'Apps' : category}
-                    </Text>
-                  </Pressable>
-                );
-
-                if (category === 'All') {
-                  return [
-                    chip,
-                    <RatingFilterChip
-                      key="rating-filter"
-                      active={ratingFilterActive}
-                      threshold={ratingThreshold}
-                      dropdownOpen={ratingDropdownOpen}
-                      onToggleActive={() => setRatingFilterActive((current) => !current)}
-                      onToggleDropdown={() => setRatingDropdownOpen((current) => !current)}
-                      onSelectThreshold={(next) => {
-                        setRatingThreshold(next);
-                        setRatingFilterActive(true);
-                        setRatingDropdownOpen(false);
-                      }}
-                      palette={palette}
-                      isWide={isWide}
-                    />,
-                  ];
-                }
-
-                return chip;
-              })}
-            </View>
+            <ActiveFilterBar scope="sample-recipes" palette={palette} />
           </View>
         </View>
 
@@ -343,7 +269,7 @@ export default function SampleRecipesScreen() {
                 <Text style={[styles.panelTitle, { color: palette.text }]}>Recipe Stats</Text>
                 <View style={styles.listStack}>
                   {categoryCounts.map((category) => {
-                    const isActive = activeCategoryFilters.includes(category.name);
+                    const isActive = filters.categories.includes(category.name);
                     const statTextColor = isActive ? palette.accentContrastText : palette.text;
                     const statBodyColor = isActive ? palette.accentContrastText : palette.textMuted;
                     const statCountColor = isActive ? palette.accentContrastText : '#000000';
