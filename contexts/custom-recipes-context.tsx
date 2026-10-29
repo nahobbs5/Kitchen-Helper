@@ -19,6 +19,7 @@ import {
   inferRecipeTags,
 } from '../utils/allergen-tags';
 import {
+  deleteSyncedData,
   fetchSyncSnapshot,
   getSyncConfig,
   type SyncedRecipeOverrideRecord,
@@ -134,6 +135,8 @@ type CustomRecipesContextValue = {
   syncBusy: boolean;
   syncError: string | null;
   refreshSync: () => Promise<void>;
+  lastSyncedAt: number | null;
+  deleteCloudData: () => Promise<void>;
   clearSyncError: () => void;
 };
 
@@ -465,10 +468,11 @@ function normalizeError(error: unknown, fallback: string) {
 }
 
 export function CustomRecipesProvider({ children }: PropsWithChildren) {
-  const { configured: authConfigured, loaded: authLoaded, session, user } = useAuth();
+  const { configured: authConfigured, loaded: authLoaded, session, signOut, user } = useAuth();
   const [customRecipes, setCustomRecipes] = useState<UserRecipe[]>([]);
   const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverride[]>([]);
   const [lastDeletedRecipes, setLastDeletedRecipes] = useState<UserRecipe[]>([]);
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [syncBusy, setSyncBusy] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -540,7 +544,39 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
     setCustomRecipes(mergedCustomRecipes);
     setRecipeOverrides(mergedRecipeOverrides);
     await persistCache(mergedCustomRecipes, mergedRecipeOverrides);
+    markSynced();
+  }
+
+  function markSynced() {
     setSyncError(null);
+    setLastSyncedAt(Date.now());
+  }
+
+  /**
+   * Deletes everything this user has in the cloud, then signs out on this device.
+   * Local copies are kept and marked local, so they upload again if you sign back in.
+   */
+  async function deleteCloudData() {
+    if (!syncConfig || !session?.accessToken || !user?.id) {
+      throw new Error('Sign in to delete your synced data.');
+    }
+
+    setSyncBusy(true);
+    try {
+      await deleteSyncedData(syncConfig, session.accessToken, user.id);
+      const localRecipes = customRecipesRef.current.map((recipe) => ({
+        ...recipe,
+        userId: LOCAL_USER_ID,
+        syncStatus: 'local' as const,
+      }));
+      const localOverrides = recipeOverridesRef.current.map((recipe) => ({ ...recipe, userId: LOCAL_USER_ID }));
+      await persistLocalCache(localRecipes, localOverrides);
+      setLastSyncedAt(null);
+      setSyncError(null);
+    } finally {
+      setSyncBusy(false);
+    }
+    await signOut();
   }
 
   async function refreshSync() {
@@ -642,7 +678,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         session.accessToken,
         recipes.map((recipe) => toSyncedUserRecipeRecord({ ...recipe, userId: user.id }))
       );
-      setSyncError(null);
+      markSynced();
       return savedRecords.length > 0 ? savedRecords.map(mapSyncedUserRecipe) : recipes;
     } catch (error) {
       setSyncError(normalizeError(error, fallback));
@@ -669,7 +705,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         session.accessToken,
         recipes.map((recipe) => toSyncedRecipeOverrideRecord({ ...recipe, userId: user.id }))
       );
-      setSyncError(null);
+      markSynced();
       return savedRecords.length > 0 ? savedRecords.map(mapSyncedRecipeOverride) : recipes;
     } catch (error) {
       setSyncError(normalizeError(error, fallback));
@@ -774,7 +810,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
         }
 
         await persistCache(mergedCustomRecipes, mergedRecipeOverrides);
-        setSyncError(null);
+        markSynced();
       } catch (error) {
         if (active) {
           setSyncError(normalizeError(error, 'Unable to load synced recipes.'));
@@ -821,6 +857,8 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
       syncBusy,
       syncError,
       refreshSync,
+      lastSyncedAt,
+      deleteCloudData,
       clearSyncError: () => setSyncError(null),
       addRecipe: async (input: NewUserRecipeInput) => {
         try {
@@ -1383,6 +1421,7 @@ export function CustomRecipesProvider({ children }: PropsWithChildren) {
     [
       customRecipes,
       lastDeletedRecipes,
+      lastSyncedAt,
       loaded,
       recipeOverrides,
       session?.accessToken,

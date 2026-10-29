@@ -256,7 +256,8 @@ Important route files:
 
 - [`app/_layout.tsx`]
 - [`app/add-recipe.tsx`]
-- [`app/account.tsx`]
+- [`app/account/index.tsx`]
+- [`app/settings/index.tsx`]
 - [`app/index.tsx`]
 - [`app/reference.tsx`]
 - [`app/conversions.tsx`]
@@ -314,7 +315,6 @@ What this layer currently handles:
 - whether recipe reordering is enabled
 - the handoff to account-level auth and export flows
 - the shared cook-timer popup and timer state
-- opening and closing the settings overlay
 - local caching and persistence through AsyncStorage
 
 This layer matters because it keeps app-wide behavior from being duplicated separately on every screen.
@@ -376,7 +376,8 @@ Important files:
 - [`components/star-rating.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
-- [`app/account.tsx`]
+- [`components/settings-ui.tsx`]
+- [`app/account/index.tsx`]
 
 What this layer does:
 
@@ -396,8 +397,8 @@ Current shared header behavior:
 - `🍳` opens `My Recipes` and is disabled on `/my-recipes`
 - `📖` opens `Kitchen Guides` and is disabled on `/reference`
 - `⏳` opens the shared cook timer
-- `⚙` opens the shared settings overlay
-- `👤` opens `Account` and is disabled on `/account`
+- `⚙` opens the Settings hub (`/settings`) and is disabled there; from a category page it returns to the hub
+- `👤` opens `Account` and is disabled on `/account`; from an Account sub-page it returns to the main Account page
 
 The disabled state uses a grayed-out, reduced-opacity treatment so users can still see where they are in the app without triggering redundant navigation.
 
@@ -609,12 +610,15 @@ Search inputs use the shared [`components/clearable-search-input.tsx`](component
 
 ## Settings System
 
-The app has a shared settings menu that can be opened from the gear icon in the shared header.
+Settings are real pages opened from the gear icon in the shared header: a hub at `/settings` with category cards (Appearance, Cooking, Recipe Management, Kitchen Guides, Data & Exports, Restore Defaults), and a detail page per category at `/settings/<section>`.
 
 Important files:
 
 - [`app/_layout.tsx`]
-- [`components/settings-menu.tsx`]
+- [`app/settings/index.tsx`]
+- [`app/settings/[section].tsx`]
+- [`components/settings-ui.tsx`] (shared cards, rows, toggle, stepper, dropdown, nav row, pill button)
+- [`components/settings-menu.tsx`] (header buttons)
 - [`contexts/settings-context.tsx`]
 - [`components/app-theme.ts`]
 
@@ -628,14 +632,18 @@ Current saved settings:
 - `Timer sound`
 - `Confirm delete`
 - `Kitchen Guides default view` — which tab opens first when navigating to Kitchen Guides
+- `Default timer duration` — minutes pre-filled into idle, untouched cook-timer slots (None by default)
+- `Show ratings in exports`
+- `Reorder haptics` (iOS/Android only)
 - `Enable recipe reordering` — toggles drag-and-drop mode in My Recipes
 
 How it works:
 
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on launch
-- restore defaults is an immediate in-app action, not just a placeholder label
-- restore defaults immediately resets dark mode to Off, keep screen awake to Off, vibration to On, timer sound to `Beep Beep`, confirm delete to On, and timer count to 3
+- each category page ends with a `Restore defaults` card that resets only that page's settings (`resetSection`)
+- the hub's `Restore Defaults` card asks for confirmation, then resets every setting (`resetToDefaults`); recipes and recipe order are not affected
+- number of timers uses a − / + stepper clamped to `1-6`
 - dark mode swaps between centralized light and dark palettes
 - keep-awake mode uses `expo-keep-awake`
 - timer count controls how many timer slots the shared cook timer exposes and is clamped to `1-6`
@@ -645,23 +653,10 @@ How it works:
 - bulk delete still always confirms, even if the single-delete setting is turned off
 - Kitchen Guides default view saves which reference tab the user uses most so they land there instead of the first tab
 - recipe reordering is off by default so the normal list experience is unaffected for users who don't want drag-and-drop
-- the settings UI is implemented as a shared in-app overlay rather than relying on more fragile native UI primitives
-- the scrollable settings overlay uses a backdrop, a sheet, fixed-width controls, and max-width/max-height constraints so the same modal remains usable on compact mobile screens and larger web layouts
+- dropdowns open inline under their row instead of floating, so they never get clipped inside a ScrollView on Android
+- a page's Restore defaults button briefly shows `Done ✓` after resetting
 
-The dedicated Account screen now owns account-facing actions:
-
-- sign in and sign up
-- `Account Sync` helper copy that says `Sign in to sync recipes across devices.`
-- signed-out password reset from the `Forgot password` action
-- sync status and sign out
-- PDF export
-- importer guidance and compatibility notes
-
-The restore-defaults flow is deliberately immediate:
-
-- tapping it resets the saved preferences right away
-- the settings overlay stays open so the user can keep adjusting values after the reset
-- the UI briefly shows the checked-state feedback before returning to the normal button state
+Account-facing actions (sign-in, sync, export, importer notes) live on the Account pages, not in Settings. See `Account And Recipe Sync`.
 
 This was a useful architecture milestone because it introduced real app-wide persisted state.
 
@@ -673,7 +668,7 @@ The export builds a single cookbook-style PDF from the merged recipe library, us
 
 Important files:
 
-- [`app/account.tsx`](app/account.tsx)
+- [`app/account/export.tsx`](app/account/export.tsx)
 - [`utils/export-recipes.ts`](utils/export-recipes.ts)
 - [`utils/recipe-metadata.ts`](utils/recipe-metadata.ts)
 - [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
@@ -684,7 +679,7 @@ Current behavior:
 - app-created recipes are included
 - Obsidian recipes are included
 - local overrides are treated as canonical for export
-- the Account screen can filter selected exports by recipe type, allergy-friendly tags, allergen tags, cook time, and prep time
+- the export page (`/account/export`) can filter selected exports by recipe type, allergy-friendly tags, allergen tags, cook time, and prep time
 - selected export filters use AND logic across filter groups and OR logic within a group
 - time thresholds parse human-readable metadata, use the upper bound for ranges, and exclude missing or unparseable times when active
 - the PDF includes metadata, tags, ingredients, directions, notes, and source attribution when present
@@ -708,7 +703,13 @@ Recipe sync now uses a Supabase-backed auth and database layer instead of per-de
 
 Important files:
 
-- [`app/account.tsx`](app/account.tsx)
+- [`app/account/index.tsx`](app/account/index.tsx) — main Account page (signed out, signed in, or sync not set up)
+- [`app/account/sign-in.tsx`](app/account/sign-in.tsx) — sign in / create account (`?mode=signup`) and forgot password
+- [`app/account/password.tsx`](app/account/password.tsx) — change password while signed in
+- [`app/account/synced-data.tsx`](app/account/synced-data.tsx) — live counts of what's stored in the account
+- [`app/account/your-data.tsx`](app/account/your-data.tsx) — plain-language facts about what syncs and what stays on the device
+- [`app/account/export.tsx`](app/account/export.tsx) and [`app/account/importers.tsx`](app/account/importers.tsx)
+- [`utils/app-links.ts`](utils/app-links.ts) — optional privacy-policy link and "time ago" formatting
 - [`contexts/auth-context.tsx`](contexts/auth-context.tsx)
 - [`contexts/custom-recipes-context.tsx`](contexts/custom-recipes-context.tsx)
 - [`utils/supabase-sync.ts`](utils/supabase-sync.ts)
@@ -722,6 +723,13 @@ Current behavior:
 - imported recipe overrides sync through the backend
 - older local-only recipe data is migrated once after sign-in
 - AsyncStorage keeps a per-user cache for startup speed and offline fallback
+- what syncs: user recipes, edits to sample recipes, and recipe list order; ratings, favorites, and settings stay on the device
+- the signed-in page shows the email, last-synced time (`lastSyncedAt` in the recipes context), a Refresh button, a `Sign out on other devices` action (Supabase `logout?scope=others`), change password, and `Delete my synced data`
+- there is no per-device sign-in list or sync on/off switch, because the Supabase client API doesn't expose sessions per device and the app has no pause-sync feature
+- `Delete my synced data` deletes the user's rows from `user_recipes`, `recipe_overrides`, and `recipe_orders`, re-checks that they're gone, marks local copies as local, and signs out; recipes stay on the device and upload again on the next sign-in
+- deleting rows needs the `*_delete_own` policies at the end of `docs/supabase-sync.sql`; projects set up earlier must run that block once in the Supabase SQL editor, otherwise the app shows an error pointing to the file
+- full account removal (deleting the auth user) is not available in the app; it needs a server-side function
+- there is no hosted privacy policy yet; `Privacy policy` rows only appear when `EXPO_PUBLIC_PRIVACY_POLICY_URL` is set, and `Your data` explains the facts in-app meanwhile
 
 This was added so mobile and web can share one recipe library without introducing a custom backend service inside this repo.
 
@@ -765,7 +773,7 @@ The add-recipe flow now has three starting modes:
 - photo import (local OCR or AI-powered)
 - website URL
 
-The Account screen also includes high-level importer guidance and compatibility notes, but the docs intentionally avoid a hard-coded site list because those results change frequently.
+The Account pages also include high-level importer guidance (`/account/importers`) and compatibility notes, but the docs intentionally avoid a hard-coded site list because those results change frequently.
 
 ### On-Device OCR (ML Kit)
 
@@ -1022,7 +1030,7 @@ Important files:
 
 - [`components/progress-bar.tsx`](components/progress-bar.tsx)
 - [`app/add-recipe.tsx`](app/add-recipe.tsx)
-- [`app/account.tsx`](app/account.tsx)
+- [`app/account/export.tsx`](app/account/export.tsx)
 
 Current usage:
 

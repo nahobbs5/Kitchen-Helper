@@ -211,7 +211,8 @@ export function AccountButton() {
       <Pressable
         onPress={() => {
           if (!isAccountScreen) {
-            router.push('/account');
+            // navigate (not push) so sub-pages like /account/export return to the main Account page.
+            router.navigate('/account');
           }
         }}
         disabled={isAccountScreen}

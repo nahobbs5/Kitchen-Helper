@@ -189,7 +189,13 @@ function RootNavigator() {
       <Stack.Screen name="recipes/[slug]" options={{ title: 'Recipe' }} />
       <Stack.Screen name="recipe" options={{ title: 'Sample Recipes' }} />
       <Stack.Screen name="filters" options={{ title: 'Filters', animation: 'slide_from_bottom' }} />
-      <Stack.Screen name="account" options={topLevelScreenOptions('Account')} />
+      <Stack.Screen name="account/index" options={topLevelScreenOptions('Account')} />
+      <Stack.Screen name="account/sign-in" options={{ title: 'Account' }} />
+      <Stack.Screen name="account/export" options={{ title: 'Export Recipes' }} />
+      <Stack.Screen name="account/importers" options={{ title: 'Importer Compatibility' }} />
+      <Stack.Screen name="account/your-data" options={{ title: 'Your Data' }} />
+      <Stack.Screen name="account/password" options={{ title: 'Account' }} />
+      <Stack.Screen name="account/synced-data" options={{ title: 'Synced Data' }} />
       <Stack.Screen name="settings/index" options={topLevelScreenOptions('Settings')} />
       <Stack.Screen name="settings/[section]" options={{ title: 'Settings' }} />
       </Stack>

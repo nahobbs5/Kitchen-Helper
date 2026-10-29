@@ -1732,4 +1732,107 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
+
+  // Account pages (share the Settings page layout above)
+  settingsNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 4,
+  },
+  pillButton: {
+    minHeight: 52,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  pillButtonText: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  accountHero: {
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    gap: 14,
+    alignItems: 'stretch',
+  },
+  accountHeroArt: {
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 4,
+  },
+  accountHeroDevices: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 18,
+  },
+  accountHeroCircle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+  },
+  accountHeroTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  accountHeroBody: {
+    fontSize: 15,
+    lineHeight: 21,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  accountSectionHeading: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '800',
+    marginTop: 8,
+  },
+  accountProfileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  accountAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountAvatarText: {
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  accountEmail: {
+    fontSize: 18,
+    lineHeight: 23,
+    fontWeight: '800',
+  },
+  accountBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  accountBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  accountFormInput: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  accountFeedback: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
 });

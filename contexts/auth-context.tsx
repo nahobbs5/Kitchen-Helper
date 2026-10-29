@@ -11,6 +11,8 @@ import {
 import {
   fetchCurrentUser,
   getSyncConfig,
+  logoutOtherSessions,
+  updatePassword,
   requestPasswordReset as requestPasswordResetEmail,
   refreshSession,
   signInWithPassword,
@@ -32,6 +34,8 @@ type AuthContextValue = {
   signUp: (email: string, password: string) => Promise<boolean>;
   requestPasswordReset: (email: string) => Promise<boolean>;
   signOut: () => Promise<void>;
+  signOutOtherDevices: () => Promise<boolean>;
+  changePassword: (password: string) => Promise<boolean>;
 };
 
 const AUTH_SESSION_KEY = 'kitchen-helper.auth-session';
@@ -208,6 +212,48 @@ export function AuthProvider({ children }: PropsWithChildren) {
         } finally {
           setIsAuthenticating(false);
           setLoaded(true);
+        }
+      },
+      signOutOtherDevices: async () => {
+        if (!config || !session?.accessToken) {
+          setAuthError('Sign in first.');
+          return false;
+        }
+
+        setIsAuthenticating(true);
+        setAuthError(null);
+        setAuthMessage(null);
+
+        try {
+          await logoutOtherSessions(config, session.accessToken);
+          setAuthMessage('Signed out on your other devices. This device stays signed in.');
+          return true;
+        } catch (error) {
+          setAuthError(normalizeError(error, 'Unable to sign out other devices.'));
+          return false;
+        } finally {
+          setIsAuthenticating(false);
+        }
+      },
+      changePassword: async (password: string) => {
+        if (!config || !session?.accessToken) {
+          setAuthError('Sign in first.');
+          return false;
+        }
+
+        setIsAuthenticating(true);
+        setAuthError(null);
+        setAuthMessage(null);
+
+        try {
+          await updatePassword(config, session.accessToken, password);
+          setAuthMessage('Password changed.');
+          return true;
+        } catch (error) {
+          setAuthError(normalizeError(error, 'Unable to change your password.'));
+          return false;
+        } finally {
+          setIsAuthenticating(false);
         }
       },
       signOut: async () => {

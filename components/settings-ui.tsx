@@ -1,6 +1,6 @@
 import { Children, Fragment, useState, type ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Check, ChevronDown, Minus, Plus, type LucideIcon } from 'lucide-react-native';
+import { Check, ChevronDown, ChevronRight, Minus, Plus, type LucideIcon } from 'lucide-react-native';
 
 import { useAppSettings } from '../contexts/settings-context';
 import { kitchenStyles as styles } from './kitchen-styles';
@@ -231,6 +231,85 @@ export function SettingsActionButton({
       ]}
     >
       <Text style={[styles.settingsActionButtonText, { color: palette.accent }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+/** A tappable row with an optional icon, label, hint and a trailing chevron. */
+export function SettingsNavRow({
+  icon: Icon,
+  label,
+  hint,
+  onPress,
+  destructive = false,
+  disabled = false,
+}: {
+  icon?: LucideIcon;
+  label: string;
+  hint?: string;
+  onPress: () => void;
+  destructive?: boolean;
+  disabled?: boolean;
+}) {
+  const { palette } = useAppSettings();
+  const labelColor = destructive ? palette.warningText : palette.text;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={hint ? `${label}. ${hint}` : label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [styles.settingsNavRow, { opacity: disabled ? 0.5 : pressed ? 0.7 : 1 }]}
+    >
+      {Icon ? <Icon size={22} color={destructive ? palette.warningText : palette.accent} strokeWidth={2.2} /> : null}
+      <View style={styles.settingsPageRowCopy}>
+        <Text style={[styles.settingsPageRowLabel, { color: labelColor }]}>{label}</Text>
+        {hint ? <Text style={[styles.settingsPageRowHint, { color: palette.textMuted }]}>{hint}</Text> : null}
+      </View>
+      <ChevronRight size={20} color={palette.accent} strokeWidth={2.4} />
+    </Pressable>
+  );
+}
+
+/** Full-width pill button: burgundy "primary" or tan-outline "secondary". */
+export function PillButton({
+  label,
+  onPress,
+  variant = 'primary',
+  disabled = false,
+}: {
+  label: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}) {
+  const { palette } = useAppSettings();
+  const isPrimary = variant === 'primary';
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.pillButton,
+        isPrimary
+          ? { backgroundColor: disabled ? palette.borderAlt : palette.accent, borderColor: 'transparent' }
+          : { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+        { opacity: disabled && !isPrimary ? 0.5 : pressed ? 0.85 : 1 },
+      ]}
+    >
+      <Text
+        style={[
+          styles.pillButtonText,
+          { color: isPrimary ? palette.accentContrastText : palette.accentText },
+        ]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }

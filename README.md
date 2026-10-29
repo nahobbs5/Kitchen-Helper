@@ -171,7 +171,8 @@ Important routed files:
 
 - [`app/_layout.tsx`]
 - [`app/add-recipe.tsx`]
-- [`app/account.tsx`]
+- [`app/account/index.tsx`]
+- [`app/settings/index.tsx`]
 - [`app/index.tsx`]
 - [`app/reference.tsx`]
 - [`app/conversions.tsx`]
@@ -200,6 +201,7 @@ Important shared files:
 - [`components/star-rating.tsx`]
 - [`components/app-theme.ts`]
 - [`components/settings-menu.tsx`]
+- [`components/settings-ui.tsx`]
 - [`contexts/auth-context.tsx`]
 - [`contexts/cook-timer-context.tsx`]
 - [`contexts/custom-recipes-context.tsx`]
@@ -414,7 +416,7 @@ The app has a shared settings menu available from the gear icon in the shared he
 
 Settings is now limited to local app preferences. Account sign-in, sync status, sign-out, PDF export, and importer guidance live on the dedicated Account page instead.
 
-The settings UI is a custom scrollable settings overlay with a backdrop and compact sheet sizing, so it remains usable on mobile screens while still working as an in-app modal on larger displays.
+Settings is a hub page (`/settings`) with category cards that open detail pages (`/settings/<section>`). Each detail page ends with a `Restore defaults` card for just that page, and the hub's `Restore Defaults` card resets everything after asking.
 
 Current saved settings:
 
@@ -426,14 +428,14 @@ Current saved settings:
 - `Timer sound`
 - `Confirm delete`
 - `Kitchen Guides default view` (which tab opens first)
+- `Default timer duration` (pre-fills idle cook-timer slots; None by default)
 - `Enable recipe reordering` (toggles drag-and-drop mode in My Recipes)
 
 How it works:
 
 - settings are stored locally with AsyncStorage
 - auth sessions are stored locally and refreshed on app launch
-- restore defaults is a real immediate action in settings
-- restore defaults immediately resets dark mode to Off, keep screen awake to Off, vibration to On, timer sound to `Beep Beep`, confirm delete to On, and timers to 3
+- each settings page can restore its own defaults; the hub's Restore Defaults resets every setting
 - dark mode switches between light and dark palettes
 - keep-screen-awake uses `expo-keep-awake`
 - number of timers controls how many cook-timer slots are available and is clamped to `1-6`
@@ -443,12 +445,12 @@ How it works:
 
 Account page behavior:
 
-- account sync uses Supabase email/password auth from the `Account Sync` section on the shared Account page
-- the `Account Sync` section shows `Sign in to sync recipes across devices.` above the current auth state
-- signed-out users can open `Forgot password` to request a password reset email
-- the Account page shows sync status for the active user
-- the Account page includes the one-shot export action for the full merged recipe library
-- the Account page also includes importer guidance and compatibility notes without changing the add-recipe flow itself
+- signed out: a sync hero with `Sign in` / `Create account` (both open `/account/sign-in`, which also has `Forgot password?`), `What gets synced?` and `Your data` info cards, and Export / Import / Importer compatibility links
+- signed in: email with last-synced time and Refresh, `Sign out on other devices`, `Change password`, `Delete my synced data`, Data & export links, and `Sign out`
+- PDF export lives on `/account/export` and importer compatibility on `/account/importers`
+- what syncs: recipes you add, edits to sample recipes, and recipe order; ratings, favorites, and settings stay on the device
+- `Delete my synced data` needs the delete policies at the end of `docs/supabase-sync.sql` (run that block once in the Supabase SQL editor for existing projects)
+- `Privacy policy` links only appear when `EXPO_PUBLIC_PRIVACY_POLICY_URL` is set; there is no hosted policy yet
 
 Shared header navigation behavior:
 

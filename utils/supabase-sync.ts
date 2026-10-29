@@ -371,3 +371,91 @@ export async function upsertRecipeOrders(
 ) {
   return upsertRecords(config, accessToken, 'recipe_orders', records);
 }
+
+/** Signs out every other session for this user. The current device stays signed in. */
+export async function logoutOtherSessions(config: SyncConfig, accessToken: string) {
+  await request<Record<string, never>>(
+    `${config.url}/auth/v1/logout?scope=others`,
+    {
+      method: 'POST',
+      headers: authHeaders(config, accessToken),
+    },
+    'Unable to sign out other devices.'
+  );
+}
+
+export async function updatePassword(config: SyncConfig, accessToken: string, password: string) {
+  await request<Record<string, unknown>>(
+    `${config.url}/auth/v1/user`,
+    {
+      method: 'PUT',
+      headers: authHeaders(config, accessToken),
+      body: JSON.stringify({ password }),
+    },
+    'Unable to change your password.'
+  );
+}
+
+const SYNCED_TABLES = ['user_recipes', 'recipe_overrides', 'recipe_orders'] as const;
+
+export const MISSING_DELETE_POLICY_MESSAGE =
+  'Your Supabase project does not allow deleting synced data yet. Run the delete policies in docs/supabase-sync.sql, then try again.';
+
+/**
+ * Permanently removes every synced row for this user.
+ * Row-level security silently skips rows it won't delete, so the tables are re-checked afterwards.
+ */
+export async function deleteSyncedData(config: SyncConfig, accessToken: string, userId: string) {
+  for (const table of SYNCED_TABLES) {
+    const params = new URLSearchParams({ user_id: `eq.${userId}` });
+    await request<unknown>(
+      `${config.url}/rest/v1/${table}?${params.toString()}`,
+      {
+        method: 'DELETE',
+        headers: { ...authHeaders(config, accessToken), Prefer: 'return=minimal' },
+      },
+      `Unable to delete ${table}.`
+    );
+  }
+
+  const counts = await countSyncedRows(config, accessToken, userId, { includeDeleted: true });
+  if (counts.recipes + counts.recipeEdits + counts.recipeOrders > 0) {
+    throw new Error(MISSING_DELETE_POLICY_MESSAGE);
+  }
+}
+
+export type SyncedRowCounts = { recipes: number; recipeEdits: number; recipeOrders: number };
+
+/** Counts what is stored in the cloud for this user (soft-deleted rows excluded unless asked). */
+export async function countSyncedRows(
+  config: SyncConfig,
+  accessToken: string,
+  userId: string,
+  { includeDeleted = false }: { includeDeleted?: boolean } = {}
+): Promise<SyncedRowCounts> {
+  const recipeParams = new URLSearchParams({ select: 'id', user_id: `eq.${userId}` });
+  const editParams = new URLSearchParams({ select: 'id,deleted', user_id: `eq.${userId}` });
+  const orderParams = new URLSearchParams({ select: 'id', user_id: `eq.${userId}` });
+  if (!includeDeleted) {
+    recipeParams.set('deleted_at', 'is.null');
+  }
+
+  const get = <T,>(table: string, params: URLSearchParams) =>
+    request<T[]>(
+      `${config.url}/rest/v1/${table}?${params.toString()}`,
+      { method: 'GET', headers: authHeaders(config, accessToken) },
+      'Unable to load your synced data.'
+    );
+
+  const [recipes, edits, orders] = await Promise.all([
+    get<{ id: string }>('user_recipes', recipeParams),
+    get<{ id: string; deleted: boolean }>('recipe_overrides', editParams),
+    get<{ id: string }>('recipe_orders', orderParams),
+  ]);
+
+  return {
+    recipes: recipes.length,
+    recipeEdits: includeDeleted ? edits.length : edits.filter((edit) => !edit.deleted).length,
+    recipeOrders: orders.length,
+  };
+}

@@ -92,3 +92,17 @@ create policy "recipe_orders_insert_own" on public.recipe_orders
 
 create policy "recipe_orders_update_own" on public.recipe_orders
   for update using (auth.uid() = user_id);
+
+-- Lets signed-in users delete their own synced data from Account > Delete my synced data.
+-- If your project was set up before these were added, run just this block once in the SQL editor.
+drop policy if exists "user_recipes_delete_own" on public.user_recipes;
+create policy "user_recipes_delete_own" on public.user_recipes
+  for delete using (auth.uid() = user_id);
+
+drop policy if exists "recipe_overrides_delete_own" on public.recipe_overrides;
+create policy "recipe_overrides_delete_own" on public.recipe_overrides
+  for delete using (auth.uid() = user_id);
+
+drop policy if exists "recipe_orders_delete_own" on public.recipe_orders;
+create policy "recipe_orders_delete_own" on public.recipe_orders
+  for delete using (auth.uid() = user_id);
