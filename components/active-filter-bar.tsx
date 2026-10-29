@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Globe, SlidersHorizontal, Star, X, type LucideIcon } from 'lucide-react-native';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { AppPalette } from './app-theme';
@@ -15,7 +16,16 @@ import {
 type Chip = { kind: RecipeFilterKind; value?: string; label: string; Icon: LucideIcon };
 
 // Sits under the search box: a Filters button that opens the Filters page, plus removable chips.
-export function ActiveFilterBar({ scope, palette }: { scope: RecipeFilterScope; palette: AppPalette }) {
+// `besideFilters` renders next to the Filters button (e.g. a Select button).
+export function ActiveFilterBar({
+  scope,
+  palette,
+  besideFilters,
+}: {
+  scope: RecipeFilterScope;
+  palette: AppPalette;
+  besideFilters?: ReactNode;
+}) {
   const router = useRouter();
   const { filters, removeFilter, clearAll } = useRecipeFilters(scope);
   const activeCount = countActiveFilters(filters);
@@ -42,6 +52,7 @@ export function ActiveFilterBar({ scope, palette }: { scope: RecipeFilterScope; 
   return (
     <View style={barStyles.wrapper}>
       <View style={barStyles.topRow}>
+        <View style={barStyles.leftGroup}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={activeCount > 0 ? `Filters, ${activeCount} active` : 'Filters'}
@@ -56,6 +67,8 @@ export function ActiveFilterBar({ scope, palette }: { scope: RecipeFilterScope; 
             </View>
           ) : null}
         </Pressable>
+        {besideFilters}
+        </View>
         {activeCount > 0 ? (
           <Pressable accessibilityRole="button" onPress={clearAll} hitSlop={8}>
             <Text style={[barStyles.clearLink, { color: palette.inverseMuted }]}>Clear all</Text>
@@ -93,6 +106,11 @@ const barStyles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  leftGroup: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   filterButton: {
     alignItems: 'center',

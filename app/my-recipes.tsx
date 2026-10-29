@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { Check, Ellipsis, Share2, SquareCheck, Star, Tag, Trash2, X } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
@@ -17,7 +18,7 @@ import { DraggableRecipeList } from '../components/draggable-recipe-list';
 import { RecipeShareCard, recipeShareCardWidth } from '../components/recipe-share-card';
 import { ShareIcon } from '../components/share-icon';
 import { NoticePieTimer } from '../components/notice-pie-timer';
-import { FryingPanIcon, MultiSelectIcon } from '../components/recipe-action-icons';
+import { FryingPanIcon } from '../components/recipe-action-icons';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useRecipeOrder } from '../contexts/recipe-order-context';
 import { useAppSettings } from '../contexts/settings-context';
@@ -93,6 +94,7 @@ export default function MyRecipesScreen() {
   const favoritedFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showBulkMetadataEditor, setShowBulkMetadataEditor] = useState(false);
+  const [showSelectionMoreMenu, setShowSelectionMoreMenu] = useState(false);
   const [bulkCategory, setBulkCategory] = useState<(typeof bulkCategoryOptions)[number]>('Keep existing');
   const [bulkCuisineRegion, setBulkCuisineRegion] = useState('');
   const [bulkApplyCuisineRegion, setBulkApplyCuisineRegion] = useState(false);
@@ -156,6 +158,8 @@ export default function MyRecipesScreen() {
     setSelectedRecipeSlugs([]);
     setSelectionAnchorSlug(null);
     setShowBulkDeleteConfirm(false);
+    setShowBulkMetadataEditor(false);
+    setShowSelectionMoreMenu(false);
   }
 
   function toggleRecipeSelection(slug: string) {
@@ -194,6 +198,7 @@ export default function MyRecipesScreen() {
     setSelectionAnchorSlug(null);
     setShowBulkDeleteConfirm(false);
     setShowBulkMetadataEditor(false);
+    setShowSelectionMoreMenu(false);
   }
 
   const canApplyBulkMetadata =
@@ -321,6 +326,12 @@ export default function MyRecipesScreen() {
   useEffect(() => {
     // Hide the "n favorited" confirmation as soon as the selection changes.
     setFavoritedFeedbackCount(null);
+    if (selectedRecipeSlugs.length === 0) {
+      // The toolbar hides at 0 selected, so close anything opened from it.
+      setShowBulkDeleteConfirm(false);
+      setShowBulkMetadataEditor(false);
+      setShowSelectionMoreMenu(false);
+    }
   }, [selectedRecipeSlugs]);
 
   useEffect(() => () => {
@@ -379,7 +390,40 @@ export default function MyRecipesScreen() {
     updateStickySearch(scrollOffsetRef.current, threshold);
   }
 
-  function renderRecipeSearchInput(variant: 'inline' | 'sticky') {
+  // Search box, or the "N selected" header while selecting.
+  function renderSearchRow(variant: 'inline' | 'sticky') {
+    const onLayout = variant === 'inline' ? handleInlineSearchLayout : undefined;
+
+    if (selectionMode) {
+      return (
+        <View
+          onLayout={onLayout}
+          style={[
+            styles.selectionHeader,
+            variant === 'sticky' && styles.referenceStickySearchInput,
+            { backgroundColor: palette.accent, borderColor: palette.accent },
+          ]}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Exit selection"
+            onPress={toggleSelectionMode}
+            hitSlop={8}
+          >
+            <X size={22} color={palette.accentContrastText} />
+          </Pressable>
+          <Text style={[styles.selectionHeaderTitle, { color: palette.accentContrastText }]}>
+            {favoritedFeedbackCount !== null
+              ? `${favoritedFeedbackCount} favorited`
+              : `${selectedRecipeSlugs.length} selected`}
+          </Text>
+          <Pressable accessibilityRole="button" onPress={selectAllVisibleRecipes} hitSlop={8}>
+            <Text style={[styles.selectionHeaderLink, { color: palette.accentContrastText }]}>Select All</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
     return (
       <ClearableSearchInput
         value={searchText}
@@ -387,7 +431,7 @@ export default function MyRecipesScreen() {
         placeholder={isWide ? "Search recipes, categories, or tags" : "Search recipes…"}
         placeholderTextColor={palette.searchPlaceholder}
         clearTintColor={palette.searchPlaceholder}
-        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
+        onLayout={onLayout}
         style={[
           styles.searchInput,
           variant === 'sticky' && styles.referenceStickySearchInput,
@@ -526,9 +570,25 @@ export default function MyRecipesScreen() {
           >
             <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>{filteredRecipes.length} recipes shown</Text>
 
-            {renderRecipeSearchInput('inline')}
+            {renderSearchRow('inline')}
 
-            <ActiveFilterBar scope="my-recipes" palette={palette} />
+            <ActiveFilterBar
+              scope="my-recipes"
+              palette={palette}
+              besideFilters={
+                selectionMode ? null : (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Select recipes"
+                    onPress={toggleSelectionMode}
+                    style={[styles.selectButton, { backgroundColor: palette.accent, borderColor: palette.accentSoft }]}
+                  >
+                    <SquareCheck size={18} color={palette.accentContrastText} />
+                    <Text style={[styles.selectButtonText, { color: palette.accentContrastText }]}>Select</Text>
+                  </Pressable>
+                )
+              }
+            />
           </View>
         </View>
 
@@ -611,6 +671,7 @@ export default function MyRecipesScreen() {
                       styles.detailCard,
                       { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                       selectionMode && selectedRecipeSlugs.includes(recipe.slug) && {
+                        backgroundColor: palette.elevatedAlt,
                         borderColor: palette.accent,
                         borderWidth: 2,
                       },
@@ -620,11 +681,6 @@ export default function MyRecipesScreen() {
                     <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
                     <View style={styles.detailCardHeader}>
                       <View style={styles.detailCardTitleBlock}>
-                        {selectionMode ? (
-                          <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>
-                            {selectedRecipeSlugs.includes(recipe.slug) ? 'Selected' : 'Tap to select'}
-                          </Text>
-                        ) : null}
                         <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
                       </View>
                       {selectionMode ? (
@@ -638,6 +694,10 @@ export default function MyRecipesScreen() {
                             </Text>
                           ) : null}
                           <Pressable
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: selectedRecipeSlugs.includes(recipe.slug) }}
+                            accessibilityLabel={`Select ${recipe.title}`}
+                            hitSlop={8}
                             onPress={(event) => {
                               event.stopPropagation();
                               handleSelectionPress(
@@ -646,17 +706,15 @@ export default function MyRecipesScreen() {
                               );
                             }}
                             style={[
-                              styles.starButton,
-                              { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                              selectedRecipeSlugs.includes(recipe.slug) && {
-                                backgroundColor: palette.accentSoft,
-                                borderColor: palette.accentSoft,
-                              },
+                              styles.selectCheckCircle,
+                              selectedRecipeSlugs.includes(recipe.slug)
+                                ? { backgroundColor: palette.accent, borderColor: palette.accent }
+                                : { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
                             ]}
                           >
-                            <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                              {selectedRecipeSlugs.includes(recipe.slug) ? '☑' : '☐'}
-                            </Text>
+                            {selectedRecipeSlugs.includes(recipe.slug) ? (
+                              <Check size={16} strokeWidth={3} color={palette.accentContrastText} />
+                            ) : null}
                           </Pressable>
                         </View>
                       ) : isMobile ? null : (
@@ -817,260 +875,294 @@ export default function MyRecipesScreen() {
             { backgroundColor: palette.background, borderColor: palette.borderAlt },
           ]}
         >
-          {renderRecipeSearchInput('sticky')}
+          {renderSearchRow('sticky')}
         </View>
       ) : null}
-      {selectionMode ? (
-        <View style={[styles.selectionBar, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-          <ScrollView
-            style={styles.selectionBarScroll}
-            contentContainerStyle={styles.selectionBarContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.selectionBarHeader}>
-              <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
-                {favoritedFeedbackCount !== null
-                  ? `${favoritedFeedbackCount} favorited`
-                  : `${selectedRecipeSlugs.length} selected`}
-              </Text>
-              <View style={styles.selectionBarHeaderActions}>
-                <Pressable onPress={selectAllVisibleRecipes} hitSlop={8}>
-                  <Text style={[styles.selectionBarLink, { color: palette.accentText }]}>Select All</Text>
-                </Pressable>
-                <Pressable onPress={clearSelectedRecipes} hitSlop={8}>
-                  <Text style={[styles.selectionBarLink, { color: palette.accentText }]}>Clear</Text>
-                </Pressable>
-                <Pressable
-                  onPress={toggleSelectionMode}
-                  style={[styles.selectionBarDone, { backgroundColor: palette.accent }]}
-                >
-                  <Text style={[styles.selectionBarDoneText, { color: palette.accentContrastText }]}>Done</Text>
-                </Pressable>
-              </View>
-            </View>
-            <View style={styles.actionRow}>
-              <Pressable
-                accessibilityLabel="Favorite selected"
-                onPress={handleFavoriteSelected}
-                style={[
-                  styles.starButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  selectedRecipeSlugs.length === 0 && { opacity: 0.5 },
-                ]}
+      {selectionMode && selectedRecipeSlugs.length > 0 ? (
+        <View style={styles.selectionDock} pointerEvents="box-none">
+          {showBulkMetadataEditor || showBulkDeleteConfirm ? (
+            <View
+              style={[
+                styles.selectionSheet,
+                { maxHeight: height * 0.55, backgroundColor: palette.surface, borderColor: palette.borderAlt },
+              ]}
+            >
+              <ScrollView
+                style={styles.selectionSheetScroll}
+                contentContainerStyle={styles.selectionSheetContent}
+                keyboardShouldPersistTaps="handled"
               >
-                <Text style={[styles.starButtonText, { color: palette.accentText }]}>☆</Text>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={sharingSelectedRecipes ? 'Sharing selected' : 'Share selected'}
-                onPress={() => {
-                  void handleShareSelectedRecipes();
-                }}
-                style={[
-                  styles.starButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  (selectedRecipeSlugs.length === 0 || sharingSelectedRecipes) && { opacity: 0.5 },
-                ]}
-              >
-                <ShareIcon color={palette.accentText} size={18} />
-              </Pressable>
-              <Pressable
-                accessibilityLabel="Edit metadata"
-                accessibilityState={{ selected: showBulkMetadataEditor }}
-                onPress={() => setShowBulkMetadataEditor((current) => !current)}
-                style={[
-                  styles.starButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  showBulkMetadataEditor && {
-                    backgroundColor: palette.accentSoft,
-                    borderColor: palette.accentSoft,
-                  },
-                ]}
-              >
-                <Text style={[styles.starButtonText, { color: palette.accentText }]}>✎</Text>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={`Delete ${selectedRecipeSlugs.length} selected`}
-                onPress={handleBulkDeletePress}
-                style={[
-                  styles.starButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  selectedRecipeSlugs.length === 0 && { opacity: 0.5 },
-                ]}
-              >
-                <Text style={styles.starButtonText}>🗑</Text>
-              </Pressable>
-            </View>
-            {showBulkMetadataEditor ? (
-              <View
-                style={[
-                  styles.noticeCard,
-                  { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                ]}
-              >
-                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>Bulk metadata</Text>
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Category</Text>
-                  <View style={styles.servingsRow}>
-                    {bulkCategoryOptions.map((option) => {
-                      const isActive = bulkCategory === option;
-
-                      return (
-                        <Pressable
-                          key={option}
-                          onPress={() => setBulkCategory(option)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt },
-                            !isActive && { backgroundColor: palette.surface },
-                            isActive && styles.servingsButtonActive,
-                            isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: isActive ? palette.inverseText : palette.text },
-                              isActive && styles.servingsButtonTextActive,
-                            ]}
-                          >
-                            {option}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Cuisine region</Text>
-                  <TextInput
-                    value={bulkCuisineRegion}
-                    onChangeText={setBulkCuisineRegion}
-                    placeholder="Optional cuisine region to apply"
-                    placeholderTextColor={palette.searchPlaceholder}
+                {showBulkMetadataEditor ? (
+                  <View
                     style={[
-                      styles.formInput,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                  <Pressable
-                    onPress={() => setBulkApplyCuisineRegion((current) => !current)}
-                    style={[
-                      styles.secondaryButton,
-                      { backgroundColor: bulkApplyCuisineRegion ? palette.accentSoft : palette.surface, borderColor: palette.borderAlt },
+                      styles.noticeCard,
+                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.secondaryButtonText,
-                        { color: bulkApplyCuisineRegion ? palette.inverseText : palette.accentText },
-                      ]}
-                    >
-                      {bulkApplyCuisineRegion ? 'Cuisine Will Be Applied' : 'Apply Cuisine Region'}
+                    <Text style={[styles.noticeCardTitle, { color: palette.text }]}>Bulk metadata</Text>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Category</Text>
+                      <View style={styles.servingsRow}>
+                        {bulkCategoryOptions.map((option) => {
+                          const isActive = bulkCategory === option;
+
+                          return (
+                            <Pressable
+                              key={option}
+                              onPress={() => setBulkCategory(option)}
+                              style={[
+                                styles.servingsButton,
+                                { borderColor: palette.borderAlt },
+                                !isActive && { backgroundColor: palette.surface },
+                                isActive && styles.servingsButtonActive,
+                                isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.servingsButtonText,
+                                  { color: isActive ? palette.inverseText : palette.text },
+                                  isActive && styles.servingsButtonTextActive,
+                                ]}
+                              >
+                                {option}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Cuisine region</Text>
+                      <TextInput
+                        value={bulkCuisineRegion}
+                        onChangeText={setBulkCuisineRegion}
+                        placeholder="Optional cuisine region to apply"
+                        placeholderTextColor={palette.searchPlaceholder}
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
+                        ]}
+                      />
+                      <Pressable
+                        onPress={() => setBulkApplyCuisineRegion((current) => !current)}
+                        style={[
+                          styles.secondaryButton,
+                          { backgroundColor: bulkApplyCuisineRegion ? palette.accentSoft : palette.surface, borderColor: palette.borderAlt },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.secondaryButtonText,
+                            { color: bulkApplyCuisineRegion ? palette.inverseText : palette.accentText },
+                          ]}
+                        >
+                          {bulkApplyCuisineRegion ? 'Cuisine Will Be Applied' : 'Apply Cuisine Region'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Add allergy-friendly tags</Text>
+                      <View style={styles.tagRow}>
+                        {allergyFriendlyTagOptions.map((tag) => {
+                          const isActive = bulkFriendlyTagsToAdd.includes(tag);
+
+                          return (
+                            <Pressable
+                              key={tag}
+                              onPress={() => toggleBulkFriendlyTag(tag)}
+                              style={[
+                                styles.servingsButton,
+                                { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                                isActive && styles.selectableAllergyFriendlyTag,
+                                isActive && { borderColor: '#97bf72' },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.servingsButtonText,
+                                  { color: palette.text },
+                                  isActive && styles.selectableAllergyFriendlyTagText,
+                                ]}
+                              >
+                                {tag}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                    <View style={styles.formField}>
+                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Add allergen tags</Text>
+                      <View style={styles.tagRow}>
+                        {allergenTagOptions.map((tag) => {
+                          const isActive = bulkAllergenTagsToAdd.includes(tag);
+
+                          return (
+                            <Pressable
+                              key={tag}
+                              onPress={() => toggleBulkAllergenTag(tag)}
+                              style={[
+                                styles.servingsButton,
+                                { borderColor: palette.borderAlt, backgroundColor: palette.surface },
+                                isActive && styles.selectableAllergenTag,
+                                isActive && { borderColor: '#e98d34' },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.servingsButtonText,
+                                  { color: palette.text },
+                                  isActive && styles.selectableAllergenTagText,
+                                ]}
+                              >
+                                {tag}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={handleApplyBulkMetadata}
+                        style={[
+                          styles.primaryButton,
+                          { backgroundColor: canApplyBulkMetadata ? palette.accent : palette.borderAlt },
+                        ]}
+                      >
+                        <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Apply Metadata</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+                {showBulkDeleteConfirm ? (
+                  <View
+                    style={[
+                      styles.dangerCard,
+                      { backgroundColor: palette.surface, borderColor: '#d47a5b' },
+                    ]}
+                  >
+                    <Text style={[styles.dangerCardTitle, { color: palette.text }]}>
+                      Delete {selectedRecipeSlugs.length} recipe{selectedRecipeSlugs.length === 1 ? '' : 's'}?
                     </Text>
-                  </Pressable>
-                </View>
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Add allergy-friendly tags</Text>
-                  <View style={styles.tagRow}>
-                    {allergyFriendlyTagOptions.map((tag) => {
-                      const isActive = bulkFriendlyTagsToAdd.includes(tag);
-
-                      return (
-                        <Pressable
-                          key={tag}
-                          onPress={() => toggleBulkFriendlyTag(tag)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.selectableAllergyFriendlyTag,
-                            isActive && { borderColor: '#97bf72' },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: palette.text },
-                              isActive && styles.selectableAllergyFriendlyTagText,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
+                    <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
+                      This removes the selected recipes from the library. Imported recipes are hidden locally, and app-saved recipes can still be undone right after.
+                    </Text>
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        onPress={() => setShowBulkDeleteConfirm(false)}
+                        style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
+                      >
+                        <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
+                      </Pressable>
+                      <Pressable onPress={handleBulkDelete} style={styles.dangerButton}>
+                        <Text style={styles.dangerButtonText}>Delete Selected</Text>
+                      </Pressable>
+                    </View>
                   </View>
-                </View>
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Add allergen tags</Text>
-                  <View style={styles.tagRow}>
-                    {allergenTagOptions.map((tag) => {
-                      const isActive = bulkAllergenTagsToAdd.includes(tag);
-
-                      return (
-                        <Pressable
-                          key={tag}
-                          onPress={() => toggleBulkAllergenTag(tag)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.selectableAllergenTag,
-                            isActive && { borderColor: '#e98d34' },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: palette.text },
-                              isActive && styles.selectableAllergenTagText,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-                <View style={styles.actionRow}>
-                  <Pressable
-                    onPress={handleApplyBulkMetadata}
-                    style={[
-                      styles.primaryButton,
-                      { backgroundColor: canApplyBulkMetadata ? palette.accent : palette.borderAlt },
-                    ]}
-                  >
-                    <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>Apply Metadata</Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : null}
-            {showBulkDeleteConfirm ? (
-              <View
+                ) : null}
+              </ScrollView>
+            </View>
+          ) : null}
+          {showSelectionMoreMenu ? (
+            <View
+              style={[
+                styles.selectionMoreMenu,
+                { backgroundColor: palette.surface, borderColor: palette.borderAlt },
+              ]}
+            >
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setShowSelectionMoreMenu(false);
+                  handleFavoriteSelected();
+                }}
+                style={styles.selectionMoreMenuItem}
+              >
+                <Star size={18} color={palette.accentText} />
+                <Text style={[styles.selectionMoreMenuText, { color: palette.text }]}>Favorite selected</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={clearSelectedRecipes} style={styles.selectionMoreMenuItem}>
+                <X size={18} color={palette.accentText} />
+                <Text style={[styles.selectionMoreMenuText, { color: palette.text }]}>Clear selection</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          <View style={[styles.selectionToolbar, { backgroundColor: palette.accent }]}>
+            <View style={styles.selectionToolbarCount}>
+              <Text style={[styles.selectionToolbarCountNumber, { color: palette.accentContrastText }]}>
+                {selectedRecipeSlugs.length}
+              </Text>
+              <Text style={[styles.selectionToolbarLabel, { color: palette.accentContrastText }]}>selected</Text>
+            </View>
+            {[
+              {
+                key: 'share',
+                label: sharingSelectedRecipes ? 'Sharing' : 'Share',
+                Icon: Share2,
+                active: false,
+                dimmed: sharingSelectedRecipes,
+                onPress: () => {
+                  setShowSelectionMoreMenu(false);
+                  void handleShareSelectedRecipes();
+                },
+              },
+              {
+                key: 'tag',
+                label: 'Add Tag',
+                Icon: Tag,
+                active: showBulkMetadataEditor,
+                dimmed: false,
+                onPress: () => {
+                  setShowSelectionMoreMenu(false);
+                  setShowBulkDeleteConfirm(false);
+                  setShowBulkMetadataEditor((current) => !current);
+                },
+              },
+              {
+                key: 'delete',
+                label: 'Delete',
+                Icon: Trash2,
+                active: showBulkDeleteConfirm,
+                dimmed: false,
+                onPress: () => {
+                  setShowSelectionMoreMenu(false);
+                  setShowBulkMetadataEditor(false);
+                  if (showBulkDeleteConfirm) {
+                    setShowBulkDeleteConfirm(false);
+                  } else {
+                    handleBulkDeletePress();
+                  }
+                },
+              },
+              {
+                key: 'more',
+                label: 'More',
+                Icon: Ellipsis,
+                active: showSelectionMoreMenu,
+                dimmed: false,
+                onPress: () => setShowSelectionMoreMenu((current) => !current),
+              },
+            ].map(({ key, label, Icon, active, dimmed, onPress }) => (
+              <Pressable
+                key={key}
+                accessibilityRole="button"
+                accessibilityLabel={key === 'delete' ? `Delete ${selectedRecipeSlugs.length} selected` : label}
+                accessibilityState={{ selected: active }}
+                onPress={onPress}
                 style={[
-                  styles.dangerCard,
-                  { backgroundColor: palette.surface, borderColor: '#d47a5b' },
+                  styles.selectionToolbarButton,
+                  // 15% tint of the contrast colour marks the open panel.
+                  active && { backgroundColor: `${palette.accentContrastText}26` },
+                  dimmed && { opacity: 0.5 },
                 ]}
               >
-                <Text style={[styles.dangerCardTitle, { color: palette.text }]}>
-                  Delete {selectedRecipeSlugs.length} recipe{selectedRecipeSlugs.length === 1 ? '' : 's'}?
-                </Text>
-                <Text style={[styles.dangerCardBody, { color: palette.textMuted }]}>
-                  This removes the selected recipes from the library. Imported recipes are hidden locally, and app-saved recipes can still be undone right after.
-                </Text>
-                <View style={styles.actionRow}>
-                  <Pressable
-                    onPress={() => setShowBulkDeleteConfirm(false)}
-                    style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                  >
-                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
-                  </Pressable>
-                  <Pressable onPress={handleBulkDelete} style={styles.dangerButton}>
-                    <Text style={styles.dangerButtonText}>Delete Selected</Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : null}
-          </ScrollView>
+                <Icon size={20} color={palette.accentContrastText} />
+                <Text style={[styles.selectionToolbarLabel, { color: palette.accentContrastText }]}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
       ) : null}
       {showFloatingActions && !selectionMode ? (
@@ -1094,20 +1186,6 @@ export default function MyRecipesScreen() {
               <Text style={[styles.mobileRecipeActionPlusText, { color: palette.addButtonText }]}>+</Text>
             </View>
           </View>
-        </Pressable>
-        <Pressable
-          accessibilityLabel={selectionMode ? 'Done selecting recipes' : 'Select recipes'}
-          accessibilityState={{ selected: selectionMode }}
-          onPress={toggleSelectionMode}
-          style={[
-            styles.floatingActionButton,
-            {
-              backgroundColor: selectionMode ? palette.accentSoft : palette.surface,
-              borderColor: selectionMode ? palette.accentSoft : palette.borderAlt,
-            },
-          ]}
-        >
-          <MultiSelectIcon active={selectionMode} size={28} palette={palette} />
         </Pressable>
       </View>
       ) : null}
