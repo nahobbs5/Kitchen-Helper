@@ -1,3 +1,5 @@
+import { formatCategoryLabel } from './recipe-form-options';
+
 export type RatingThreshold = 3 | 4 | 5;
 
 export const RATING_THRESHOLDS: RatingThreshold[] = [3, 4, 5];
@@ -124,7 +126,8 @@ export function applyRecipeFilters<T extends FilterableRecipe>(
     }
 
     if (normalizedSearch) {
-      const haystack = `${recipe.title} ${recipe.category} ${cuisine} ${tags.join(' ')}`.toLowerCase();
+      // Includes the display label so searching "entrée" finds Entree recipes.
+      const haystack = `${recipe.title} ${recipe.category} ${formatCategoryLabel(recipe.category)} ${cuisine} ${tags.join(' ')}`.toLowerCase();
       return haystack.includes(normalizedSearch);
     }
 

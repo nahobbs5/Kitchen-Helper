@@ -1,30 +1,18 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import {
-  Image,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { useRef, useState } from 'react';
+import { Image, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Camera, FileText, Link, Pencil } from 'lucide-react-native';
 
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ProgressBar } from '../components/progress-bar';
+import { BasicInfoFields, DetailsStep } from '../components/recipe-wizard/details-step';
+import { FinishStep } from '../components/recipe-wizard/finish-step';
 import { RecipeSectionEditor } from '../components/recipe-section-editor';
+import { ChoiceCard, WizardFooter, WizardStepper } from '../components/recipe-wizard/wizard-chrome';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useAppSettings } from '../contexts/settings-context';
-import type { RecipeSection } from '../data/obsidian-recipes';
-import {
-  allergenTagOptions,
-  allergyFriendlyTagOptions,
-  inferRecipeTags,
-  toggleAllergenSelection,
-  toggleFriendlySelection,
-} from '../utils/allergen-tags';
+import { EMPTY_RECIPE_FORM, WIZARD_STEPS, useRecipeForm, type WizardStep } from '../hooks/use-recipe-form';
+import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import {
   type AiImportedRecipe,
   type AiImportTier,
@@ -33,22 +21,9 @@ import {
 } from '../utils/ai-recipe-import';
 import { parseRecipeFromMarkdown } from '../utils/markdown-recipe-import';
 import { parseOcrRecipeText } from '../utils/ocr-recipe-parser';
-import { extractRecipeMetadata, formatCookTimeTag } from '../utils/recipe-metadata';
-import {
-  formatRecipeSections,
-  normalizeRecipeSections,
-  parseRecipeSectionsText,
-  recipeSectionsHaveItems,
-} from '../utils/recipe-sections';
+import { RECIPE_CATEGORY_VALUES } from '../utils/recipe-form-options';
+import { normalizeRecipeSections, parseRecipeSectionsText } from '../utils/recipe-sections';
 import { parseRecipeFromHtml } from '../utils/web-recipe-import';
-
-const categoryOptions = [
-  { label: 'Appetizer', value: 'Appetizers' },
-  { label: 'Breakfast', value: 'Breakfast' },
-  { label: 'Side', value: 'Side' },
-  { label: 'Entree', value: 'Entree' },
-  { label: 'Dessert', value: 'Dessert' },
-] as const;
 
 type EntryMode = 'manual' | 'photo' | 'website' | 'markdown';
 type PhotoMethod = 'ai' | 'ocr';
@@ -62,13 +37,32 @@ type SelectedRecipePhoto = {
 };
 type SelectedAiPhoto = AiRecipePhoto & { uri: string };
 
+/** 'start' picks how to add the recipe; the rest are the wizard steps. */
+type AddStep = 'start' | WizardStep;
+
+const ENTRY_MODES = [
+  { value: 'manual' as const, title: 'Manual entry', subtitle: 'Type in your recipe', icon: Pencil },
+  { value: 'photo' as const, title: 'Photo', subtitle: 'Scan or AI-read a photo', icon: Camera },
+  { value: 'website' as const, title: 'Website', subtitle: 'Import from a URL', icon: Link },
+  { value: 'markdown' as const, title: 'Markdown', subtitle: 'Paste formatted text', icon: FileText },
+];
+
+const STEP_SUBTITLES: Record<AddStep, string> = {
+  start: "Choose how you'd like to add your recipe.",
+  details: 'Enter the details for your recipe.',
+  ingredients: 'Add ingredients and directions.',
+  directions: 'Add the steps to make it.',
+  finish: 'Check everything, then save.',
+};
+
 export default function AddRecipeScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isWide = width >= 960;
   const { palette } = useAppSettings();
   const { addRecipe, syncBusy } = useCustomRecipes();
+  const form = useRecipeForm(EMPTY_RECIPE_FORM, { autoDetectTags: true });
+  const scrollRef = useRef<ScrollView>(null);
 
+  const [step, setStep] = useState<AddStep>('start');
   const [entryMode, setEntryMode] = useState<EntryMode>('manual');
   const [photoMethod, setPhotoMethod] = useState<PhotoMethod>('ai');
   const [aiState, setAiState] = useState<AiImportState>('idle');
@@ -85,124 +79,64 @@ export default function AddRecipeScreen() {
   const [markdownText, setMarkdownText] = useState('');
   const [markdownImportState, setMarkdownImportState] = useState<MarkdownImportState>('idle');
   const [markdownImportError, setMarkdownImportError] = useState('');
-  const [category, setCategory] = useState<string>('Entree');
-  const [recipeName, setRecipeName] = useState('');
-  const [sourceInfo, setSourceInfo] = useState<{ websiteName: string | null; author: string | null; url: string | null } | null>(null);
-  const [ingredientsSections, setIngredientsSections] = useState<RecipeSection[]>([]);
-  const [directionsSections, setDirectionsSections] = useState<RecipeSection[]>([]);
-  const [prepTime, setPrepTime] = useState('');
-  const [cookTime, setCookTime] = useState('');
-  const [servings, setServings] = useState('');
-  const [notes, setNotes] = useState('');
-  const [cuisineRegion, setCuisineRegion] = useState('');
-  const [allergenTags, setAllergenTags] = useState<string[]>([]);
-  const [allergyFriendlyTags, setAllergyFriendlyTags] = useState<string[]>([]);
-  const [allergenTouched, setAllergenTouched] = useState(false);
-  const [friendlyTouched, setFriendlyTouched] = useState(false);
-  const [saveAttempted, setSaveAttempted] = useState(false);
-  const ingredientsText = useMemo(
-    () => formatRecipeSections(ingredientsSections),
-    [ingredientsSections]
-  );
-  const directionsText = useMemo(
-    () => formatRecipeSections(directionsSections, { ordered: true }),
-    [directionsSections]
-  );
-  const sourceUrl = useMemo(
-    () => (sourceInfo?.url ?? websiteUrl).trim(),
-    [sourceInfo, websiteUrl]
-  );
+  const [saveError, setSaveError] = useState('');
 
-  const detectedTags = useMemo(
-    () =>
-      inferRecipeTags({
-        title: recipeName,
-        ingredientsText,
-        directionsText,
-        notes,
-      }),
-    [directionsText, ingredientsText, notes, recipeName]
-  );
-
-  const missingRequiredFields = useMemo(
-    () =>
-      [
-        !recipeName.trim() ? 'recipe name' : null,
-        !recipeSectionsHaveItems(ingredientsSections) ? 'ingredients' : null,
-        !recipeSectionsHaveItems(directionsSections) ? 'directions' : null,
-        entryMode === 'website' && !sourceUrl ? 'website URL' : null,
-      ].filter(Boolean) as string[],
-    [directionsSections, entryMode, ingredientsSections, recipeName, sourceUrl]
-  );
-
-  const canSave = missingRequiredFields.length === 0;
   const supportsLocalOcr = Platform.OS !== 'web';
+  const sourceUrl = (form.values.sourceInfo?.url ?? websiteUrl).trim();
 
-  useEffect(() => {
-    if (!allergenTouched) {
-      setAllergenTags(detectedTags.allergenTags);
-    }
+  // The import handlers below predate the shared form hook; these keep their setter names.
+  const setRecipeName = (value: string) => form.set('recipeName', value);
+  const setCategory = (value: string) => form.set('category', value);
+  const setCuisineRegion = (value: string) => form.set('cuisineRegion', value);
+  const setIngredientsSections = (value: ReturnType<typeof normalizeRecipeSections>) => form.set('ingredientsSections', value);
+  const setDirectionsSections = (value: ReturnType<typeof normalizeRecipeSections>) => form.set('directionsSections', value);
+  const setPrepTime = (value: string) => form.set('prepTime', value);
+  const setCookTime = (value: string) => form.set('cookTime', value);
+  const setServings = (value: string) => form.set('servings', value);
+  const setNotes = (value: string) => form.set('notes', value);
+  const setSourceInfo = (value: typeof form.values.sourceInfo) => form.set('sourceInfo', value);
+  const categoryOptions = RECIPE_CATEGORY_VALUES.map((value) => ({ value }));
+  function applyImportedTags(allergenTags: string[], allergyFriendlyTags: string[]) {
+    form.markTagsTouched();
+    form.patch({ allergenTags, allergyFriendlyTags });
+  }
 
-    if (!friendlyTouched) {
-      setAllergyFriendlyTags(detectedTags.allergyFriendlyTags);
-    }
-  }, [allergenTouched, detectedTags.allergenTags, detectedTags.allergyFriendlyTags, friendlyTouched]);
+  function scrollToTop() {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }
+
+  function goTo(next: AddStep) {
+    setStep(next);
+    scrollToTop();
+  }
 
   async function handleSave() {
-    setSaveAttempted(true);
-
-    if (!canSave) {
+    if (!form.canSave) {
+      if (form.firstInvalidStep) goTo(form.firstInvalidStep);
       return;
     }
+    if (entryMode === 'website' && !sourceUrl) {
+      setSaveError('Website URL is required for website imports.');
+      goTo('details');
+      return;
+    }
+    setSaveError('');
 
-    const savedRecipe = await addRecipe({
-      category,
-      title: recipeName,
-      ingredientsText,
-      directionsText,
-      ingredientsSections,
-      directionsSections,
-      prepTime,
-      cookTime,
-      servings,
-      notes,
-      cuisineRegion,
-      sourceInfo:
+    const savedRecipe = await addRecipe(
+      form.buildSaveInput(
         entryMode === 'website'
           ? {
-              websiteName: sourceInfo?.websiteName ?? null,
-              author: sourceInfo?.author ?? null,
+              websiteName: form.values.sourceInfo?.websiteName ?? null,
+              author: form.values.sourceInfo?.author ?? null,
               url: sourceUrl || null,
             }
-          : sourceInfo,
-      allergenTags,
-      allergyFriendlyTags,
-    });
+          : form.values.sourceInfo
+      )
+    );
 
     if (savedRecipe) {
       router.replace('/my-recipes');
     }
-  }
-
-  function handleAllergenToggle(tag: (typeof allergenTagOptions)[number]) {
-    setAllergenTouched(true);
-    const next = toggleAllergenSelection(allergenTags, allergyFriendlyTags, tag);
-    setAllergenTags(next.allergenTags);
-    setAllergyFriendlyTags(next.allergyFriendlyTags);
-  }
-
-  function handleFriendlyToggle(tag: (typeof allergyFriendlyTagOptions)[number]) {
-    setFriendlyTouched(true);
-    const next = toggleFriendlySelection(allergenTags, allergyFriendlyTags, tag);
-    setAllergenTags(next.allergenTags);
-    setAllergyFriendlyTags(next.allergyFriendlyTags);
-  }
-
-  function handleAutoDetectTags() {
-    setAllergenTouched(true);
-    setFriendlyTouched(true);
-    setAllergenTags(detectedTags.allergenTags);
-    setAllergyFriendlyTags(detectedTags.allergyFriendlyTags);
   }
 
   function applyOcrResult(rawText: string) {
@@ -248,43 +182,6 @@ export default function AddRecipeScreen() {
       })
       .filter(Boolean)
       .join('\n\n');
-  }
-
-  function applyExtractedMetadata(nextIngredients: string, nextDirections: string, nextNotes = notes) {
-    const extracted = extractRecipeMetadata({
-      ingredientsText: nextIngredients,
-      directionsText: nextDirections,
-      notesText: nextNotes,
-    });
-
-    if (extracted.prepTime && !prepTime.trim()) {
-      setPrepTime(extracted.prepTime);
-    }
-
-    if (extracted.cookTime && !cookTime.trim()) {
-      setCookTime(extracted.cookTime);
-    }
-
-    if (extracted.servings && !servings.trim()) {
-      setServings(extracted.servings);
-    }
-
-    return extracted;
-  }
-
-  function handleIngredientsSectionsChange(nextSections: RecipeSection[]) {
-    applyExtractedMetadata(formatRecipeSections(nextSections), directionsText);
-    setIngredientsSections(nextSections);
-  }
-
-  function handleDirectionsSectionsChange(nextSections: RecipeSection[]) {
-    applyExtractedMetadata(ingredientsText, formatRecipeSections(nextSections, { ordered: true }));
-    setDirectionsSections(nextSections);
-  }
-
-  function handleNotesChange(value: string) {
-    const extracted = applyExtractedMetadata(ingredientsText, directionsText, value);
-    setNotes(extracted.notesText);
   }
 
   async function handleImportFromWebsite() {
@@ -470,10 +367,7 @@ export default function AddRecipeScreen() {
     );
 
     if (aiAllergens.length > 0 || aiFriendly.length > 0) {
-      setAllergenTouched(true);
-      setFriendlyTouched(true);
-      setAllergenTags(aiAllergens);
-      setAllergyFriendlyTags(aiFriendly);
+      applyImportedTags(aiAllergens, aiFriendly);
     }
   }
 
@@ -590,73 +484,37 @@ export default function AddRecipeScreen() {
     }
   }
 
+  const stepIndex = WIZARD_STEPS.findIndex((item) => item.key === step);
+  const nextStep = WIZARD_STEPS[stepIndex + 1]?.key;
+  const prevStep: AddStep = stepIndex <= 0 ? 'start' : WIZARD_STEPS[stepIndex - 1].key;
+  const stepIsValid = step === 'start' ? form.stepErrors.details.length === 0 : form.stepErrors[step as WizardStep].length === 0;
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      <ScrollView contentContainerStyle={styles.page}>
-        <View
-          style={[
-            styles.hero,
-            isWide && styles.heroWide,
-            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-          ]}
-        >
-          <View style={styles.heroCopy}>
-            <Text style={[styles.title, { color: palette.text }]}>Add a new recipe</Text>
-            <View style={styles.actionRow}>
-              <Pressable
-                onPress={() => router.push('/my-recipes')}
-                style={[styles.primaryButton, { backgroundColor: palette.accent }]}
-              >
-                <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                  ↩ Back to My Recipes
-                </Text>
-              </Pressable>
-            </View>
-
-          </View>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.settingsPageContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.wizardPageHeader}>
+          <Text style={[styles.settingsPageTitle, { color: palette.text }]}>Add a new recipe</Text>
+          <Text style={[styles.settingsPageSubtitle, { color: palette.textMuted }]}>{STEP_SUBTITLES[step]}</Text>
         </View>
 
-        <View style={[styles.contentGrid, isWide && styles.contentGridWide]}>
-          <View style={styles.primaryColumn}>
-            <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-              <View style={styles.formStack}>
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Entry mode</Text>
-                  <View style={styles.servingsRow}>
-                    {[
-                      { label: 'Manual entry', value: 'manual' as const },
-                      { label: 'Photo OCR', value: 'photo' as const },
-                      { label: 'Website', value: 'website' as const },
-                      { label: 'Markdown', value: 'markdown' as const },
-                    ].map((option) => {
-                      const isActive = entryMode === option.value;
-
-                      return (
-                        <Pressable
-                          key={option.value}
-                          onPress={() => setEntryMode(option.value)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt },
-                            !isActive && { backgroundColor: palette.surface },
-                            isActive && styles.servingsButtonActive,
-                            isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: isActive ? palette.inverseText : palette.text },
-                              isActive && styles.servingsButtonTextActive,
-                            ]}
-                          >
-                            {option.label}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
+        {step === 'start' ? (
+          <View style={styles.wizardFieldStack}>
+            <View style={styles.choiceGrid}>
+              {ENTRY_MODES.map((mode) => (
+                <ChoiceCard
+                  key={mode.value}
+                  icon={mode.icon}
+                  title={mode.title}
+                  subtitle={mode.subtitle}
+                  selected={entryMode === mode.value}
+                  onPress={() => setEntryMode(mode.value)}
+                />
+              ))}
+            </View>
 
                 {entryMode === 'photo' ? (
                   <View style={styles.formField}>
@@ -952,394 +810,85 @@ export default function AddRecipeScreen() {
                   </View>
                 ) : null}
 
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Category *</Text>
-                  <View style={styles.servingsRow}>
-                    {categoryOptions.map((option) => {
-                      const isActive = category === option.value;
-
-                      return (
-                        <Pressable
-                          key={option.value}
-                          onPress={() => setCategory(option.value)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt },
-                            !isActive && { backgroundColor: palette.surface },
-                            isActive && styles.servingsButtonActive,
-                            isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: isActive ? palette.inverseText : palette.text },
-                              isActive && styles.servingsButtonTextActive,
-                            ]}
-                          >
-                            {option.label}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Recipe name *</Text>
-                  <TextInput
-                    value={recipeName}
-                    onChangeText={setRecipeName}
-                    placeholder={isWide ? 'Example: Lemon Herb Roast Chicken' : 'Ex: Lemon Herb Roast Chicken'}
-                    placeholderTextColor={palette.searchPlaceholder}
-                    style={[
-                      styles.formInput,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                  {saveAttempted && !recipeName.trim() ? (
-                    <Text style={[styles.formHint, { color: palette.accent }]}>Recipe name is required.</Text>
-                  ) : null}
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Cuisine region</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    Optional examples: American, European, Asian, Mexican, Mediterranean
-                  </Text>
-                  <TextInput
-                    value={cuisineRegion}
-                    onChangeText={setCuisineRegion}
-                    placeholder="Optional cuisine region"
-                    placeholderTextColor={palette.searchPlaceholder}
-                    style={[
-                      styles.formInput,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                </View>
-
-                <RecipeSectionEditor
-                  label="Ingredients *"
-                  hint="Use ## Sauce or [Sauce] for section headers."
-                  placeholder={'## Dough\n2 cups flour\n1 teaspoon salt\n\n[Filling]\n1/2 cup butter'}
-                  sections={ingredientsSections}
-                  onChange={handleIngredientsSectionsChange}
-                  palette={palette}
-                  error={
-                    saveAttempted && !recipeSectionsHaveItems(ingredientsSections)
-                      ? 'Ingredients are required.'
-                      : undefined
-                  }
-                />
-
-                <RecipeSectionEditor
-                  label="Directions *"
-                  hint="Use ## Sauce or [Sauce] for section headers. One step per line; numbers optional."
-                  placeholder={'## Prep\n1. Preheat the oven.\n\n[Bake]\n2. Bake until golden.'}
-                  ordered
-                  sections={directionsSections}
-                  onChange={handleDirectionsSectionsChange}
-                  palette={palette}
-                  error={
-                    saveAttempted && !recipeSectionsHaveItems(directionsSections)
-                      ? 'Directions are required.'
-                      : undefined
-                  }
-                />
-
-                <View style={styles.formField}>
-                  <View style={styles.metadataRow}>
-                    <View style={styles.metadataField}>
-                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Prep time</Text>
-                      <TextInput
-                        value={prepTime}
-                        onChangeText={setPrepTime}
-                        placeholder="15 minutes"
-                        placeholderTextColor={palette.searchPlaceholder}
-                        style={[
-                          styles.formInput,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                        ]}
-                      />
-                    </View>
-                    <View style={styles.metadataField}>
-                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Cook/bake time</Text>
-                      <TextInput
-                        value={cookTime}
-                        onChangeText={setCookTime}
-                        placeholder="30 minutes"
-                        placeholderTextColor={palette.searchPlaceholder}
-                        style={[
-                          styles.formInput,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                        ]}
-                      />
-                    </View>
-                    <View style={styles.metadataField}>
-                      <Text style={[styles.formLabel, { color: palette.accentText }]}>Servings</Text>
-                      <TextInput
-                        value={servings}
-                        onChangeText={setServings}
-                        placeholder="Serves 4"
-                        placeholderTextColor={palette.searchPlaceholder}
-                        style={[
-                          styles.formInput,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Notes</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    Optional notes, tips, serving sizes, etc.
-                  </Text>
-                  <TextInput
-                    value={notes}
-                    onChangeText={handleNotesChange}
-                    placeholder="Optional notes, substitutions, or reminders"
-                    placeholderTextColor={palette.searchPlaceholder}
-                    multiline
-                    style={[
-                      styles.formInput,
-                      styles.formTextArea,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text },
-                    ]}
-                  />
-                </View>
-
-                {entryMode === 'website' ? (
-                  <View style={styles.formField}>
-                    <Text style={[styles.formLabel, { color: palette.accentText }]}>Website URL *</Text>
-                    <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                      Saved automatically from the recipe URL you imported above. This records where the
-                      recipe came from and can&apos;t be edited here.
-                    </Text>
-                    <TextInput
-                      value={sourceUrl}
-                      editable={false}
-                      placeholder="Import a recipe URL above"
-                      placeholderTextColor={palette.searchPlaceholder}
-                      style={[
-                        styles.formInput,
-                        { backgroundColor: palette.surface, borderColor: palette.borderAlt, color: palette.text, opacity: 0.7 },
-                      ]}
-                    />
-                    {saveAttempted && !sourceUrl ? (
-                      <Text style={[styles.formHint, { color: palette.accent }]}>
-                        Import a recipe URL above before saving a website recipe.
-                      </Text>
-                    ) : null}
-                  </View>
-                ) : null}
-
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergy-friendly tags</Text>
-                  <Text style={[styles.formHint, { color: palette.textSoft }]}>
-                    These are auto-detected from the recipe text first, and you can adjust them before saving.
-                  </Text>
-                  <View style={styles.tagRow}>
-                    {allergyFriendlyTagOptions.map((tag) => {
-                      const isActive = allergyFriendlyTags.includes(tag);
-
-                      return (
-                        <Pressable
-                          key={tag}
-                          onPress={() => handleFriendlyToggle(tag)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.selectableAllergyFriendlyTag,
-                            isActive && { borderColor: '#97bf72' },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: palette.text },
-                              isActive && styles.selectableAllergyFriendlyTagText,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                  <View style={styles.actionRow}>
-                    <Pressable
-                      onPress={handleAutoDetectTags}
-                      style={[
-                        styles.secondaryButton,
-                        { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                      ]}
-                    >
-                      <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>
-                        Auto-detect tags
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={[styles.formLabel, { color: palette.accentText }]}>Allergen tags</Text>
-                  <View style={styles.tagRow}>
-                    {allergenTagOptions.map((tag) => {
-                      const isActive = allergenTags.includes(tag);
-
-                      return (
-                        <Pressable
-                          key={tag}
-                          onPress={() => handleAllergenToggle(tag)}
-                          style={[
-                            styles.servingsButton,
-                            { borderColor: palette.borderAlt, backgroundColor: palette.surface },
-                            isActive && styles.selectableAllergenTag,
-                            isActive && { borderColor: '#e98d34' },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.servingsButtonText,
-                              { color: palette.text },
-                              isActive && styles.selectableAllergenTagText,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                <View style={styles.actionRow}>
-                  <Pressable
-                    onPress={() => router.back()}
-                    style={[styles.secondaryButton, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                  >
-                    <Text style={[styles.secondaryButtonText, { color: palette.accentText }]}>Cancel</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      void handleSave();
-                    }}
-                    style={[
-                      styles.primaryButton,
-                      {
-                        backgroundColor: canSave && !syncBusy ? palette.accent : palette.borderAlt,
-                      },
-                    ]}
-                  >
-                    <Text style={[styles.primaryButtonText, { color: palette.accentContrastText }]}>
-                      {syncBusy ? 'Saving…' : 'Save Recipe'}
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
+            <View style={[styles.settingsDivider, { backgroundColor: palette.border }]} />
+            <Text style={[styles.wizardSectionTitle, { color: palette.accent }]}>Basic information</Text>
+            <BasicInfoFields form={form} categoryStyle="chips" />
+            <WizardFooter
+              primaryLabel="Next: Add details"
+              primaryDisabled={!stepIsValid}
+              onPrimary={() => goTo('details')}
+            />
+            {!stepIsValid ? (
+              <Text style={[styles.accountFeedback, { color: palette.textMuted }]}>
+                Add a recipe name to continue.
+              </Text>
+            ) : null}
           </View>
+        ) : (
+          <View style={styles.wizardFieldStack}>
+            <WizardStepper current={step} completed={(key) => form.stepErrors[key].length === 0} />
 
-          {isWide ? (
-            <View style={styles.secondaryColumn}>
-              <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-                <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Recipe preview</Text>
+            {step === 'details' ? (
+              <DetailsStep
+                form={form}
+                sourceUrl={entryMode === 'website' ? sourceUrl : undefined}
+                onSourceUrlChange={
+                  entryMode === 'website'
+                    ? (url) => {
+                        setWebsiteUrl(url);
+                        if (form.values.sourceInfo) form.set('sourceInfo', { ...form.values.sourceInfo, url });
+                      }
+                    : undefined
+                }
+              />
+            ) : null}
+            {step === 'ingredients' ? (
+              <RecipeSectionEditor
+                label="Ingredients *"
+                hint="Use ## Sauce or [Sauce] for section headers."
+                placeholder={'## Dough\n2 cups flour\n1 teaspoon salt\n\n[Filling]\n1/2 cup butter'}
+                sections={form.values.ingredientsSections}
+                onChange={form.setIngredientsSections}
+                palette={palette}
+              />
+            ) : null}
+            {step === 'directions' ? (
+              <RecipeSectionEditor
+                label="Directions *"
+                hint="Use ## Sauce or [Sauce] for section headers. One step per line; numbers optional."
+                placeholder={'## Prep\n1. Preheat the oven.\n\n[Bake]\n2. Bake until golden.'}
+                ordered
+                sections={form.values.directionsSections}
+                onChange={form.setDirectionsSections}
+                palette={palette}
+              />
+            ) : null}
+            {step === 'finish' ? <FinishStep form={form} onEditStep={goTo} /> : null}
 
-                <View
-                  style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                >
-                  <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{category}</Text>
-                  <Text style={[styles.helperCardTitle, { color: palette.text }]}>
-                    {recipeName.trim() || 'Recipe name will appear here'}
-                  </Text>
-                  <Text style={[styles.helperCardBody, { color: palette.accentText }]}>Ingredients</Text>
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {ingredientsText.trim() ? ingredientsText.trim() : 'No ingredients entered yet'}
-                  </Text>
-                  <Text style={[styles.helperCardBody, { color: palette.accentText }]}>Directions</Text>
-                  <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                    {directionsText.trim() ? directionsText.trim() : 'No directions entered yet'}
-                  </Text>
-                  {prepTime.trim() || cookTime.trim() || servings.trim() ? (
-                    <View style={styles.tagRow}>
-                      {prepTime.trim() ? (
-                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                          <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {prepTime.trim()}</Text>
-                        </View>
-                      ) : null}
-                      {cookTime.trim() ? (
-                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                          <Text style={[styles.tagText, { color: palette.tagText }]}>
-                            {formatCookTimeTag(
-                              { title: recipeName, category, directions: [{ items: [directionsText] }] },
-                              cookTime.trim()
-                            )}
-                          </Text>
-                        </View>
-                      ) : null}
-                      {servings.trim() ? (
-                        <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                          <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {servings.trim()}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  ) : null}
-                  {notes.trim() ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>Notes included</Text>
-                  ) : (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No notes added</Text>
-                  )}
-                  {cuisineRegion.trim() ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      Cuisine region: {cuisineRegion.trim()}
-                    </Text>
-                  ) : (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>No cuisine region added</Text>
-                  )}
-                  {entryMode === 'website' && sourceInfo?.websiteName ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      Website: {sourceInfo.websiteName}
-                    </Text>
-                  ) : null}
-                  {entryMode === 'website' && sourceInfo?.author ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      Author: {sourceInfo.author}
-                    </Text>
-                  ) : null}
-                  {entryMode === 'website' && sourceInfo?.url ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      Source: {sourceInfo.url}
-                    </Text>
-                  ) : null}
-                  {allergenTags.length > 0 ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      Allergens: {allergenTags.join(', ')}
-                    </Text>
-                  ) : null}
-                  {allergyFriendlyTags.length > 0 ? (
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      Allergy-friendly: {allergyFriendlyTags.join(', ')}
-                    </Text>
-                  ) : null}
-                </View>
-
-                {ocrRawText ? (
-                  <View
-                    style={[styles.helperCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                  >
-                    <Text style={[styles.helperCardTitle, { color: palette.text }]}>OCR text preview</Text>
-                    <Text style={[styles.helperCardBody, { color: palette.textMuted }]}>
-                      {ocrRawText}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            </View>
-          ) : null}
-        </View>
+            {saveError ? (
+              <Text style={[styles.accountFeedback, { color: palette.warningText }]}>{saveError}</Text>
+            ) : null}
+            {!stepIsValid && step !== 'finish' ? (
+              <Text style={[styles.accountFeedback, { color: palette.textMuted }]}>
+                {form.stepErrors[step as WizardStep][0]}
+              </Text>
+            ) : null}
+            <WizardFooter
+              onBack={() => goTo(prevStep)}
+              primaryLabel={
+                step === 'finish'
+                  ? syncBusy
+                    ? 'Saving…'
+                    : 'Save recipe'
+                  : `Next: ${WIZARD_STEPS[stepIndex + 1].label}`
+              }
+              primaryIcon={step === 'finish' ? 'none' : 'arrow'}
+              primaryTone={step === 'finish' ? 'save' : 'accent'}
+              primaryDisabled={step === 'finish' ? !form.canSave || syncBusy : !stepIsValid}
+              onPrimary={() => (step === 'finish' ? void handleSave() : nextStep && goTo(nextStep))}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

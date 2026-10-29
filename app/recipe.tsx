@@ -24,6 +24,7 @@ import { useAppSettings } from '../contexts/settings-context';
 import { triggerReorderHaptic } from '../utils/haptics';
 import { applyRecipeFilters, toggleValue } from '../utils/recipe-filters';
 import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
+import { formatCategoryLabel } from '../utils/recipe-form-options';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 import { buildSampleRecipes, sampleRecipeCategories } from '../utils/sample-recipes';
 
@@ -190,7 +191,7 @@ export default function SampleRecipesScreen() {
                     style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
                     {...dragProps}
                   >
-                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
+                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{formatCategoryLabel(recipe.category)}</Text>
                     <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
 
                     {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
@@ -286,7 +287,7 @@ export default function SampleRecipesScreen() {
                           },
                         ]}
                       >
-                        <Text style={[styles.detailCardTitle, { color: statTextColor }]}>{category.name}</Text>
+                        <Text style={[styles.detailCardTitle, { color: statTextColor }]}>{formatCategoryLabel(category.name)}</Text>
                         <Text style={[styles.infoCardMeta, { color: statCountColor }]}>{category.count} recipes</Text>
                         <Text style={[styles.detailCardBody, { color: statBodyColor }]}>
                           {isActive ? 'Current filter' : 'Click to filter'}

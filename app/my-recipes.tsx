@@ -31,11 +31,12 @@ import { useLibraryRecipes, type LibraryRecipe } from '../hooks/use-library-reci
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
 import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
 import { triggerReorderHaptic } from '../utils/haptics';
+import { RECIPE_CATEGORY_VALUES, formatCategoryLabel } from '../utils/recipe-form-options';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 import { applyRecipeFilters, toggleValue } from '../utils/recipe-filters';
 import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 
-const bulkCategoryOptions = ['Keep existing', 'Appetizers', 'Breakfast', 'Side', 'Entree', 'Dessert'] as const;
+const bulkCategoryOptions = ['Keep existing', ...RECIPE_CATEGORY_VALUES] as const;
 
 function toExportRecipe(
   recipe: LibraryRecipe,
@@ -692,7 +693,7 @@ export default function MyRecipesScreen() {
                     ]}
                     {...dragProps}
                   >
-                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{recipe.category}</Text>
+                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{formatCategoryLabel(recipe.category)}</Text>
                     <View style={styles.detailCardHeader}>
                       <View style={styles.detailCardTitleBlock}>
                         <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
@@ -939,7 +940,7 @@ export default function MyRecipesScreen() {
                                   isActive && styles.servingsButtonTextActive,
                                 ]}
                               >
-                                {option}
+                                {formatCategoryLabel(option)}
                               </Text>
                             </Pressable>
                           );

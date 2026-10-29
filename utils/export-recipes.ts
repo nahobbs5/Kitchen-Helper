@@ -7,6 +7,7 @@ import { captureRef } from 'react-native-view-shot';
 
 import { type RecipeSource, type RecipeOverride, type UserRecipe } from '../contexts/custom-recipes-context';
 import { obsidianRecipes, type ObsidianRecipe, type RecipeSection } from '../data/obsidian-recipes';
+import { formatCategoryLabel } from './recipe-form-options';
 import { formatCookTimeTag } from './recipe-metadata';
 
 export type ExportRecipe = {
@@ -343,7 +344,7 @@ function renderRecipeCards(recipes: ExportRecipe[]) {
       (recipe) => `
         <article class="recipe-card">
           <header class="recipe-header">
-            <p class="recipe-category">${escapeHtml(recipe.category)}</p>
+            <p class="recipe-category">${escapeHtml(formatCategoryLabel(recipe.category))}</p>
             <h2 class="recipe-title">${escapeHtml(recipe.title)}</h2>
             ${renderRating(recipe)}
             ${renderMetadata(recipe)}

@@ -475,6 +475,15 @@ The app now supports:
 - deleting app-saved recipes
 - restoring recently deleted recipes from an undo banner
 
+Adding and editing recipes uses a step-by-step wizard:
+
+- Add starts with a choice of Manual entry, Photo (AI or offline OCR), Website, or Markdown, plus basic info (name, category chips, cuisine), then steps Details → Ingredients → Directions → Finish
+- Edit uses the same steps, but every step is tappable and `Save` is available from any step; Delete lives on the Finish step
+- Details: name, category and cuisine dropdowns (cuisine has `Other…` for custom values), a servings stepper and prep/cook minute boxes that take a number or a range (`20-25` is saved as `20–25 minutes`), notes; values the boxes can't show (e.g. `1 hr 20 min`, servings like `4–6`) stay as text boxes, and untouched fields are saved exactly as they were
+- Ingredients and Directions each use the text editor that understands `## Sauce` / `[Sauce]` section headers
+- Finish holds the allergy-friendly / allergen tags (after ingredients and directions, so auto-detect has the recipe text), a review of everything, and the green Save button
+- categories are Appetizer, Breakfast, Entrée, Side, Dessert, and Other (shared list in `utils/recipe-form-options.ts`); the stored value stays `Entree` and `formatCategoryLabel` adds the accent wherever it's shown
+
 Recipe metadata now includes:
 
 - category

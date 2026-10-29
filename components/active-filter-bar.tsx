@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { AppPalette } from './app-theme';
 import { getCategoryIcon, getDietaryIcon } from './filter-icons';
+import { formatCategoryLabel } from '../utils/recipe-form-options';
 import { useRecipeFilters } from '../contexts/recipe-filters-context';
 import {
   countActiveFilters,
@@ -34,7 +35,7 @@ export function ActiveFilterBar({
     ...filters.categories.map((value) => ({
       kind: 'category' as const,
       value,
-      label: value,
+      label: formatCategoryLabel(value),
       Icon: getCategoryIcon(value),
     })),
     ...(filters.ratingActive

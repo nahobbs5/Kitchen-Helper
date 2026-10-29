@@ -767,11 +767,28 @@ This approach was chosen so we could support editing everywhere without writing 
 
 ## Photo Recipe Import: Local OCR And AI Import
 
-The add-recipe flow now has three starting modes:
+The add-recipe flow starts with four modes: manual entry, photo import (local OCR or AI-powered), website URL, and markdown. After choosing, the user continues through the shared recipe wizard.
 
-- manual entry
-- photo import (local OCR or AI-powered)
-- website URL
+### Add / Edit Recipe Wizard
+
+Important files:
+
+- [`app/add-recipe.tsx`](app/add-recipe.tsx) — start screen (mode cards, import panels, basic info) then the wizard
+- [`app/edit-recipe/[slug].tsx`](app/edit-recipe/[slug].tsx) — the same wizard with tappable steps and Save on every step
+- [`hooks/use-recipe-form.ts`](hooks/use-recipe-form.ts) — shared form state, tag auto-detect, metadata extraction, per-step validation, and the save input
+- [`components/recipe-wizard/`](components/recipe-wizard/) — stepper/footer/controls, Details step, and Finish step (tags + review)
+- [`components/recipe-section-editor.tsx`](components/recipe-section-editor.tsx) — the ingredients / directions text editor
+- [`utils/recipe-form-options.ts`](utils/recipe-form-options.ts) — category and cuisine lists, minutes and servings parsing
+
+Behavior:
+
+- steps are Details → Ingredients → Directions → Finish; Add only moves forward when the current step is valid (name, at least one ingredient, at least one direction)
+- ingredients and directions are entered in the `RecipeSectionEditor` text box (`## Sauce` / `[Sauce]` start a section)
+- tags live on the Finish step, after ingredients and directions, because auto-detect reads that text; Add keeps auto-filling them until the user changes one, Edit keeps the saved tags and offers `Auto-detect`
+- Save buttons are green (`SAVE_GREEN` in `components/recipe-wizard/wizard-chrome.tsx`); Next buttons stay burgundy
+- servings uses a stepper when the value is empty or a plain number; prep/cook time boxes accept a number or a range (`20-25` → `20–25 minutes`); other text (`1 hr 20 min`, servings like `4–6`) stays in free-text boxes, and untouched values are saved as-is
+- `Entree` is stored without the accent (data, sync, importers, filters); `formatCategoryLabel` in `utils/recipe-form-options.ts` shows it as `Entrée` on cards, recipe pages, filters, share cards, and PDF export
+- the Edit screen loads the recipe into the form once, so a background sync refresh doesn't wipe in-progress edits
 
 The Account pages also include high-level importer guidance (`/account/importers`) and compatibility notes, but the docs intentionally avoid a hard-coded site list because those results change frequently.
 

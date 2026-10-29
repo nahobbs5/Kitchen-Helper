@@ -20,6 +20,8 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 
+import { formatCategoryLabel } from '../utils/recipe-form-options';
+
 const categoryIcons: Record<string, LucideIcon> = {
   dessert: CakeSlice,
   breakfast: Croissant,
@@ -28,6 +30,7 @@ const categoryIcons: Record<string, LucideIcon> = {
   entree: UtensilsCrossed,
   side: Salad,
   favorites: Star,
+  other: Tag,
 };
 
 export function getCategoryIcon(name: string): LucideIcon {
@@ -61,5 +64,5 @@ export function getDietaryIcon(tag: string): LucideIcon {
 }
 
 export function shortCategoryLabel(name: string) {
-  return name === 'Appetizers' ? 'Apps' : name;
+  return name === 'Appetizers' ? 'Apps' : formatCategoryLabel(name);
 }

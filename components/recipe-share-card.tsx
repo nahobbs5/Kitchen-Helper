@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { StarRating } from './star-rating';
 import { type ExportRecipe } from '../utils/export-recipes';
+import { formatCategoryLabel } from '../utils/recipe-form-options';
 import { formatCookTimeTag } from '../utils/recipe-metadata';
 
 type Props = {
@@ -54,7 +55,7 @@ export function RecipeShareCard({ onLayout, recipe }: Props) {
   return (
     <View collapsable={false} onLayout={onLayout} style={shareStyles.page}>
       <View style={shareStyles.card}>
-        <Text style={shareStyles.category}>{recipe.category}</Text>
+        <Text style={shareStyles.category}>{formatCategoryLabel(recipe.category)}</Text>
         <Text style={shareStyles.title}>{recipe.title}</Text>
 
         {recipe.scaleNote ? (

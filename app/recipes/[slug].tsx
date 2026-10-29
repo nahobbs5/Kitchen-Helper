@@ -19,6 +19,7 @@ import { obsidianRecipeMap } from '../../data/obsidian-recipes';
 import { formatIngredientsText, shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { extractBaseServings, formatScaleLabel, scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { RecipeMetaPill } from '../../components/recipe-meta-pill';
+import { formatCategoryLabel } from '../../utils/recipe-form-options';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -211,7 +212,7 @@ export default function ObsidianRecipeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>{formatCategoryLabel(recipe.category)}</Text>
             <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
             <View style={styles.actionRow}>
               <Pressable

@@ -18,6 +18,7 @@ import { useAppSettings } from '../../contexts/settings-context';
 import { formatIngredientsText, shareRecipe, type ExportRecipe } from '../../utils/export-recipes';
 import { extractBaseServings, formatScaleLabel, scaleIngredientLine } from '../../utils/ingredient-scaling';
 import { RecipeMetaPill } from '../../components/recipe-meta-pill';
+import { formatCategoryLabel } from '../../utils/recipe-form-options';
 import { formatCookTimeTag } from '../../utils/recipe-metadata';
 
 const fractionalPresets = [0.25, 0.5] as const;
@@ -207,7 +208,7 @@ export default function UserRecipeScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: palette.accentText }]}>{recipe.category}</Text>
+            <Text style={[styles.eyebrow, { color: palette.accentText }]}>{formatCategoryLabel(recipe.category)}</Text>
             <Text style={[styles.title, { color: palette.text }]}>{recipe.title}</Text>
             <View style={styles.actionRow}>
               <Pressable
@@ -421,19 +422,12 @@ export default function UserRecipeScreen() {
               )}
             </View>
 
-            {(recipe.notes || recipe.cuisineRegion) ? (
+            {recipe.notes ? (
               <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
                 <Text style={[styles.panelEyebrow, { color: palette.accentText }]}>Notes</Text>
                 <View style={styles.listStack}>
                   <View style={styles.recipeFlatGroup}>
-                    {recipe.cuisineRegion ? (
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                        Cuisine region: {recipe.cuisineRegion}
-                      </Text>
-                    ) : null}
-                    {recipe.notes ? (
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
-                    ) : null}
+                    <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{recipe.notes}</Text>
                   </View>
                 </View>
               </View>
