@@ -65,21 +65,6 @@ export const conversionSections: ConversionSection[] = [
     entries: [],
   },
   {
-    title: 'Oven temperatures',
-    description: 'US, metric, and gas mark references from the chart.',
-    entries: [
-      { from: '325F', result: '170C' },
-      { from: '350F', result: '180C' },
-      { from: '400F', result: '200C' },
-      { from: '450F', result: '230C' },
-    ],
-  },
-  {
-    title: 'Butter to olive oil',
-    description: 'Useful when baking substitutions are needed.',
-    entries: [],
-  },
-  {
     title: 'Butter sticks',
     description: 'Quick reference for US butter sticks, tablespoons, cups, teaspoons, and grams.',
     entries: [],
@@ -96,6 +81,21 @@ export const conversionSections: ConversionSection[] = [
       ],
       note: '1 US stick = 8 tbsp = 1/2 cup = 4 oz = 113 g',
     },
+  },
+  {
+    title: 'Oven temperatures',
+    description: 'US, metric, and gas mark references from the chart.',
+    entries: [
+      { from: '325F', result: '170C' },
+      { from: '350F', result: '180C' },
+      { from: '400F', result: '200C' },
+      { from: '450F', result: '230C' },
+    ],
+  },
+  {
+    title: 'Butter to olive oil',
+    description: 'Useful when baking substitutions are needed.',
+    entries: [],
   },
 ];
 

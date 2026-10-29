@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import type { LayoutChangeEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Pressable, TextInput, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -9,6 +9,8 @@ type ClearableSearchInputProps = Omit<ComponentProps<typeof TextInput>, 'onLayou
   clearAccessibilityLabel?: string;
   clearTintColor: string;
   inputStyle?: StyleProp<TextStyle>;
+  /** Optional icon shown before the text field. */
+  leading?: ReactNode;
   onLayout?: (event: LayoutChangeEvent) => void;
   style?: StyleProp<ViewStyle>;
   value: string;
@@ -18,6 +20,7 @@ export function ClearableSearchInput({
   clearAccessibilityLabel = 'Clear search',
   clearTintColor,
   inputStyle,
+  leading,
   onChangeText,
   onLayout,
   style,
@@ -26,6 +29,7 @@ export function ClearableSearchInput({
 }: ClearableSearchInputProps) {
   return (
     <View onLayout={onLayout} style={style}>
+      {leading}
       <TextInput
         {...inputProps}
         value={value}

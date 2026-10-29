@@ -390,7 +390,21 @@ export default function MyRecipesScreen() {
     updateStickySearch(scrollOffsetRef.current, threshold);
   }
 
-  // Search box, or the "N selected" header while selecting.
+  function renderSelectButton() {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Select recipes"
+        onPress={toggleSelectionMode}
+        style={[styles.selectButton, { backgroundColor: palette.accent, borderColor: palette.accentSoft }]}
+      >
+        <SquareCheck size={18} color={palette.accentContrastText} />
+        <Text style={[styles.selectButtonText, { color: palette.accentContrastText }]}>Select</Text>
+      </Pressable>
+    );
+  }
+
+  // Search box (plus Select when sticky), or the "N selected" header while selecting.
   function renderSearchRow(variant: 'inline' | 'sticky') {
     const onLayout = variant === 'inline' ? handleInlineSearchLayout : undefined;
 
@@ -424,7 +438,7 @@ export default function MyRecipesScreen() {
       );
     }
 
-    return (
+    const searchInput = (
       <ClearableSearchInput
         value={searchText}
         onChangeText={setSearchText}
@@ -435,10 +449,22 @@ export default function MyRecipesScreen() {
         style={[
           styles.searchInput,
           variant === 'sticky' && styles.referenceStickySearchInput,
+          variant === 'sticky' && styles.searchRowInput,
           { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
         ]}
         inputStyle={{ color: palette.text }}
       />
+    );
+
+    if (variant === 'inline') {
+      return searchInput;
+    }
+
+    return (
+      <View style={styles.searchRow}>
+        {searchInput}
+        {renderSelectButton()}
+      </View>
     );
   }
 
@@ -575,19 +601,7 @@ export default function MyRecipesScreen() {
             <ActiveFilterBar
               scope="my-recipes"
               palette={palette}
-              besideFilters={
-                selectionMode ? null : (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Select recipes"
-                    onPress={toggleSelectionMode}
-                    style={[styles.selectButton, { backgroundColor: palette.accent, borderColor: palette.accentSoft }]}
-                  >
-                    <SquareCheck size={18} color={palette.accentContrastText} />
-                    <Text style={[styles.selectButtonText, { color: palette.accentContrastText }]}>Select</Text>
-                  </Pressable>
-                )
-              }
+              besideFilters={selectionMode ? null : renderSelectButton()}
             />
           </View>
         </View>
@@ -1074,14 +1088,16 @@ export default function MyRecipesScreen() {
             >
               <Pressable
                 accessibilityRole="button"
+                accessibilityState={{ selected: showBulkMetadataEditor }}
                 onPress={() => {
                   setShowSelectionMoreMenu(false);
-                  handleFavoriteSelected();
+                  setShowBulkDeleteConfirm(false);
+                  setShowBulkMetadataEditor((current) => !current);
                 }}
                 style={styles.selectionMoreMenuItem}
               >
-                <Star size={18} color={palette.accentText} />
-                <Text style={[styles.selectionMoreMenuText, { color: palette.text }]}>Favorite selected</Text>
+                <Tag size={18} color={palette.accentText} />
+                <Text style={[styles.selectionMoreMenuText, { color: palette.text }]}>Add Tag</Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={clearSelectedRecipes} style={styles.selectionMoreMenuItem}>
                 <X size={18} color={palette.accentText} />
@@ -1109,15 +1125,14 @@ export default function MyRecipesScreen() {
                 },
               },
               {
-                key: 'tag',
-                label: 'Add Tag',
-                Icon: Tag,
-                active: showBulkMetadataEditor,
+                key: 'favorite',
+                label: 'Favorite',
+                Icon: Star,
+                active: false,
                 dimmed: false,
                 onPress: () => {
                   setShowSelectionMoreMenu(false);
-                  setShowBulkDeleteConfirm(false);
-                  setShowBulkMetadataEditor((current) => !current);
+                  handleFavoriteSelected();
                 },
               },
               {

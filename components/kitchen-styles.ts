@@ -816,6 +816,14 @@ export const kitchenStyles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchRowInput: {
+    flex: 1,
+  },
   selectButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1446,5 +1454,181 @@ export const kitchenStyles = StyleSheet.create({
   timerAlertDismissText: {
     fontSize: 14,
     fontWeight: '800',
+  },
+
+  // Kitchen Guides (reference screen)
+  guideHeader: {
+    gap: 14,
+  },
+  guideEyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+  },
+  guideTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  guideTitle: {
+    flex: 1,
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: '800',
+  },
+  guideIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guideTabBar: {
+    flexDirection: 'row',
+    borderRadius: 999,
+    borderWidth: 1,
+    padding: 4,
+    gap: 2,
+  },
+  guideTab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+  },
+  guideTabText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  guideSearchInput: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    marginTop: 0,
+  },
+  guideChipScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 8,
+  },
+  guideChipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  guideChip: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  guideChipText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  guideSection: {
+    gap: 12,
+  },
+  guideSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  guideSectionTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '800',
+  },
+  guideConverterValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  guideConverterValueBlock: {
+    flex: 1,
+    gap: 4,
+  },
+  guideConverterValueBlockEnd: {
+    alignItems: 'flex-end',
+  },
+  guideConverterLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  guideConverterValue: {
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: '800',
+  },
+  guideSwapButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guideList: {
+    gap: 10,
+  },
+  guideRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 12,
+  },
+  guideRowBody: {
+    flex: 1,
+    gap: 3,
+  },
+  guideRowTitle: {
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: '800',
+  },
+  guideRowText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  guideSubLead: {
+    width: 76,
+    gap: 6,
+  },
+  guideSubSwaps: {
+    flex: 1,
+    gap: 3,
+  },
+  guideBulletRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  guideSubTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  guideSubNotes: {
+    borderTopWidth: 1,
+    paddingTop: 10,
+    gap: 8,
+  },
+  guideEmpty: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+    gap: 4,
   },
 });

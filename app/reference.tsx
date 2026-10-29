@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   LayoutChangeEvent,
   PanResponder,
+  type PanResponderInstance,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -10,8 +11,11 @@ import {
   View,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { ChevronRight, Search, SlidersHorizontal } from 'lucide-react-native';
 
 import { ClearableSearchInput } from '../components/clearable-search-input';
+import { GuideConverterCard } from '../components/guide-converter-card';
+import { GuideThumbnail } from '../components/guide-thumbnail';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { allergySubstitutions, chartSubstitutions, conversionSections } from '../components/sample-data';
 import {
@@ -29,22 +33,16 @@ import { cookingTips } from '../data/cooking-tips';
 import { useAppSettings } from '../contexts/settings-context';
 
 type MainTab = 'conversions' | 'substitutions' | 'dictionary' | 'tips';
-type SubSection = 'all' | 'allergy' | 'pantry';
 type DictTab = 'all' | 'general' | 'spices' | 'oils' | 'cheeses' | 'breads' | 'pasta-rice' | 'alcohol' | 'instruments';
 
 const BACK_TO_TOP_SCROLL_THRESHOLD = 600;
 
-const MAIN_TABS: { key: MainTab; label: string }[] = [
+// `short` is the tab pill text when it differs from the page title.
+const MAIN_TABS: { key: MainTab; label: string; short?: string }[] = [
   { key: 'conversions', label: 'Conversions' },
-  { key: 'substitutions', label: 'Substitutions' },
+  { key: 'substitutions', label: 'Substitutions', short: 'Subs' },
   { key: 'dictionary', label: 'Dictionary' },
   { key: 'tips', label: 'Tips' },
-];
-
-const SUB_SECTION_TABS: { key: SubSection; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'allergy', label: 'Allergy Free' },
-  { key: 'pantry', label: 'General Pantry' },
 ];
 
 const DICT_TABS: { key: DictTab; label: string }[] = [
@@ -60,8 +58,52 @@ const DICT_TABS: { key: DictTab; label: string }[] = [
 ];
 
 const allergyTags = Array.from(new Set(allergySubstitutions.map((item) => item.allergy))).sort();
+const PANTRY_CHIP = 'Pantry';
+const subChipOptions = ['All', ...allergyTags, PANTRY_CHIP];
+const tipCategoryOptions = ['All', ...cookingTips.map((group) => group.category)];
+
+type SubSwap = { swap: string; ratio: string; notes: string; tag: string };
+type SubRow = { key: string; name: string; swaps: SubSwap[] };
+
+// Short ratios read well inline ("Oat milk (1:1)"); longer ones move to the expanded notes.
+const INLINE_RATIO_MAX_LENGTH = 14;
+
+function formatSubName(value: string) {
+  const trimmed = value.replace(/^1\s+/, '').trim();
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
+function isInlineRatio(ratio: string) {
+  return ratio.length <= INLINE_RATIO_MAX_LENGTH && !/replacement/i.test(ratio);
+}
+
+/** Merges allergy and pantry swaps into one row per ingredient, e.g. both egg swaps become one "Egg" row. */
+function buildSubRows(): SubRow[] {
+  const rows = new Map<string, SubRow>();
+  const add = (name: string, swap: SubSwap) => {
+    const display = formatSubName(name);
+    const key = display.toLowerCase();
+    const row = rows.get(key) ?? { key, name: display, swaps: [] };
+    row.swaps.push(swap);
+    rows.set(key, row);
+  };
+  for (const item of allergySubstitutions) {
+    add(item.avoid, { swap: item.swap, ratio: item.ratio, notes: item.notes, tag: item.allergy });
+  }
+  for (const item of chartSubstitutions) {
+    add(item.ingredient, { swap: item.swap, ratio: item.ratio, notes: item.note, tag: PANTRY_CHIP });
+  }
+  return Array.from(rows.values());
+}
+
+const subRows = buildSubRows();
 const letterOptions = ['All', ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
-const convOptions = ['All', 'Liquid measure', 'Dry measure', 'Oven temperatures', 'Butter sticks', 'Butter to olive oil'];
+const convOptions = ['All', 'Liquid measure', 'Dry measure', 'Butter sticks', 'Oven temperatures', 'Butter to olive oil'];
+const CONV_SHORT_LABELS: Record<string, string> = {
+  'Liquid measure': 'Liquid',
+  'Dry measure': 'Dry',
+  'Oven temperatures': 'Oven temps',
+};
 const OVEN_TEMPERATURE_SECTION = 'Oven temperatures';
 const OVEN_TEMP_MIN = 200;
 const OVEN_TEMP_MAX = 550;
@@ -264,10 +306,18 @@ export default function ReferenceScreen() {
   const [tspMlValue, setTspMlValue] = useState(3);
   const [tspMlSliderWidth, setTspMlSliderWidth] = useState(0);
 
+  // Header state
+  const [showFilters, setShowFilters] = useState(true);
+  const [collapsedConvSections, setCollapsedConvSections] = useState<Set<string>>(() => new Set());
+
   // Substitutions state
-  const [subSection, setSubSection] = useState<SubSection>('all');
-  const [subTag, setSubTag] = useState<string | null>(null);
+  const [subChip, setSubChip] = useState('All');
   const [subSearch, setSubSearch] = useState('');
+  const [expandedSubs, setExpandedSubs] = useState<Set<string>>(() => new Set());
+
+  // Tips state
+  const [tipCategory, setTipCategory] = useState('All');
+  const [tipSearch, setTipSearch] = useState('');
 
   // Dictionary state
   const [dictTab, setDictTab] = useState<DictTab>('all');
@@ -634,38 +684,39 @@ export default function ReferenceScreen() {
 
   // Substitutions filtering
   const subNormalized = subSearch.trim().toLowerCase();
-  const showAllergy = subSection === 'all' || subSection === 'allergy';
-  const showPantry = subSection === 'all' || subSection === 'pantry';
-
-  const filteredAllergySubstitutions = useMemo(
+  const visibleSubRows = useMemo(
     () =>
-      allergySubstitutions.filter((item) => {
-        const matchesSearch = subNormalized
-          ? `${item.allergy} ${item.avoid} ${item.swap} ${item.ratio} ${item.notes}`
-              .toLowerCase()
-              .includes(subNormalized)
-          : true;
-        const matchesTag = subTag ? item.allergy === subTag : true;
-        return matchesSearch && matchesTag;
-      }),
-    [subNormalized, subTag]
+      subRows
+        .map((row) => ({
+          ...row,
+          swaps: row.swaps.filter((swap) => {
+            const matchesChip = subChip === 'All' || swap.tag === subChip;
+            const matchesSearch = subNormalized
+              ? `${row.name} ${swap.tag} ${swap.swap} ${swap.ratio} ${swap.notes}`
+                  .toLowerCase()
+                  .includes(subNormalized)
+              : true;
+            return matchesChip && matchesSearch;
+          }),
+        }))
+        .filter((row) => row.swaps.length > 0),
+    [subChip, subNormalized]
   );
 
-  const filteredChartSubstitutions = useMemo(
+  // Tips filtering
+  const tipNormalized = tipSearch.trim().toLowerCase();
+  const visibleTips = useMemo(
     () =>
-      chartSubstitutions.filter((item) =>
-        subNormalized
-          ? `${item.ingredient} ${item.swap} ${item.ratio} ${item.note}`
-              .toLowerCase()
-              .includes(subNormalized)
-          : true
-      ),
-    [subNormalized]
+      cookingTips
+        .filter((group) => tipCategory === 'All' || group.category === tipCategory)
+        .flatMap((group) => group.tips.map((tip) => ({ category: group.category, tip })))
+        .filter(({ category, tip }) =>
+          tipNormalized
+            ? `${category} ${tip.title} ${tip.lines.join(' ')}`.toLowerCase().includes(tipNormalized)
+            : true
+        ),
+    [tipCategory, tipNormalized]
   );
-
-  const subResultCount =
-    (showAllergy ? filteredAllergySubstitutions.length : 0) +
-    (showPantry ? filteredChartSubstitutions.length : 0);
 
   // Dictionary filtering
   const dictNormalized = dictSearch.trim().toLowerCase();
@@ -748,510 +799,630 @@ export default function ReferenceScreen() {
   }
 
   function renderSearchInput(variant: 'inline' | 'sticky') {
-    const inputStyle = [
-      styles.searchInput,
-      variant === 'sticky' && styles.referenceStickySearchInput,
-      { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
-    ];
+    // Phone placeholders are measured to fit a 320dp-wide screen; wide screens get the longer wording.
+    const search =
+      activeTab === 'conversions'
+        ? {
+            value: convSearch,
+            onChange: setConvSearch,
+            placeholder: isWide ? 'Search conversions (cup, 350, ml…)' : 'Search conversions (cup, ml…)',
+          }
+        : activeTab === 'substitutions'
+          ? {
+              value: subSearch,
+              onChange: setSubSearch,
+              placeholder: isWide ? 'Search for an ingredient (butter, milk…)' : 'Search swaps (butter, milk…)',
+            }
+          : activeTab === 'dictionary'
+            ? {
+                value: dictSearch,
+                onChange: setDictSearch,
+                placeholder: isWide ? 'Search terms (julienne, roux, braise…)' : 'Search terms (julienne, roux…)',
+              }
+            : { value: tipSearch, onChange: setTipSearch, placeholder: 'Search tips (potato, rice…)' };
 
-    return activeTab === 'conversions' ? (
+    return (
       <ClearableSearchInput
-        value={convSearch}
-        onChangeText={setConvSearch}
-        placeholder={isWide ? "Search conversions like cup, butter, 350, or ml" : "Search (cup, 350, ml…)"}
+        value={search.value}
+        onChangeText={search.onChange}
+        placeholder={search.placeholder}
         placeholderTextColor={palette.searchPlaceholder}
         clearTintColor={palette.searchPlaceholder}
+        leading={<Search size={18} color={palette.accentText} strokeWidth={2.2} />}
         onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
-        style={inputStyle}
-        inputStyle={{ color: palette.text }}
+        style={[
+          styles.searchInput,
+          styles.guideSearchInput,
+          variant === 'sticky' && styles.referenceStickySearchInput,
+          { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
+        ]}
+        // Keeps the placeholder centered top to bottom (Android adds font padding and top-aligns otherwise).
+        inputStyle={{
+          color: palette.text,
+          textAlignVertical: 'center',
+          includeFontPadding: false,
+          paddingVertical: 0,
+        }}
       />
-    ) : activeTab === 'substitutions' ? (
-      <ClearableSearchInput
-        value={subSearch}
-        onChangeText={setSubSearch}
-        placeholder={isWide ? "Search swaps like dairy, butter, egg, or yogurt" : "Search (dairy, egg…)"}
-        placeholderTextColor={palette.searchPlaceholder}
-        clearTintColor={palette.searchPlaceholder}
-        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
-        style={inputStyle}
-        inputStyle={{ color: palette.text }}
-      />
-    ) : (
-      <ClearableSearchInput
-        value={dictSearch}
-        onChangeText={setDictSearch}
-        placeholder={isWide ? "Search terms like aioli, zest, braise, or vinegar" : "Search (aioli, zest…)"}
-        placeholderTextColor={palette.searchPlaceholder}
-        clearTintColor={palette.searchPlaceholder}
-        onLayout={variant === 'inline' ? handleInlineSearchLayout : undefined}
-        style={inputStyle}
-        inputStyle={{ color: palette.text }}
-      />
+    );
+  }
+
+  function renderChip(key: string, label: string, isActive: boolean, onPress: () => void, disabled = false) {
+    return (
+      <Pressable
+        key={key}
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isActive, disabled }}
+        style={[
+          styles.guideChip,
+          { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
+          disabled && { backgroundColor: 'transparent', borderColor: palette.border },
+          isActive && { backgroundColor: palette.accent, borderColor: palette.accent },
+        ]}
+      >
+        <Text
+          style={[
+            styles.guideChipText,
+            { color: disabled ? palette.textSoft : palette.text },
+            isActive && { color: palette.accentContrastText },
+          ]}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  function renderChipRow(chips: ReactNode) {
+    return (
+      <View style={styles.guideChipRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.guideChipScroll}
+          style={{ flex: 1 }}
+        >
+          {chips}
+        </ScrollView>
+        <ChevronRight size={18} color={palette.textSoft} />
+      </View>
+    );
+  }
+
+  function renderChipRows() {
+    if (activeTab === 'conversions') {
+      return renderChipRow(
+        convOptions.map((opt) =>
+          renderChip(opt, CONV_SHORT_LABELS[opt] ?? opt, convSection === opt, () => setConvSection(opt))
+        )
+      );
+    }
+    if (activeTab === 'substitutions') {
+      return renderChipRow(
+        subChipOptions.map((chip) => renderChip(chip, chip, subChip === chip, () => setSubChip(chip)))
+      );
+    }
+    if (activeTab === 'dictionary') {
+      return (
+        <>
+          {renderChipRow(
+            DICT_TABS.map((tab) =>
+              renderChip(tab.key, tab.label, dictTab === tab.key, () => {
+                setDictTab(tab.key);
+                setDictLetter('All');
+              })
+            )
+          )}
+          {renderChipRow(
+            letterOptions.map((letter) => {
+              const isAvailable = letter === 'All' || availableLetters.has(letter);
+              return renderChip(letter, letter, dictLetter === letter, () => setDictLetter(letter), !isAvailable);
+            })
+          )}
+        </>
+      );
+    }
+    return renderChipRow(
+      tipCategoryOptions.map((category) =>
+        renderChip(category, category, tipCategory === category, () => setTipCategory(category))
+      )
+    );
+  }
+
+  function renderSlider(
+    sliderRef: RefObject<View | null>,
+    responder: PanResponderInstance,
+    setSliderWidth: (width: number) => void,
+    measure: () => void,
+    progressWidth: number
+  ) {
+    return (
+      <View
+        ref={sliderRef}
+        onLayout={(event) => {
+          setSliderWidth(event.nativeEvent.layout.width);
+          measure();
+        }}
+        style={styles.ovenSliderHitArea}
+        {...responder.panHandlers}
+      >
+        <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
+          <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: progressWidth }]} />
+          <View
+            style={[
+              styles.ovenSliderThumb,
+              { backgroundColor: palette.accent, borderColor: palette.elevated, left: progressWidth },
+            ]}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  function renderRange(min: string, max: string) {
+    return (
+      <View style={styles.ovenSliderRangeRow}>
+        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{min}</Text>
+        <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{max}</Text>
+      </View>
+    );
+  }
+
+  function renderPresets(presets: { key: string | number; label: string; isActive: boolean; onPress: () => void }[]) {
+    return (
+      <View style={styles.ovenPresetRow}>
+        {presets.map((preset) => (
+          <Pressable
+            key={preset.key}
+            onPress={preset.onPress}
+            style={[
+              styles.ovenPresetButton,
+              { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
+              preset.isActive && { backgroundColor: palette.accent, borderColor: palette.accent },
+            ]}
+          >
+            <Text
+              style={[
+                styles.ovenPresetButtonText,
+                { color: preset.isActive ? palette.accentContrastText : palette.text },
+              ]}
+            >
+              {preset.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     );
   }
 
   function renderOvenTemperatureConverter() {
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Fahrenheit</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ovenFahrenheit}F</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Celsius</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ovenCelsius}C</Text>
-          </View>
-        </View>
-
-        <View
-          ref={ovenSliderRef}
-          onLayout={(event) => {
-            setOvenSliderWidth(event.nativeEvent.layout.width);
-            measureOvenSlider();
-          }}
-          style={styles.ovenSliderHitArea}
-          {...ovenSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View
-              style={[
-                styles.ovenSliderFill,
-                { backgroundColor: palette.accentSoft, width: ovenProgressWidth },
-              ]}
-            />
-            <View
-              style={[
-                styles.ovenSliderThumb,
-                {
-                  backgroundColor: palette.accent,
-                  borderColor: palette.surface,
-                  left: ovenProgressWidth,
-                },
-              ]}
-            />
-          </View>
-        </View>
-
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OVEN_TEMP_MIN}F</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OVEN_TEMP_MAX}F</Text>
-        </View>
-
-        <View style={styles.ovenPresetRow}>
-          {OVEN_TEMP_PRESETS.map((preset) => {
-            const isActive = preset === ovenFahrenheit;
-
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setOvenFahrenheit(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset}F</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard
+        fromLabel="Fahrenheit"
+        fromValue={`${ovenFahrenheit}°F`}
+        toLabel="Celsius"
+        toValue={`${ovenCelsius}°C`}
+      >
+        {renderSlider(ovenSliderRef, ovenSliderResponder, setOvenSliderWidth, measureOvenSlider, ovenProgressWidth)}
+        {renderRange(`${OVEN_TEMP_MIN}°F`, `${OVEN_TEMP_MAX}°F`)}
+        {renderPresets(
+          OVEN_TEMP_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${preset}°F`,
+            isActive: preset === ovenFahrenheit,
+            onPress: () => setOvenFahrenheit(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderOzToMlConverter() {
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Ounces</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ozValue} oz</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Milliliters</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ozMl} ml</Text>
-          </View>
-        </View>
-
-        <View
-          ref={ozSliderRef}
-          onLayout={(event) => {
-            setOzSliderWidth(event.nativeEvent.layout.width);
-            measureOzSlider();
-          }}
-          style={styles.ovenSliderHitArea}
-          {...ozSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: ozProgressWidth }]} />
-            <View
-              style={[
-                styles.ovenSliderThumb,
-                { backgroundColor: palette.accent, borderColor: palette.surface, left: ozProgressWidth },
-              ]}
-            />
-          </View>
-        </View>
-
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OZ_MIN} oz</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{OZ_MAX} oz</Text>
-        </View>
-
-        <View style={styles.ovenPresetRow}>
-          {OZ_PRESETS.map((preset) => {
-            const isActive = preset === ozValue;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setOzValue(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset} oz</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard fromLabel="Ounces" fromValue={`${ozValue} oz`} toLabel="Milliliters" toValue={`${ozMl} ml`}>
+        {renderSlider(ozSliderRef, ozSliderResponder, setOzSliderWidth, measureOzSlider, ozProgressWidth)}
+        {renderRange(`${OZ_MIN} oz`, `${OZ_MAX} oz`)}
+        {renderPresets(
+          OZ_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${preset} oz`,
+            isActive: preset === ozValue,
+            onPress: () => setOzValue(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderCupToOzConverter() {
-    const cupLabel = `${formatCups(cupValue)} cup${cupValue > 1 ? 's' : ''}`;
-    const ozLabel = `${cupOz} fl oz`;
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupLabel}</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Fl oz</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{ozLabel}</Text>
-          </View>
-        </View>
-
-        <View
-          ref={cupSliderRef}
-          onLayout={(event) => {
-            setCupSliderWidth(event.nativeEvent.layout.width);
-            measureCupSlider();
-          }}
-          style={styles.ovenSliderHitArea}
-          {...cupSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: cupProgressWidth }]} />
-            <View
-              style={[
-                styles.ovenSliderThumb,
-                { backgroundColor: palette.accent, borderColor: palette.surface, left: cupProgressWidth },
-              ]}
-            />
-          </View>
-        </View>
-
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 cup</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>4 cups</Text>
-        </View>
-
-        <View style={styles.ovenPresetRow}>
-          {CUP_PRESETS.map((preset) => {
-            const isActive = Math.abs(preset - cupValue) < 0.01;
-            const label = `${formatCups(preset)} cup${preset > 1 ? 's' : ''}`;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setCupValue(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard
+        fromLabel="Cups"
+        fromValue={`${formatCups(cupValue)} cup${cupValue > 1 ? 's' : ''}`}
+        toLabel="Fl oz"
+        toValue={`${cupOz} fl oz`}
+      >
+        {renderSlider(cupSliderRef, cupSliderResponder, setCupSliderWidth, measureCupSlider, cupProgressWidth)}
+        {renderRange('1/4 cup', '4 cups')}
+        {renderPresets(
+          CUP_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${formatCups(preset)} cup${preset > 1 ? 's' : ''}`,
+            isActive: Math.abs(preset - cupValue) < 0.01,
+            onPress: () => setCupValue(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderButterOliveOilConverter() {
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Butter</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{formatVolume(butterTsp)}</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Olive oil</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{formatVolume(oliveOilTsp)}</Text>
-          </View>
-        </View>
-
-        <View
-          ref={butterSliderRef}
-          onLayout={(event) => {
-            setButterSliderWidth(event.nativeEvent.layout.width);
-            measureButterSlider();
-          }}
-          style={styles.ovenSliderHitArea}
-          {...butterSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: butterProgressWidth }]} />
-            <View
-              style={[
-                styles.ovenSliderThumb,
-                { backgroundColor: palette.accent, borderColor: palette.surface, left: butterProgressWidth },
-              ]}
-            />
-          </View>
-        </View>
-
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1 tsp</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1 cup</Text>
-        </View>
-
-        <View style={styles.ovenPresetRow}>
-          {BUTTER_PRESETS_TSP.map((preset) => {
-            const isActive = preset === butterTsp;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setButterTsp(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatVolume(preset)}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard
+        fromLabel="Butter"
+        fromValue={formatVolume(butterTsp)}
+        toLabel="Olive oil"
+        toValue={formatVolume(oliveOilTsp)}
+      >
+        {renderSlider(butterSliderRef, butterSliderResponder, setButterSliderWidth, measureButterSlider, butterProgressWidth)}
+        {renderRange('1 tsp', '1 cup')}
+        {renderPresets(
+          BUTTER_PRESETS_TSP.map((preset) => ({
+            key: preset,
+            label: formatVolume(preset),
+            isActive: preset === butterTsp,
+            onPress: () => setButterTsp(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderGalToCupConverter() {
-    const galLabel = `${formatCups(galValue)} gal`;
-    const cupsLabel = `${galCups} cups`;
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Gallons</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{galLabel}</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupsLabel}</Text>
-          </View>
-        </View>
-        <View
-          ref={galSliderRef}
-          onLayout={(event) => { setGalSliderWidth(event.nativeEvent.layout.width); measureGalSlider(); }}
-          style={styles.ovenSliderHitArea}
-          {...galSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: galProgressWidth }]} />
-            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: galProgressWidth }]} />
-          </View>
-        </View>
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 gal</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{GAL_MAX} gal</Text>
-        </View>
-        <View style={styles.ovenPresetRow}>
-          {GAL_PRESETS.map((preset) => {
-            const isActive = Math.abs(preset - galValue) < 0.01;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setGalValue(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatCups(preset)} gal</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard
+        fromLabel="Gallons"
+        fromValue={`${formatCups(galValue)} gal`}
+        toLabel="Cups"
+        toValue={`${galCups} cups`}
+      >
+        {renderSlider(galSliderRef, galSliderResponder, setGalSliderWidth, measureGalSlider, galProgressWidth)}
+        {renderRange('1/4 gal', `${GAL_MAX} gal`)}
+        {renderPresets(
+          GAL_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${formatCups(preset)} gal`,
+            isActive: Math.abs(preset - galValue) < 0.01,
+            onPress: () => setGalValue(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderQtToCupConverter() {
-    const qtLabel = `${formatCups(qtValue)} qt`;
-    const cupsLabel = `${qtCups} cups`;
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Quarts</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{qtLabel}</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupsLabel}</Text>
-          </View>
-        </View>
-        <View
-          ref={qtSliderRef}
-          onLayout={(event) => { setQtSliderWidth(event.nativeEvent.layout.width); measureQtSlider(); }}
-          style={styles.ovenSliderHitArea}
-          {...qtSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: qtProgressWidth }]} />
-            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: qtProgressWidth }]} />
-          </View>
-        </View>
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 qt</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{QT_MAX} qt</Text>
-        </View>
-        <View style={styles.ovenPresetRow}>
-          {QT_PRESETS.map((preset) => {
-            const isActive = Math.abs(preset - qtValue) < 0.01;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setQtValue(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatCups(preset)} qt</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard
+        fromLabel="Quarts"
+        fromValue={`${formatCups(qtValue)} qt`}
+        toLabel="Cups"
+        toValue={`${qtCups} cups`}
+      >
+        {renderSlider(qtSliderRef, qtSliderResponder, setQtSliderWidth, measureQtSlider, qtProgressWidth)}
+        {renderRange('1/4 qt', `${QT_MAX} qt`)}
+        {renderPresets(
+          QT_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${formatCups(preset)} qt`,
+            isActive: Math.abs(preset - qtValue) < 0.01,
+            onPress: () => setQtValue(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderLiterToCupConverter() {
-    const literLabel = `${formatCups(literValue)} L`;
-    const cupsLabel = `${literCups} cups`;
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Liters</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{literLabel}</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Cups</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{cupsLabel}</Text>
-          </View>
-        </View>
-        <View
-          ref={literSliderRef}
-          onLayout={(event) => { setLiterSliderWidth(event.nativeEvent.layout.width); measureLiterSlider(); }}
-          style={styles.ovenSliderHitArea}
-          {...literSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: literProgressWidth }]} />
-            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: literProgressWidth }]} />
-          </View>
-        </View>
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>1/4 L</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{LITER_MAX} L</Text>
-        </View>
-        <View style={styles.ovenPresetRow}>
-          {LITER_PRESETS.map((preset) => {
-            const isActive = Math.abs(preset - literValue) < 0.01;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setLiterValue(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{formatCups(preset)} L</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <GuideConverterCard
+        fromLabel="Liters"
+        fromValue={`${formatCups(literValue)} L`}
+        toLabel="Cups"
+        toValue={`${literCups} cups`}
+      >
+        {renderSlider(literSliderRef, literSliderResponder, setLiterSliderWidth, measureLiterSlider, literProgressWidth)}
+        {renderRange('1/4 L', `${LITER_MAX} L`)}
+        {renderPresets(
+          LITER_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${formatCups(preset)} L`,
+            isActive: Math.abs(preset - literValue) < 0.01,
+            onPress: () => setLiterValue(preset),
+          }))
+        )}
+      </GuideConverterCard>
     );
   }
 
   function renderTspToMlConverter() {
     return (
-      <View style={[styles.ovenConverterCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-        <View style={styles.ovenConverterValueRow}>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Teaspoons</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{tspMlValue} tsp</Text>
-          </View>
-          <View style={styles.ovenConverterValueBlock}>
-            <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>Milliliters</Text>
-            <Text style={[styles.ovenConverterValue, { color: palette.text }]}>{tspMl} ml</Text>
-          </View>
-        </View>
-        <View
-          ref={tspMlSliderRef}
-          onLayout={(event) => { setTspMlSliderWidth(event.nativeEvent.layout.width); measureTspMlSlider(); }}
-          style={styles.ovenSliderHitArea}
-          {...tspMlSliderResponder.panHandlers}
-        >
-          <View style={[styles.ovenSliderTrack, { backgroundColor: palette.borderAlt }]}>
-            <View style={[styles.ovenSliderFill, { backgroundColor: palette.accentSoft, width: tspMlProgressWidth }]} />
-            <View style={[styles.ovenSliderThumb, { backgroundColor: palette.accent, borderColor: palette.surface, left: tspMlProgressWidth }]} />
-          </View>
-        </View>
-        <View style={styles.ovenSliderRangeRow}>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{TSP_ML_MIN} tsp</Text>
-          <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{TSP_ML_MAX} tsp</Text>
-        </View>
-        <View style={styles.ovenPresetRow}>
-          {TSP_ML_PRESETS.map((preset) => {
-            const isActive = preset === tspMlValue;
-            return (
-              <Pressable
-                key={preset}
-                onPress={() => setTspMlValue(preset)}
-                style={[
-                  styles.ovenPresetButton,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                  isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                ]}
-              >
-                <Text style={[styles.ovenPresetButtonText, { color: palette.text }]}>{preset} tsp</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+      <GuideConverterCard
+        fromLabel="Teaspoons"
+        fromValue={`${tspMlValue} tsp`}
+        toLabel="Milliliters"
+        toValue={`${tspMl} ml`}
+      >
+        {renderSlider(tspMlSliderRef, tspMlSliderResponder, setTspMlSliderWidth, measureTspMlSlider, tspMlProgressWidth)}
+        {renderRange(`${TSP_ML_MIN} tsp`, `${TSP_ML_MAX} tsp`)}
+        {renderPresets(
+          TSP_ML_PRESETS.map((preset) => ({
+            key: preset,
+            label: `${preset} tsp`,
+            isActive: preset === tspMlValue,
+            onPress: () => setTspMlValue(preset),
+          }))
+        )}
+      </GuideConverterCard>
+    );
+  }
+
+  function toggleConvSection(title: string) {
+    setCollapsedConvSections((current) => {
+      const next = new Set(current);
+      if (next.has(title)) next.delete(title);
+      else next.add(title);
+      return next;
+    });
+  }
+
+  function toggleSubRow(key: string) {
+    setExpandedSubs((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function renderEmpty(title: string, body: string) {
+    return (
+      <View style={[styles.guideEmpty, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}>
+        <Text style={[styles.guideRowTitle, { color: palette.text }]}>{title}</Text>
+        <Text style={[styles.guideRowText, { color: palette.textMuted }]}>{body}</Text>
       </View>
     );
   }
+
+  function renderConversionSectionBody(section: (typeof visibleConvSections)[number]) {
+    return (
+      <>
+        {section.table ? (
+          <View style={[styles.detailCard, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}>
+            <View style={styles.conversionTable}>
+              <View style={[styles.conversionTableRow, styles.conversionTableHeader]}>
+                {section.table.columns.map((column, index) => (
+                  <Text
+                    key={column}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.82}
+                    maxFontSizeMultiplier={1.1}
+                    style={[
+                      styles.conversionTableCell,
+                      index === 0 && styles.conversionTableAmountCell,
+                      index > 0 && index < section.table!.columns.length - 1 && styles.conversionTableShortCell,
+                      index === section.table!.columns.length - 1 && styles.conversionTableGramsCell,
+                      styles.conversionTableHeaderCell,
+                      { color: palette.accentText },
+                    ]}
+                  >
+                    {column}
+                  </Text>
+                ))}
+              </View>
+              {section.table.rows.map((row) => (
+                <View key={row.join('-')} style={styles.conversionTableRow}>
+                  {row.map((cell, index) => (
+                    <Text
+                      key={`${row[0]}-${index}`}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.82}
+                      maxFontSizeMultiplier={1.1}
+                      style={[
+                        styles.conversionTableCell,
+                        index === 0 && styles.conversionTableAmountCell,
+                        index > 0 && index < row.length - 1 && styles.conversionTableShortCell,
+                        index === row.length - 1 && styles.conversionTableGramsCell,
+                        { color: index === 0 ? palette.text : palette.textMuted },
+                      ]}
+                    >
+                      {cell}
+                    </Text>
+                  ))}
+                </View>
+              ))}
+            </View>
+            <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{section.table.note}</Text>
+          </View>
+        ) : null}
+        {section.title === OVEN_TEMPERATURE_SECTION ? (
+          renderOvenTemperatureConverter()
+        ) : (
+          <>
+            {section.entries.map((entry) => (
+              <View
+                key={`${section.title}-${entry.from}-${entry.result}`}
+                style={[styles.guideRow, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <View style={styles.guideRowBody}>
+                  <Text style={[styles.guideRowTitle, { color: palette.text }]}>{entry.from}</Text>
+                  <Text style={[styles.guideRowText, { color: palette.textMuted }]}>{entry.result}</Text>
+                </View>
+              </View>
+            ))}
+            {section.title === OZ_TO_ML_SECTION && renderOzToMlConverter()}
+            {section.title === OZ_TO_ML_SECTION && renderGalToCupConverter()}
+            {section.title === OZ_TO_ML_SECTION && renderQtToCupConverter()}
+            {section.title === OZ_TO_ML_SECTION && renderLiterToCupConverter()}
+            {section.title === CUP_TO_OZ_SECTION && renderCupToOzConverter()}
+            {section.title === CUP_TO_OZ_SECTION && renderTspToMlConverter()}
+            {section.title === BUTTER_OLIVE_SECTION && renderButterOliveOilConverter()}
+          </>
+        )}
+      </>
+    );
+  }
+
+  function renderConversions() {
+    return (
+      <View style={styles.listStack}>
+        {visibleConvSections.map((section) => {
+          // A search should never hide its own results behind a collapsed section.
+          const isCollapsed = !convNormalized && collapsedConvSections.has(section.title);
+          return (
+            <View key={section.title} style={styles.guideSection}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: !isCollapsed }}
+                onPress={() => toggleConvSection(section.title)}
+                style={styles.guideSectionHeader}
+              >
+                <Text style={[styles.guideSectionTitle, { color: palette.accent }]}>{section.title}</Text>
+                <View style={{ transform: [{ rotate: isCollapsed ? '180deg' : '0deg' }] }}>
+                  <ChevronUpIcon color={palette.text} />
+                </View>
+              </Pressable>
+              {isCollapsed ? null : renderConversionSectionBody(section)}
+            </View>
+          );
+        })}
+        {visibleConvSections.length === 0
+          ? renderEmpty('No conversion results found', 'Try another search term or switch back to All.')
+          : null}
+      </View>
+    );
+  }
+
+  function renderSubstitutions() {
+    return (
+      <View style={styles.guideList}>
+        {visibleSubRows.map((row) => {
+          const isExpanded = expandedSubs.has(row.key);
+          return (
+            <Pressable
+              key={row.key}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: isExpanded }}
+              onPress={() => toggleSubRow(row.key)}
+              style={[
+                styles.guideRow,
+                {
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  backgroundColor: palette.elevated,
+                  borderColor: palette.borderAlt,
+                },
+              ]}
+            >
+              <View style={styles.guideSubTopRow}>
+                <View style={styles.guideSubLead}>
+                  <Text style={[styles.guideRowTitle, { color: palette.text }]}>{row.name}</Text>
+                  <GuideThumbnail name={row.name} size={52} />
+                </View>
+                <Text style={[styles.guideRowTitle, { color: palette.accentText }]}>→</Text>
+                <View style={styles.guideSubSwaps}>
+                  {row.swaps.map((swap) => (
+                    <View key={`${swap.tag}-${swap.swap}`} style={styles.guideBulletRow}>
+                      <Text style={[styles.guideRowText, { color: palette.textMuted }]}>•</Text>
+                      <Text style={[styles.guideRowText, { color: palette.text, flex: 1 }]}>
+                        {isInlineRatio(swap.ratio) ? `${swap.swap} (${swap.ratio})` : swap.swap}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}>
+                  <ChevronRight size={18} color={palette.textSoft} />
+                </View>
+              </View>
+              {isExpanded ? (
+                <View style={[styles.guideSubNotes, { borderTopColor: palette.border }]}>
+                  {row.swaps.map((swap) => (
+                    <View key={`${swap.tag}-${swap.swap}-notes`} style={{ gap: 2 }}>
+                      <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>
+                        {`${swap.swap} · ${swap.tag}`}
+                      </Text>
+                      {!isInlineRatio(swap.ratio) && !/replacement/i.test(swap.ratio) ? (
+                        <Text style={[styles.guideRowText, { color: palette.text }]}>{swap.ratio}</Text>
+                      ) : null}
+                      <Text style={[styles.guideRowText, { color: palette.textMuted }]}>{swap.notes}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })}
+        {visibleSubRows.length === 0
+          ? renderEmpty('No substitution matches', 'Try another search term or switch back to All.')
+          : null}
+      </View>
+    );
+  }
+
+  function renderDictionary() {
+    return (
+      <View style={styles.guideList}>
+        {groupedDictEntries.map((group) => (
+          <View key={`${dictTab}-${group.letter}`} style={styles.guideList}>
+            <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8 }]}>{group.letter}</Text>
+            {group.entries.map((entry) => (
+              <View
+                key={`${dictTab}-${entry.term}`}
+                style={[styles.guideRow, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+              >
+                <View style={styles.guideRowBody}>
+                  <Text style={[styles.guideRowTitle, { color: palette.accent }]}>{entry.term}</Text>
+                  {renderDictionaryDefinition(entry.definition, palette.textMuted)}
+                </View>
+              </View>
+            ))}
+          </View>
+        ))}
+        {visibleDictEntries.length === 0
+          ? renderEmpty('No dictionary matches found', 'Try another search term or switch back to All.')
+          : null}
+      </View>
+    );
+  }
+
+  function renderTips() {
+    return (
+      <View style={styles.guideList}>
+        {visibleTips.map(({ category, tip }) => (
+          <View
+            key={`${category}-${tip.title}`}
+            style={[styles.guideRow, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}
+          >
+            <GuideThumbnail name={tip.title} iconHint={category} />
+            <View style={styles.guideRowBody}>
+              <Text style={[styles.guideRowTitle, { color: palette.text }]}>{tip.title}</Text>
+              {tip.lines.map((line, index) => (
+                <Text key={index} style={[styles.guideRowText, { color: palette.textMuted }]}>
+                  {line}
+                </Text>
+              ))}
+            </View>
+          </View>
+        ))}
+        {visibleTips.length === 0 ? renderEmpty('No tips found', 'Try another search term or switch back to All.') : null}
+      </View>
+    );
+  }
+
+  const activeTabLabel = MAIN_TABS.find((tab) => tab.key === activeTab)?.label ?? 'Kitchen Guides';
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
@@ -1274,453 +1445,66 @@ export default function ReferenceScreen() {
           onLayout={(event) => {
             heroLayoutYRef.current = event.nativeEvent.layout.y;
           }}
-          style={[
-            styles.hero,
-            isWide && styles.heroWide,
-            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-          ]}
+          style={styles.guideHeader}
         >
-          <View style={styles.heroCopy}>
-            <Text style={[styles.title, { color: palette.text, fontSize: 28, lineHeight: 34 }]}>Kitchen Guides</Text>
-            <View style={styles.numberGrid}>
-              {MAIN_TABS.map((tab) => {
-                const isActive = activeTab === tab.key;
-                return (
-                  <Pressable
-                    key={tab.key}
-                    onPress={() => setActiveTab(tab.key)}
-                    style={[
-                      styles.numberButton,
-                      { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
-                      isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                    ]}
-                  >
-                    <Text style={[styles.numberButtonText, { color: palette.text }]}>{tab.label}</Text>
-                  </Pressable>
-                );
-              })}
+          <View style={styles.guideTitleRow}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={[styles.guideEyebrow, { color: palette.accentText }]}>Kitchen Guides</Text>
+              <Text style={[styles.guideTitle, { color: palette.text }]}>{activeTabLabel}</Text>
             </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={showFilters ? 'Hide filters' : 'Show filters'}
+              accessibilityState={{ expanded: showFilters }}
+              onPress={() => setShowFilters((current) => !current)}
+              style={[
+                styles.guideIconButton,
+                { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
+                !showFilters && { backgroundColor: palette.elevatedAlt },
+              ]}
+            >
+              <SlidersHorizontal size={20} color={palette.accent} strokeWidth={2.2} />
+            </Pressable>
           </View>
 
-          {activeTab !== 'tips' && <View
+          <View style={[styles.guideTabBar, { backgroundColor: palette.elevated, borderColor: palette.borderAlt }]}>
+            {MAIN_TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <Pressable
+                  key={tab.key}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: isActive }}
+                  onPress={() => setActiveTab(tab.key)}
+                  style={[styles.guideTab, isActive && { backgroundColor: palette.accent }]}
+                >
+                  <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    style={[styles.guideTabText, { color: isActive ? palette.accentContrastText : palette.text }]}
+                  >
+                    {tab.short ?? tab.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View
             onLayout={(event) => {
               heroCardLayoutYRef.current = event.nativeEvent.layout.y;
             }}
-            style={[styles.heroCard, isMobile && styles.recipeFilterCardMobile, { backgroundColor: palette.elevatedDark }]}
           >
-            {activeTab === 'conversions' && (
-              <>
-                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Conversions</Text>
-                {renderSearchInput('inline')}
-                <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
-                  {convOptions.map((opt) => {
-                    const isActive = convSection === opt;
-                    return (
-                      <Pressable
-                        key={opt}
-                        onPress={() => setConvSection(opt)}
-                        style={[
-                          isMobile ? styles.servingsButton : styles.numberButton,
-                          isMobile && styles.recipeFilterButtonMobile,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                          isActive && (isMobile ? styles.servingsButtonActive : styles.numberButtonActive),
-                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            isMobile ? styles.servingsButtonText : styles.numberButtonText,
-                            { color: palette.text },
-                            isActive && isMobile && styles.servingsButtonTextActive,
-                          ]}
-                        >
-                          {isMobile && opt === 'Liquid measure'
-                            ? 'Liquid'
-                            : isMobile && opt === 'Dry measure'
-                              ? 'Dry'
-                              : isMobile && opt === 'Oven temperatures'
-                                ? 'Oven temps'
-                                : opt}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </>
-            )}
+            {renderSearchInput('inline')}
+          </View>
 
-            {activeTab === 'substitutions' && (
-              <>
-                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Substitutions</Text>
-                {renderSearchInput('inline')}
-                {subNormalized ? (
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                    {subResultCount} {subResultCount === 1 ? 'result' : 'results'}
-                  </Text>
-                ) : null}
-                <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
-                  {SUB_SECTION_TABS.map((tab) => {
-                    const isActive = subSection === tab.key;
-                    return (
-                      <Pressable
-                        key={tab.key}
-                        onPress={() => {
-                          setSubSection(tab.key);
-                          setSubTag(null);
-                          setSubSearch('');
-                        }}
-                        style={[
-                          isMobile ? styles.servingsButton : styles.numberButton,
-                          isMobile && styles.recipeFilterButtonMobile,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                          isActive && (isMobile ? styles.servingsButtonActive : styles.numberButtonActive),
-                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            isMobile ? styles.servingsButtonText : styles.numberButtonText,
-                            { color: palette.text },
-                            isActive && isMobile && styles.servingsButtonTextActive,
-                          ]}
-                        >
-                          {tab.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                {subSection === 'allergy' ? (
-                  <View style={styles.numberGrid}>
-                    {allergyTags.map((tag) => {
-                      const isActive = subTag === tag;
-                      return (
-                        <Pressable
-                          key={tag}
-                          onPress={() => setSubTag((prev) => (prev === tag ? null : tag))}
-                          style={[
-                            styles.numberButton,
-                            { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                            isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.numberButtonText,
-                              { color: palette.text },
-                              isActive && styles.servingsButtonTextActive,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                ) : null}
-              </>
-            )}
-
-            {activeTab === 'dictionary' && (
-              <>
-                <Text style={[styles.heroCardLabel, { color: palette.accentSoft }]}>Dictionary</Text>
-                <Text style={[styles.heroCardTitle, { color: palette.inverseText }]}>
-                  {visibleDictEntries.length} terms shown
-                </Text>
-                {renderSearchInput('inline')}
-                <View style={isMobile ? [styles.servingsRow, styles.recipeFilterRowMobile] : styles.numberGrid}>
-                  {DICT_TABS.map((tab) => {
-                    const isActive = dictTab === tab.key;
-                    return (
-                      <Pressable
-                        key={tab.key}
-                        onPress={() => {
-                          setDictTab(tab.key);
-                          setDictLetter('All');
-                          setDictSearch('');
-                        }}
-                        style={[
-                          isMobile ? styles.servingsButton : styles.numberButton,
-                          isMobile && styles.recipeFilterButtonMobile,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                          isActive && (isMobile ? styles.servingsButtonActive : styles.numberButtonActive),
-                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            isMobile ? styles.servingsButtonText : styles.numberButtonText,
-                            { color: palette.text },
-                            isActive && isMobile && styles.servingsButtonTextActive,
-                          ]}
-                        >
-                          {tab.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                <View style={styles.numberGrid}>
-                  {letterOptions.map((letter) => {
-                    const isActive = dictLetter === letter;
-                    const isAvailable = letter === 'All' || availableLetters.has(letter);
-                    return (
-                      <Pressable
-                        key={letter}
-                        onPress={() => isAvailable && setDictLetter(letter)}
-                        disabled={!isAvailable}
-                        style={[
-                          styles.numberButton,
-                          isMobile && styles.dictionaryLetterButtonMobile,
-                          { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                          !isAvailable && styles.numberButtonDisabled,
-                          !isAvailable && { backgroundColor: palette.elevated, borderColor: palette.border },
-                          isActive && { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.numberButtonText,
-                            { color: isAvailable ? palette.text : palette.textSoft },
-                          ]}
-                        >
-                          {letter}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </>
-            )}
-
-          </View>}
+          {showFilters ? renderChipRows() : null}
         </View>
 
-        {activeTab === 'conversions' && (
-          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-            <Text style={[styles.panelTitle, { color: palette.text }]}>
-              {convSection === 'All' ? 'All conversion sections' : convSection}
-            </Text>
-            <View style={styles.listStack}>
-              {visibleConvSections.map((section) => (
-                <View key={section.title} style={{ gap: 14 }}>
-                  {convSection === 'All' ? (
-                    <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8, marginBottom: 4 }]}>
-                      {section.title}
-                    </Text>
-                  ) : null}
-                  {section.table ? (
-                    <View
-                      style={[
-                        styles.detailCard,
-                        { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                      ]}
-                    >
-                      <View style={styles.conversionTable}>
-                        <View style={[styles.conversionTableRow, styles.conversionTableHeader]}>
-                          {section.table.columns.map((column, index) => (
-                            <Text
-                              key={column}
-                              numberOfLines={1}
-                              adjustsFontSizeToFit
-                              minimumFontScale={0.82}
-                              maxFontSizeMultiplier={1.1}
-                              style={[
-                                styles.conversionTableCell,
-                                index === 0 && styles.conversionTableAmountCell,
-                                index > 0 &&
-                                  index < section.table!.columns.length - 1 &&
-                                  styles.conversionTableShortCell,
-                                index === section.table!.columns.length - 1 && styles.conversionTableGramsCell,
-                                styles.conversionTableHeaderCell,
-                                { color: palette.accentText },
-                              ]}
-                            >
-                              {column}
-                            </Text>
-                          ))}
-                        </View>
-                        {section.table.rows.map((row) => (
-                          <View key={row.join('-')} style={styles.conversionTableRow}>
-                            {row.map((cell, index) => (
-                              <Text
-                                key={`${row[0]}-${index}`}
-                                numberOfLines={1}
-                                adjustsFontSizeToFit
-                                minimumFontScale={0.82}
-                                maxFontSizeMultiplier={1.1}
-                                style={[
-                                  styles.conversionTableCell,
-                                  index === 0 && styles.conversionTableAmountCell,
-                                  index > 0 && index < row.length - 1 && styles.conversionTableShortCell,
-                                  index === row.length - 1 && styles.conversionTableGramsCell,
-                                  { color: index === 0 ? palette.text : palette.textMuted },
-                                ]}
-                              >
-                                {cell}
-                              </Text>
-                            ))}
-                          </View>
-                        ))}
-                      </View>
-                      <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                        {section.table.note}
-                      </Text>
-                    </View>
-                  ) : null}
-                  {section.title === OVEN_TEMPERATURE_SECTION
-                    ? renderOvenTemperatureConverter()
-                    : (
-                      <>
-                        {section.entries.map((entry) => (
-                          <View
-                            key={`${section.title}-${entry.from}-${entry.result}`}
-                            style={[
-                              styles.detailCard,
-                              { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                            ]}
-                          >
-                            <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.from}</Text>
-                            <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{entry.result}</Text>
-                          </View>
-                        ))}
-                        {section.title === OZ_TO_ML_SECTION && renderOzToMlConverter()}
-                        {section.title === OZ_TO_ML_SECTION && renderGalToCupConverter()}
-                        {section.title === OZ_TO_ML_SECTION && renderQtToCupConverter()}
-                        {section.title === OZ_TO_ML_SECTION && renderLiterToCupConverter()}
-                        {section.title === CUP_TO_OZ_SECTION && renderCupToOzConverter()}
-                        {section.title === CUP_TO_OZ_SECTION && renderTspToMlConverter()}
-                        {section.title === BUTTER_OLIVE_SECTION && renderButterOliveOilConverter()}
-                      </>
-                    )}
-                </View>
-              ))}
-              {visibleConvSections.length === 0 ? (
-                <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>No conversion results found</Text>
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                    Try another search term or switch back to All.
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        )}
-
-        {activeTab === 'substitutions' && showAllergy ? (
-          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-            <Text style={[styles.panelTitle, { color: palette.text }]}>
-              {subTag ? `${subTag} substitutions` : 'Allergy substitutions'}
-            </Text>
-            <View style={styles.listStack}>
-              {filteredAllergySubstitutions.map((item) => (
-                <View
-                  key={`${item.allergy}-${item.avoid}`}
-                  style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                >
-                  {!subTag && <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{item.allergy}</Text>}
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>{`${item.avoid} → ${item.swap}`}</Text>
-                  {item.ratio !== '1 egg replacement' ? (
-                    <Text style={[styles.infoCardMeta, { color: palette.text }]}>{item.ratio}</Text>
-                  ) : null}
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>{item.notes}</Text>
-                </View>
-              ))}
-              {filteredAllergySubstitutions.length === 0 ? (
-                <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>No allergy swap matches</Text>
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                    Try another search term or tag.
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        ) : null}
-
-        {activeTab === 'substitutions' && showPantry ? (
-          <View style={[styles.panelAlt, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}>
-            <Text style={[styles.panelTitle, { color: palette.text }]}>General pantry substitutions</Text>
-            <View style={styles.cardStack}>
-              {filteredChartSubstitutions.map((item) => (
-                <View
-                  key={item.ingredient}
-                  style={[styles.infoCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                >
-                  <Text style={[styles.infoCardTitle, { color: palette.accentText }]}>{item.ingredient}</Text>
-                  <Text style={[styles.infoCardSwap, { color: palette.text }]}>{item.swap}</Text>
-                  <Text style={[styles.infoCardMeta, { color: palette.text }]}>{item.ratio}</Text>
-                  <Text style={[styles.infoCardBody, { color: palette.textMuted }]}>{item.note}</Text>
-                </View>
-              ))}
-              {filteredChartSubstitutions.length === 0 ? (
-                <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>No pantry substitution matches</Text>
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>Try another search term.</Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        ) : null}
-
-        {activeTab === 'dictionary' && (
-          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-            <Text style={[styles.panelTitle, { color: palette.text }]}>
-              {dictTab === 'all' ? 'All Entries' : DICT_TABS.find((t) => t.key === dictTab)?.label ?? ''}
-            </Text>
-            <View style={styles.listStack}>
-              {groupedDictEntries.map((group) => (
-                <View key={`${dictTab}-${group.letter}`} style={{ gap: 14 }}>
-                  <Text style={[styles.panelEyebrow, { color: palette.accentText, marginTop: 8, marginBottom: 4 }]}>
-                    {group.letter}
-                  </Text>
-                  {group.entries.map((entry) => (
-                    <View
-                      key={`${dictTab}-${entry.term}`}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{entry.term}</Text>
-                      {renderDictionaryDefinition(entry.definition, palette.textMuted)}
-                    </View>
-                  ))}
-                </View>
-              ))}
-              {visibleDictEntries.length === 0 ? (
-                <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>
-                  <Text style={[styles.detailCardTitle, { color: palette.text }]}>No dictionary matches found</Text>
-                  <Text style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                    Try another search term or switch back to All.
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        )}
-
-        {activeTab === 'tips' && (
-          <View style={[styles.panel, { backgroundColor: palette.elevated, borderColor: palette.border }]}>
-            <Text style={[styles.panelTitle, { color: palette.text }]}>Tips</Text>
-            <View style={styles.listStack}>
-              {cookingTips.map((group) => (
-                <View key={group.category} style={{ gap: 14 }}>
-                  {group.tips.map((tip) => (
-                    <View
-                      key={tip.title}
-                      style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    >
-                      <Text style={[styles.detailCardTitle, { color: palette.text }]}>{tip.title}</Text>
-                      {tip.lines.map((line, index) => (
-                        <Text key={index} style={[styles.detailCardBody, { color: palette.textMuted }]}>
-                          {line}
-                        </Text>
-                      ))}
-                    </View>
-                  ))}
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
+        {activeTab === 'conversions' && renderConversions()}
+        {activeTab === 'substitutions' && renderSubstitutions()}
+        {activeTab === 'dictionary' && renderDictionary()}
+        {activeTab === 'tips' && renderTips()}
       </ScrollView>
       {showStickySearch ? (
         <View
