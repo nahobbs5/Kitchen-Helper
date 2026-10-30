@@ -56,7 +56,9 @@ function hideAndroidNavigationBar() {
 
   void (async () => {
     try {
-      await NavigationBar.setBehaviorAsync('overlay-swipe');
+      // Hiding also sets swipe-to-reveal behavior natively (setBehaviorAsync was removed in SDK 57).
+      // setVisibilityAsync is used over NavigationBar.setHidden because setHidden caches its last
+      // value and would skip re-hiding after the user swipes the bar back up.
       await NavigationBar.setVisibilityAsync('hidden');
     } catch {
       // Some Android navigation modes do not support programmatic control.
