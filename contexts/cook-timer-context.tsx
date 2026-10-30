@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useAppSettings } from './settings-context';
+import { MAX_TIMER_COUNT, useAppSettings } from './settings-context';
 
 export type CookTimerSlot = {
   id: number;
@@ -31,6 +31,12 @@ type CookTimerContextValue = {
   updateTimerDurationInput: (id: number, value: string) => void;
   toggleTimer: (id: number) => void;
   resetTimer: (id: number) => void;
+  /** Sets an idle timer's duration (used by preset chips and the H/M/S stepper). */
+  setTimerDurationMs: (id: number, durationMs: number) => void;
+  /** Adds a timer slot by raising the "Number of timers" setting. */
+  addTimer: () => void;
+  /** Removes an idle or finished timer and lowers the "Number of timers" setting. */
+  removeTimer: (id: number) => void;
   loadTimerSlot: (label: string, durationMs: number) => boolean;
 };
 
@@ -118,6 +124,11 @@ function parseDurationInput(value: string) {
   return Math.round(minutes * 60 * 1000);
 }
 
+/** Running or paused mid-way; finished and reset timers are not locked. */
+export function isTimerLocked(timer: CookTimerSlot) {
+  return timer.active || (timer.hasStarted && timer.remainingMs > 0);
+}
+
 export function formatTimerRemaining(ms: number) {
   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
   const hours = Math.floor(totalSeconds / 3600);
@@ -132,7 +143,7 @@ export function formatTimerRemaining(ms: number) {
 }
 
 export function CookTimerProvider({ children }: PropsWithChildren) {
-  const { timerCount, defaultTimerMinutes } = useAppSettings();
+  const { timerCount, defaultTimerMinutes, setTimerCount } = useAppSettings();
   const [completedEventCount, setCompletedEventCount] = useState(0);
   const [finishedTimerAlerts, setFinishedTimerAlerts] = useState<CookTimerFinishedAlert[]>([]);
   const [isCookTimerOpen, setIsCookTimerOpen] = useState(false);
@@ -230,7 +241,8 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
           ...completedTimers.map((timer, index) => ({
             id: `${timer.id}-${now}-${index}`,
             timerId: timer.id,
-            timerName: timer.label.trim() || `Timer ${timer.id}`,
+            // Fall back to the on-screen position so names stay right after deletes.
+            timerName: timer.label.trim() || `Timer ${timers.indexOf(timer) + 1}`,
             completedAt: now,
           })),
         ]);
@@ -322,6 +334,39 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
           )
         );
       },
+      setTimerDurationMs: (id: number, durationMs: number) => {
+        const nextMs = Math.max(0, Math.round(durationMs));
+        setTimers((current) =>
+          current.map((timer) =>
+            timer.id === id && !timer.active
+              ? {
+                  ...timer,
+                  durationInput: nextMs > 0 ? msToTimerInput(nextMs) : '',
+                  durationMs: nextMs,
+                  remainingMs: nextMs,
+                  hasStarted: false,
+                }
+              : timer
+          )
+        );
+      },
+      addTimer: () => {
+        if (timers.length < MAX_TIMER_COUNT) {
+          // The [timerCount] effect appends the new slot.
+          setTimerCount(timers.length + 1);
+        }
+      },
+      removeTimer: (id: number) => {
+        const target = timers.find((timer) => timer.id === id);
+        if (!target || timers.length <= 1 || isTimerLocked(target)) {
+          return;
+        }
+
+        setFinishedTimerAlerts((current) => current.filter((alert) => alert.timerId !== id));
+        setTimers((current) => current.filter((timer) => timer.id !== id));
+        // Lengths now match, so the [timerCount] effect leaves the list alone.
+        setTimerCount(timers.length - 1);
+      },
       loadTimerSlot: (label: string, durationMs: number) => {
         const target =
           timers.find((t) => !t.active && !t.hasStarted) ?? timers.find((t) => !t.active);
@@ -338,7 +383,7 @@ export function CookTimerProvider({ children }: PropsWithChildren) {
         return true;
       },
     }),
-    [completedEventCount, finishedTimerAlerts, isCookTimerOpen, timers]
+    [completedEventCount, finishedTimerAlerts, isCookTimerOpen, setTimerCount, timers]
   );
 
   return <CookTimerContext.Provider value={value}>{children}</CookTimerContext.Provider>;

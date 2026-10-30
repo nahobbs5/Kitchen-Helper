@@ -14,18 +14,18 @@ import { ClearableSearchInput } from '../components/clearable-search-input';
 import { DraggableRecipeList } from '../components/draggable-recipe-list';
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ActiveFilterBar } from '../components/active-filter-bar';
-import { StarRating } from '../components/star-rating';
+import { RecipeCard } from '../components/recipe-card';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { useRatings } from '../contexts/ratings-context';
 import { useRecipeFilters } from '../contexts/recipe-filters-context';
 import { useRecipeOrder } from '../contexts/recipe-order-context';
 import { useAppSettings } from '../contexts/settings-context';
+import { useRecipeShare } from '../hooks/use-recipe-share';
 import { triggerReorderHaptic } from '../utils/haptics';
 import { applyRecipeFilters, toggleValue } from '../utils/recipe-filters';
 import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 import { formatCategoryLabel } from '../utils/recipe-form-options';
-import { formatCookTimeTag } from '../utils/recipe-metadata';
 import { buildSampleRecipes, sampleRecipeCategories } from '../utils/sample-recipes';
 
 export default function SampleRecipesScreen() {
@@ -41,7 +41,8 @@ export default function SampleRecipesScreen() {
   const heroLayoutYRef = useRef(0);
   const heroCardLayoutYRef = useRef(0);
   const { filters, setFilters, searchText, setSearchText } = useRecipeFilters('sample-recipes');
-  const { favoriteSlugs } = useFavorites();
+  const { favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
+  const { shareOne, hiddenShareCards } = useRecipeShare();
   const [searchStickyThreshold, setSearchStickyThreshold] = useState<number | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -114,6 +115,7 @@ export default function SampleRecipesScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
+      {hiddenShareCards}
       <ScrollView
         ref={scrollViewRef}
         scrollEnabled={!isDragging}
@@ -187,68 +189,21 @@ export default function SampleRecipesScreen() {
                   })
                 }
                 renderItem={(recipe, _index, { dragProps }) => (
-                  <Pressable
-                    style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}
-                    {...dragProps}
-                  >
-                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{formatCategoryLabel(recipe.category)}</Text>
-                    <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
-
-                    {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
-                      <View style={styles.tagRow}>
-                        <View style={styles.cuisineTag}>
-                          <Text style={styles.cuisineTagText}>
-                            {(recipe as { cuisineRegion?: string | null }).cuisineRegion}
-                          </Text>
-                        </View>
-                      </View>
-                    ) : null}
-                    {recipe.allergyFriendlyTags.length > 0 ? (
-                      <View style={styles.tagRow}>
-                        {recipe.allergyFriendlyTags.map((tag) => (
-                          <View key={tag} style={styles.allergyFriendlyTag}>
-                            <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    ) : null}
-                    {recipe.allergenTags.length > 0 ? (
-                      <View style={styles.tagRow}>
-                        {recipe.allergenTags.map((tag) => (
-                          <View key={tag} style={styles.allergenTag}>
-                            <Text style={styles.allergenTagText}>{tag}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    ) : null}
-                    {recipe.prepTime || recipe.cookTime || recipe.servings ? (
-                      <View style={styles.tagRow}>
-                        {recipe.prepTime ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
-                          </View>
-                        ) : null}
-                        {recipe.cookTime ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>
-                              {formatCookTimeTag(recipe, recipe.cookTime)}
-                            </Text>
-                          </View>
-                        ) : null}
-                        {recipe.servings ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
-                          </View>
-                        ) : null}
-                      </View>
-                    ) : null}
-                    <View style={styles.detailCardRatingRow}>
-                      <StarRating
-                        value={getRating(recipe.slug)}
-                        onRate={(next) => setRating(recipe.slug, next)}
-                      />
-                    </View>
-                  </Pressable>
+                  <RecipeCard
+                    recipe={recipe}
+                    rating={getRating(recipe.slug)}
+                    onRate={(next) => setRating(recipe.slug, next)}
+                    isFavorite={isFavorite(recipe.slug)}
+                    onToggleFavorite={() => toggleFavorite(recipe.slug)}
+                    onShare={() => void shareOne(recipe)}
+                    onTagPress={(tag) =>
+                      setFilters((current) => ({ ...current, dietaryTags: toggleValue(current.dietaryTags, tag) }))
+                    }
+                    onCuisinePress={(cuisine) =>
+                      setFilters((current) => ({ ...current, cuisines: toggleValue(current.cuisines, cuisine) }))
+                    }
+                    dragProps={dragProps}
+                  />
                 )}
               />
               {filteredRecipes.length === 0 ? (

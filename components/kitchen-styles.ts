@@ -249,6 +249,67 @@ export const kitchenStyles = StyleSheet.create({
     gap: 12,
     marginTop: 4,
   },
+  homeDashboard: {
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+    gap: 14,
+  },
+  homeSyncCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 18,
+  },
+  homeSyncCardStacked: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  homeArtCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  homeArtCircleLarge: {
+    width: 96,
+    height: 96,
+  },
+  homeSyncCopy: {
+    flex: 1,
+    gap: 8,
+  },
+  homeSyncActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  homeSyncAction: {
+    flex: 1,
+  },
+  homeMenuList: {
+    gap: 14,
+  },
+  homeMenuCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  homeMenuCardCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  homeChevronButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   menuGrid: {
     gap: 12,
     marginTop: 4,
@@ -582,30 +643,11 @@ export const kitchenStyles = StyleSheet.create({
     color: '#2c2219',
     fontWeight: '800',
   },
-  detailCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  detailCardTitleBlock: {
-    flex: 1,
-    minWidth: 0,
-    gap: 6,
-  },
   detailCardActionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 0,
     gap: 8,
-  },
-  detailCardRatingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  detailCardRatingRowMobile: {
-    justifyContent: 'space-between',
   },
   detailCardMeta: {
     fontSize: 13,
@@ -1186,19 +1228,6 @@ export const kitchenStyles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  timerCloseButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  timerCloseText: {
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 20,
-  },
   settingsTitle: {
     fontSize: 28,
     lineHeight: 32,
@@ -1278,21 +1307,170 @@ export const kitchenStyles = StyleSheet.create({
     lineHeight: 21,
   },
   timerStack: {
-    gap: 12,
-    paddingHorizontal: 12,
+    flexGrow: 0,
   },
-  timerHeaderRow: {
+  timerStackContent: {
+    gap: 14,
+    paddingVertical: 4,
+  },
+  timerHeaderArt: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timerHeaderArtText: {
+    fontSize: 28,
+  },
+  timerHeaderCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  timerHeaderTitle: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: '800',
+  },
+  timerHeaderSubtitle: {
+    fontSize: 14,
+    lineHeight: 19,
+  },
+  timerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timerCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 16,
+    gap: 12,
+  },
+  timerCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    minHeight: 40,
   },
-  timerRemainingText: {
-    fontSize: 14,
+  timerCardTitle: {
+    fontSize: 20,
     fontWeight: '800',
   },
-  timerDurationInput: {
-    maxWidth: 160,
+  timerNameInput: {
+    marginTop: 0,
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  timerTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  timerTimePill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    minHeight: 50,
+  },
+  timerTimeInput: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 18,
+    fontWeight: '600',
+    paddingVertical: 10,
+  },
+  timerTimeText: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
+  timerStartButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 999,
+    minHeight: 50,
+  },
+  timerStartText: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  timerStepperPanel: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+  },
+  timerStepperColumn: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  timerStepperLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  timerStepperButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timerStepperGlyph: {
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 22,
+  },
+  timerStepperValue: {
+    width: 34,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '700',
+    padding: 0,
+  },
+  timerChipRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  timerChip: {
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 999,
+    paddingVertical: 9,
+  },
+  timerChipText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  timerResetButton: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  timerAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderRadius: 999,
+    minHeight: 54,
+  },
+  timerAddText: {
+    fontSize: 17,
+    fontWeight: '800',
   },
   timerTrack: {
     height: 10,
@@ -2057,5 +2235,108 @@ export const kitchenStyles = StyleSheet.create({
   wizardSmallButtonText: {
     fontSize: 15,
     fontWeight: '700',
+  },
+
+  // Recipe list cards (My Recipes, Sample Recipes)
+  recipeCard: {
+    gap: 14,
+    padding: 18,
+    borderRadius: 22,
+  },
+  recipeCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  recipeCardHeading: {
+    flex: 1,
+    gap: 4,
+  },
+  recipeCardEyebrow: {
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  recipeCardTitle: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '800',
+  },
+  recipeCardRoundButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recipeCardChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  recipeCardChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  recipeCardChipText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  metaStripWrapper: {
+    width: '100%',
+    alignItems: 'flex-start',
+  },
+  metaStrip: {
+    maxWidth: '100%',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  metaStripRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  metaStripContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  metaStripSingle: {
+    gap: 10,
+  },
+  metaStripSingleText: {
+    flexShrink: 1,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  metaStripSegment: {
+    flexShrink: 0,
+  },
+  metaStripSegmentDivided: {
+    borderLeftWidth: 1,
+    paddingLeft: 12,
+  },
+  metaStripLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  metaStripValue: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  recipeCardFooterActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  recipeCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
 });

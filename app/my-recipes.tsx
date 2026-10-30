@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Check, Ellipsis, Share2, SquareCheck, Star, Tag, Trash2, X } from 'lucide-react-native';
+import { Ellipsis, Share2, SquareCheck, Star, Tag, Trash2, X } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
@@ -15,8 +15,7 @@ import {
 import { kitchenStyles as styles } from '../components/kitchen-styles';
 import { ClearableSearchInput } from '../components/clearable-search-input';
 import { DraggableRecipeList } from '../components/draggable-recipe-list';
-import { RecipeShareCard, recipeShareCardWidth } from '../components/recipe-share-card';
-import { ShareIcon } from '../components/share-icon';
+import { RecipeCard } from '../components/recipe-card';
 import { NoticePieTimer } from '../components/notice-pie-timer';
 import { FryingPanIcon } from '../components/recipe-action-icons';
 import { useCustomRecipes } from '../contexts/custom-recipes-context';
@@ -24,60 +23,23 @@ import { useRecipeOrder } from '../contexts/recipe-order-context';
 import { useAppSettings } from '../contexts/settings-context';
 import { useFavorites } from '../contexts/favorites-context';
 import { useRatings } from '../contexts/ratings-context';
-import { StarRating } from '../components/star-rating';
 import { ActiveFilterBar } from '../components/active-filter-bar';
 import { useRecipeFilters } from '../contexts/recipe-filters-context';
 import { useLibraryRecipes, type LibraryRecipe } from '../hooks/use-library-recipes';
+import { useRecipeShare } from '../hooks/use-recipe-share';
 import { allergenTagOptions, allergyFriendlyTagOptions } from '../utils/allergen-tags';
-import { shareRecipe, shareRecipes, type ExportRecipe } from '../utils/export-recipes';
 import { triggerReorderHaptic } from '../utils/haptics';
 import { RECIPE_CATEGORY_VALUES, formatCategoryLabel } from '../utils/recipe-form-options';
-import { formatCookTimeTag } from '../utils/recipe-metadata';
 import { applyRecipeFilters, toggleValue } from '../utils/recipe-filters';
 import { reorderWithinFilteredView, sortByManualOrder } from '../utils/recipe-order';
 
 const bulkCategoryOptions = ['Keep existing', ...RECIPE_CATEGORY_VALUES] as const;
 
-function toExportRecipe(
-  recipe: LibraryRecipe,
-  recipeOverrideMap: ReturnType<typeof useCustomRecipes>['recipeOverrideMap'],
-  rating: number | null = null
-): ExportRecipe {
-  const override = recipeOverrideMap[recipe.slug];
-  const sourceInfo = 'sourceInfo' in recipe ? recipe.sourceInfo : override?.sourceInfo ?? null;
-
-  return {
-    slug: recipe.slug,
-    title: recipe.title,
-    category: recipe.category,
-    sourceLabel: recipe.source,
-    cuisineRegion: (recipe as { cuisineRegion?: string | null }).cuisineRegion ?? null,
-    prepTime: recipe.prepTime,
-    cookTime: recipe.cookTime,
-    totalTime: recipe.totalTime,
-    servings: recipe.servings,
-    allergyFriendlyTags: recipe.allergyFriendlyTags,
-    allergenTags: recipe.allergenTags,
-    ingredients: recipe.ingredients,
-    directions: recipe.directions,
-    notes: 'notes' in recipe && typeof recipe.notes === 'string' ? recipe.notes : null,
-    sourceInfo,
-    rating,
-  };
-}
-
-async function waitForHiddenShareCard() {
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  });
-}
-
 export default function MyRecipesScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const isWide = width >= 960;
-  const isMobile = width < 768;
-  const { palette, reorderHapticsEnabled, showRatingsInCardExports } = useAppSettings();
+  const { palette, reorderHapticsEnabled } = useAppSettings();
   const scrollOffsetRef = useRef(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const heroLayoutYRef = useRef(0);
@@ -102,19 +64,13 @@ export default function MyRecipesScreen() {
   const [bulkAllergenTagsToAdd, setBulkAllergenTagsToAdd] = useState<string[]>([]);
   const [bulkFriendlyTagsToAdd, setBulkFriendlyTagsToAdd] = useState<string[]>([]);
   const [dismissProgress, setDismissProgress] = useState(0);
-  const [recipesPendingShare, setRecipesPendingShare] = useState<ExportRecipe[]>([]);
-  const [sharingSelectedRecipes, setSharingSelectedRecipes] = useState(false);
-  const shareCardRefs = useRef<Record<string, View | null>>({});
+  const { shareOne, shareMany, sharingMany: sharingSelectedRecipes, hiddenShareCards } = useRecipeShare();
   const {
     bulkUpdateRecipeMetadata,
     clearDeletedRecipes,
     deleteRecipes,
     lastDeletedRecipes,
-    recipeOverrideMap,
     restoreDeletedRecipes,
-    syncBusy,
-    syncEnabled,
-    syncError,
   } = useCustomRecipes();
   const { favoriteRecipes, favoriteSlugs, isFavorite, toggleFavorite } = useFavorites();
   const { getRating, setRating } = useRatings();
@@ -276,52 +232,12 @@ export default function MyRecipesScreen() {
     setBulkFriendlyTagsToAdd([]);
   }
 
-  async function handleShareRecipe(recipe: LibraryRecipe) {
-    const exportRecipe = toExportRecipe(
-      recipe,
-      recipeOverrideMap,
-      showRatingsInCardExports ? getRating(recipe.slug) : null
-    );
-
-    setRecipesPendingShare([exportRecipe]);
-
-    try {
-      await waitForHiddenShareCard();
-      await shareRecipe(exportRecipe, { current: shareCardRefs.current[exportRecipe.slug] });
-    } finally {
-      setRecipesPendingShare([]);
-    }
-  }
-
   async function handleShareSelectedRecipes() {
-    if (selectedRecipeSlugs.length === 0 || sharingSelectedRecipes) {
-      return;
-    }
-
-    const exportRecipes = selectedRecipeSlugs
-      .map((slug) => recipeBySlug.get(slug))
-      .filter((recipe): recipe is LibraryRecipe => Boolean(recipe))
-      .map((recipe) =>
-        toExportRecipe(recipe, recipeOverrideMap, showRatingsInCardExports ? getRating(recipe.slug) : null)
-      );
-
-    if (exportRecipes.length === 0) {
-      return;
-    }
-
-    setSharingSelectedRecipes(true);
-    setRecipesPendingShare(exportRecipes);
-
-    try {
-      await waitForHiddenShareCard();
-      await shareRecipes(
-        exportRecipes,
-        exportRecipes.map((recipe) => ({ current: shareCardRefs.current[recipe.slug] }))
-      );
-    } finally {
-      setRecipesPendingShare([]);
-      setSharingSelectedRecipes(false);
-    }
+    await shareMany(
+      selectedRecipeSlugs
+        .map((slug) => recipeBySlug.get(slug))
+        .filter((recipe): recipe is LibraryRecipe => Boolean(recipe))
+    );
   }
 
   useEffect(() => {
@@ -471,29 +387,7 @@ export default function MyRecipesScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
-      {recipesPendingShare.length > 0 ? (
-        <View
-          pointerEvents="none"
-          style={{
-            left: -10000,
-            position: 'absolute',
-            top: 0,
-            width: recipeShareCardWidth,
-          }}
-        >
-          {recipesPendingShare.map((recipe) => (
-            <View
-              key={recipe.slug}
-              ref={(view) => {
-                shareCardRefs.current[recipe.slug] = view;
-              }}
-              collapsable={false}
-            >
-              <RecipeShareCard recipe={recipe} />
-            </View>
-          ))}
-        </View>
-      ) : null}
+      {hiddenShareCards}
       <ScrollView
         ref={scrollViewRef}
         scrollEnabled={!isDragging}
@@ -517,23 +411,6 @@ export default function MyRecipesScreen() {
           ]}
         >
           <View style={styles.heroCopy}>
-            {syncEnabled && (syncBusy || syncError) ? (
-              <View
-                style={[
-                  styles.noticeCard,
-                  { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                ]}
-              >
-                <Text style={[styles.noticeCardTitle, { color: palette.text }]}>
-                  {syncBusy ? 'Syncing recipe changes' : 'Sync issue'}
-                </Text>
-                <Text style={[styles.noticeCardBody, { color: palette.textMuted }]}>
-                  {syncBusy
-                    ? 'Changes are being written to your shared recipe library now.'
-                    : syncError}
-                </Text>
-              </View>
-            ) : null}
             {lastDeletedRecipes.length > 0 ? (
               <View
                 style={[
@@ -651,174 +528,24 @@ export default function MyRecipesScreen() {
                         }
                   );
                 }}
-                renderItem={(recipe, _index, { dragProps }) => {
-                  const actionButtons = (
-                    <View style={styles.detailCardActionRow}>
-                      <Pressable
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          void handleShareRecipe(recipe);
-                        }}
-                        style={[styles.starButton, { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt }]}
-                      >
-                        <ShareIcon color={palette.accentText} />
-                      </Pressable>
-                      <Pressable
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          toggleFavorite(recipe.slug);
-                        }}
-                        style={[
-                          styles.starButton,
-                          { backgroundColor: palette.elevatedAlt, borderColor: palette.borderAlt },
-                          isFavorite(recipe.slug) && styles.starButtonActive,
-                        ]}
-                      >
-                        <Text style={[styles.starButtonText, { color: palette.accentText }]}>
-                          {isFavorite(recipe.slug) ? '★' : '☆'}
-                        </Text>
-                      </Pressable>
-                    </View>
-                  );
-                  return (
-                  <Pressable
-                    style={[
-                      styles.detailCard,
-                      { backgroundColor: palette.surface, borderColor: palette.borderAlt },
-                      selectionMode && selectedRecipeSlugs.includes(recipe.slug) && {
-                        backgroundColor: palette.elevatedAlt,
-                        borderColor: palette.accent,
-                        borderWidth: 2,
-                      },
-                    ]}
-                    {...dragProps}
-                  >
-                    <Text style={[styles.detailCardMeta, { color: palette.accentText }]}>{formatCategoryLabel(recipe.category)}</Text>
-                    <View style={styles.detailCardHeader}>
-                      <View style={styles.detailCardTitleBlock}>
-                        <Text style={[styles.detailCardTitle, { color: palette.text }]}>{recipe.title}</Text>
-                      </View>
-                      {selectionMode ? (
-                        <View style={styles.detailCardActionRow}>
-                          {isFavorite(recipe.slug) ? (
-                            <Text
-                              accessibilityLabel="Favorited"
-                              style={[styles.starButtonText, { color: palette.accent }]}
-                            >
-                              ★
-                            </Text>
-                          ) : null}
-                          <Pressable
-                            accessibilityRole="checkbox"
-                            accessibilityState={{ checked: selectedRecipeSlugs.includes(recipe.slug) }}
-                            accessibilityLabel={`Select ${recipe.title}`}
-                            hitSlop={8}
-                            onPress={(event) => {
-                              event.stopPropagation();
-                              handleSelectionPress(
-                                recipe.slug,
-                                Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey)
-                              );
-                            }}
-                            style={[
-                              styles.selectCheckCircle,
-                              selectedRecipeSlugs.includes(recipe.slug)
-                                ? { backgroundColor: palette.accent, borderColor: palette.accent }
-                                : { backgroundColor: palette.elevated, borderColor: palette.borderAlt },
-                            ]}
-                          >
-                            {selectedRecipeSlugs.includes(recipe.slug) ? (
-                              <Check size={16} strokeWidth={3} color={palette.accentContrastText} />
-                            ) : null}
-                          </Pressable>
-                        </View>
-                      ) : isMobile ? null : (
-                        actionButtons
-                      )}
-                    </View>
-                    {(recipe as { cuisineRegion?: string | null }).cuisineRegion ? (
-                      <View style={styles.tagRow}>
-                        <Pressable
-                          onPress={(event) => {
-                            event.stopPropagation();
-                            toggleCuisineFilter((recipe as { cuisineRegion?: string | null }).cuisineRegion ?? '');
-                          }}
-                          style={styles.cuisineTag}
-                        >
-                          <Text style={styles.cuisineTagText}>
-                            {(recipe as { cuisineRegion?: string | null }).cuisineRegion}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    ) : null}
-                    {recipe.allergyFriendlyTags.length > 0 ? (
-                      <View style={styles.tagRow}>
-                        {recipe.allergyFriendlyTags.map((tag) => (
-                          <Pressable
-                            key={tag}
-                            onPress={(event) => {
-                            event.stopPropagation();
-                              toggleDietaryFilter(tag);
-                            }}
-                            style={styles.allergyFriendlyTag}
-                          >
-                            <Text style={styles.allergyFriendlyTagText}>{tag}</Text>
-                          </Pressable>
-                        ))}
-                      </View>
-                    ) : null}
-                    {recipe.allergenTags.length > 0 ? (
-                      <View style={styles.tagRow}>
-                        {recipe.allergenTags.map((tag) => (
-                          <Pressable
-                            key={tag}
-                            onPress={(event) => {
-                            event.stopPropagation();
-                              toggleDietaryFilter(tag);
-                            }}
-                            style={styles.allergenTag}
-                          >
-                            <Text style={styles.allergenTagText}>{tag}</Text>
-                          </Pressable>
-                        ))}
-                      </View>
-                    ) : null}
-                    {recipe.prepTime || recipe.cookTime || recipe.servings ? (
-                      <View style={styles.tagRow}>
-                        {recipe.prepTime ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Prep: {recipe.prepTime}</Text>
-                          </View>
-                        ) : null}
-                        {recipe.cookTime ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>
-                              {formatCookTimeTag(recipe, recipe.cookTime)}
-                            </Text>
-                          </View>
-                        ) : null}
-                        {recipe.servings ? (
-                          <View style={[styles.tag, { backgroundColor: palette.tag }]}>
-                            <Text style={[styles.tagText, { color: palette.tagText }]}>Serves: {recipe.servings}</Text>
-                          </View>
-                        ) : null}
-                      </View>
-                    ) : null}
-                    <View
-                      style={[
-                        styles.detailCardRatingRow,
-                        isMobile && !selectionMode && styles.detailCardRatingRowMobile,
-                      ]}
-                    >
-                      <StarRating
-                        value={getRating(recipe.slug)}
-                        onRate={(next) => setRating(recipe.slug, next)}
-                      />
-                      {isMobile && !selectionMode ? actionButtons : null}
-                    </View>
-                  </Pressable>
-                  );
-                }}
+                renderItem={(recipe, _index, { dragProps }) => (
+                  <RecipeCard
+                    recipe={recipe}
+                    rating={getRating(recipe.slug)}
+                    onRate={(next) => setRating(recipe.slug, next)}
+                    isFavorite={isFavorite(recipe.slug)}
+                    onToggleFavorite={() => toggleFavorite(recipe.slug)}
+                    onShare={() => void shareOne(recipe)}
+                    onTagPress={toggleDietaryFilter}
+                    onCuisinePress={toggleCuisineFilter}
+                    dragProps={dragProps}
+                    selectionMode={selectionMode}
+                    selected={selectedRecipeSlugs.includes(recipe.slug)}
+                    onSelectPress={(event) =>
+                      handleSelectionPress(recipe.slug, Boolean((event.nativeEvent as { shiftKey?: boolean }).shiftKey))
+                    }
+                  />
+                )}
               />
               {filteredRecipes.length === 0 ? (
                 <View style={[styles.detailCard, { backgroundColor: palette.surface, borderColor: palette.borderAlt }]}>

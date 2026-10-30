@@ -733,6 +733,16 @@ Current behavior:
 
 This was added so mobile and web can share one recipe library without introducing a custom backend service inside this repo.
 
+## Recipe List Cards
+
+Recipe list cards (My Recipes and Sample Recipes) share one component, [`components/recipe-card.tsx`](components/recipe-card.tsx):
+
+- category eyebrow and title (a select checkbox top-right in selection mode)
+- cuisine (blue), allergy-friendly (green), and allergen (orange) chips; tapping a chip filters the list
+- one time strip with Prep | Bake/Cook | Serves segments (Clock, a custom oven icon in [`components/oven-icon.tsx`](components/oven-icon.tsx), Utensils); a single value shows as one pill like `Bake: 35–45 minutes`; on narrow screens the segments wrap onto a second line inside the strip
+- your star rating, then round share and favorite ☆ buttons on the right
+- single and multi-recipe image sharing lives in [`hooks/use-recipe-share.tsx`](hooks/use-recipe-share.tsx), so Sample Recipes can share and favorite too
+
 ## Favorites System
 
 Favorite recipes are stored locally and can be toggled from both the recipe list and recipe detail pages.
