@@ -117,7 +117,7 @@ export default function AddRecipeScreen() {
     }
     if (entryMode === 'website' && !sourceUrl) {
       setSaveError('Website URL is required for website imports.');
-      goTo('details');
+      goTo('start');
       return;
     }
     setSaveError('');
@@ -813,6 +813,9 @@ export default function AddRecipeScreen() {
             <View style={[styles.settingsDivider, { backgroundColor: palette.border }]} />
             <Text style={[styles.wizardSectionTitle, { color: palette.accent }]}>Basic information</Text>
             <BasicInfoFields form={form} categoryStyle="chips" />
+            {saveError && !sourceUrl ? (
+              <Text style={[styles.accountFeedback, { color: palette.warningText }]}>{saveError}</Text>
+            ) : null}
             <WizardFooter
               primaryLabel="Next: Add details"
               primaryDisabled={!stepIsValid}
@@ -832,14 +835,7 @@ export default function AddRecipeScreen() {
               <DetailsStep
                 form={form}
                 sourceUrl={entryMode === 'website' ? sourceUrl : undefined}
-                onSourceUrlChange={
-                  entryMode === 'website'
-                    ? (url) => {
-                        setWebsiteUrl(url);
-                        if (form.values.sourceInfo) form.set('sourceInfo', { ...form.values.sourceInfo, url });
-                      }
-                    : undefined
-                }
+                onReplaceSourceUrl={entryMode === 'website' ? () => goTo('start') : undefined}
               />
             ) : null}
             {step === 'ingredients' ? (
@@ -865,7 +861,7 @@ export default function AddRecipeScreen() {
             ) : null}
             {step === 'finish' ? <FinishStep form={form} onEditStep={goTo} /> : null}
 
-            {saveError ? (
+            {saveError && !sourceUrl ? (
               <Text style={[styles.accountFeedback, { color: palette.warningText }]}>{saveError}</Text>
             ) : null}
             {!stepIsValid && step !== 'finish' ? (

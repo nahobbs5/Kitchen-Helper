@@ -157,12 +157,13 @@ function ServingsField({ value, onChange }: { value: string; onChange: (value: s
 export function DetailsStep({
   form,
   sourceUrl,
-  onSourceUrlChange,
+  onReplaceSourceUrl,
 }: {
   form: RecipeForm;
-  /** Shown when the recipe came from a website. */
+  /** Shown (read-only) when the recipe came from a website. */
   sourceUrl?: string;
-  onSourceUrlChange?: (url: string) => void;
+  /** Add only: goes back to the first page, where the link is set or replaced. */
+  onReplaceSourceUrl?: () => void;
 }) {
   const { palette } = useAppSettings();
   const { values, set } = form;
@@ -176,11 +177,11 @@ export function DetailsStep({
         <Text style={[styles.accountFeedback, { color: palette.warningText }]}>Recipe name is required.</Text>
       ) : null}
 
-      <View style={[styles.wizardFieldRow, { alignItems: 'flex-start' }]}>
-        <ServingsField value={values.servings} onChange={(value) => set('servings', value)} />
+      <View style={[styles.wizardFieldRow, { alignItems: 'flex-start', flexWrap: 'nowrap' }]}>
         <MinutesField label="Prep time" value={values.prepTime} onChange={(value) => set('prepTime', value)} />
         <MinutesField label="Cook time" value={values.cookTime} onChange={(value) => set('cookTime', value)} />
       </View>
+      <ServingsField value={values.servings} onChange={(value) => set('servings', value)} />
 
       <View style={[styles.settingsDivider, { backgroundColor: palette.border }]} />
 
@@ -202,22 +203,25 @@ export function DetailsStep({
 
       {sourceUrl !== undefined ? (
         <View style={styles.wizardField}>
-          <FormLabel required={Boolean(onSourceUrlChange)}>Website URL</FormLabel>
-          {onSourceUrlChange ? null : (
-            <Text style={[styles.settingsPageRowHint, { color: palette.textMuted }]}>
-              Records where this recipe came from. The source URL can&apos;t be changed.
-            </Text>
-          )}
+          <FormLabel required={Boolean(onReplaceSourceUrl)}>Website URL</FormLabel>
+          <Text style={[styles.settingsPageRowHint, { color: palette.textMuted }]}>
+            {onReplaceSourceUrl
+              ? 'Set on the first page. To use a different link, replace it there.'
+              : 'Records where this recipe came from. The source URL can\'t be changed.'}
+          </Text>
           <FormInput
-            value={sourceUrl}
-            onChangeText={onSourceUrlChange}
-            editable={Boolean(onSourceUrlChange)}
-            placeholder="https://example.com/recipe"
-            autoCapitalize="none"
-            autoCorrect={false}
+            value={sourceUrl || (onReplaceSourceUrl ? 'No link yet' : '')}
+            editable={false}
             accessibilityLabel="Website URL"
-            style={onSourceUrlChange ? undefined : { opacity: 0.7 }}
+            style={{ opacity: 0.7 }}
           />
+          {onReplaceSourceUrl ? (
+            <Pressable accessibilityRole="button" onPress={onReplaceSourceUrl} hitSlop={6} style={{ alignSelf: 'flex-start' }}>
+              <Text style={[styles.wizardTinyLink, { color: palette.accentText }]}>
+                {sourceUrl ? 'Replace link' : 'Add link'}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -231,7 +235,7 @@ export function DetailsStep({
 export function TagsFields({ form }: { form: RecipeForm }) {
   const { palette } = useAppSettings();
   const { values } = form;
-  const [tagTab, setTagTab] = useState<'friendly' | 'allergen'>('friendly');
+  const [tagTab, setTagTab] = useState<'friendly' | 'allergen'>('allergen');
 
   return (
     <View style={styles.wizardField}>
@@ -247,8 +251,8 @@ export function TagsFields({ form }: { form: RecipeForm }) {
       <View style={[styles.wizardSegment, { borderColor: palette.borderAlt, backgroundColor: palette.elevated }]}>
         {(
           [
-            { key: 'friendly', label: 'Allergy-friendly tags' },
             { key: 'allergen', label: 'Allergen tags' },
+            { key: 'friendly', label: 'Allergy-friendly tags' },
           ] as const
         ).map((tab) => (
           <Pressable

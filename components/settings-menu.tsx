@@ -1,6 +1,8 @@
 import { usePathname, useRouter } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { kitchenStyles as styles } from './kitchen-styles';
 import { useCookTimer } from '../contexts/cook-timer-context';
@@ -70,7 +72,7 @@ export function ReferenceButton() {
           {
             backgroundColor: palette.elevated,
             borderColor: palette.borderAlt,
-            opacity: isReferenceScreen ? 0.45 : 1,
+            ...(isReferenceScreen && { borderColor: palette.accent, borderWidth: 2 }),
           },
         ]}
       >
@@ -102,7 +104,7 @@ export function HomeButton() {
           {
             backgroundColor: palette.elevated,
             borderColor: palette.borderAlt,
-            opacity: isHomeScreen ? 0.45 : 1,
+            ...(isHomeScreen && { borderColor: palette.accent, borderWidth: 2 }),
           },
         ]}
       >
@@ -134,7 +136,7 @@ export function MyRecipesButton() {
           {
             backgroundColor: palette.elevated,
             borderColor: palette.borderAlt,
-            opacity: isMyRecipesScreen ? 0.45 : 1,
+            ...(isMyRecipesScreen && { borderColor: palette.accent, borderWidth: 2 }),
           },
         ]}
       >
@@ -190,7 +192,7 @@ export function SettingsGearButton() {
           {
             backgroundColor: palette.elevated,
             borderColor: palette.borderAlt,
-            opacity: isSettingsHub ? 0.45 : 1,
+            ...(isSettingsHub && { borderColor: palette.accent, borderWidth: 2 }),
           },
         ]}
       >
@@ -223,12 +225,44 @@ export function AccountButton() {
           {
             backgroundColor: palette.elevated,
             borderColor: palette.borderAlt,
-            opacity: isAccountScreen ? 0.45 : 1,
+            ...(isAccountScreen && { borderColor: palette.accent, borderWidth: 2 }),
           },
         ]}
       >
         <Text style={[styles.settingsGearIcon, { color: palette.accent }]}>👤</Text>
       </Pressable>
     </HeaderTooltip>
+  );
+}
+
+// Phone header: nav buttons spread evenly across the width.
+// Sub-pages swap Home for a back arrow.
+export function CompactNavHeader({ showBack, onBack }: { showBack: boolean; onBack: () => void }) {
+  const { palette } = useAppSettings();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={{ backgroundColor: palette.headerBackground, paddingTop: insets.top }}>
+      <View style={styles.compactNavRow}>
+        {showBack ? (
+          <Pressable
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            hitSlop={6}
+            style={styles.compactNavBack}
+          >
+            <ArrowLeft size={26} color={palette.text} />
+          </Pressable>
+        ) : (
+          <HomeButton />
+        )}
+        <MyRecipesButton />
+        <ReferenceButton />
+        <CookTimerButton />
+        <SettingsGearButton />
+        <AccountButton />
+      </View>
+    </View>
   );
 }

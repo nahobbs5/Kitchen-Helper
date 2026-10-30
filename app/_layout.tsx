@@ -6,7 +6,7 @@ import { AppState, Image, Platform, Text, View, useWindowDimensions } from 'reac
 
 import { CookTimerFinishedAlerts } from '../components/cook-timer-alerts';
 import { CookTimerModal } from '../components/cook-timer-modal';
-import { AccountButton, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton } from '../components/settings-menu';
+import { AccountButton, CompactNavHeader, CookTimerButton, HomeButton, MyRecipesButton, ReferenceButton, SettingsGearButton } from '../components/settings-menu';
 import { AuthProvider } from '../contexts/auth-context';
 import { CookTimerProvider } from '../contexts/cook-timer-context';
 import { CustomRecipesProvider } from '../contexts/custom-recipes-context';
@@ -162,6 +162,15 @@ function RootNavigator() {
         ),
         headerTitleAlign: isCompact ? 'center' : 'left',
         headerBackVisible: true,
+        // Phones get the evenly spaced nav row from the reference mockups.
+        header: isCompact
+          ? ({ navigation, back, options }) => (
+              <CompactNavHeader
+                showBack={Boolean(back) && options.headerBackVisible !== false}
+                onBack={navigation.goBack}
+              />
+            )
+          : undefined,
         headerRight: () => (
           <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>
             <HomeButton />

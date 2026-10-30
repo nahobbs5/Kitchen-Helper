@@ -1091,16 +1091,29 @@ export const kitchenStyles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  compactNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  compactNavBack: {
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   settingsGearButton: {
-    width: 38,
-    height: 38,
+    width: 46,
+    height: 46,
     borderRadius: 999,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   settingsGearIcon: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '800',
   },
   dictionaryBackToTopButton: {
